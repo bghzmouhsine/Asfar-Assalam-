@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أسفار السلام | وكالة أسفار - طنجة</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;800&family=Tajawal:wght@300;400;500&display=swap');
+
+:root{
+  --sea-deep:#0A3D5C;
+  --sea-mid:#146B86;
+  --sea-mid-a:#146b8622;
+  --foam:#F4F0E7;
+  --foam-dim:#E9E1D1;
+  --ink:#12232F;
+  --ink-soft:#3C5364;
+  --brass:#C08A3E;
+  --brass-light:#E0B876;
+  --zellige:#2F8F7B;
+  --bougain:#B84B62;
+  --radius:14px;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Cairo', sans-serif;
+  background:var(--foam);
+  color:var(--ink);
+  direction:rtl;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+h1,h2,h3,.font-display{font-family:'Amiri', serif;}
+.eyebrow{
+  font-family:'Tajawal', sans-serif;
+  font-weight:500;
+  letter-spacing:.06em;
+  color:var(--brass);
+  font-size:.85rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.eyebrow::before{
+  content:"";
+  width:22px; height:1px;
+  background:var(--brass);
+}
+a{color:inherit; text-decoration:none;}
+img,svg{display:block; max-width:100%;}
+button{font-family:inherit; cursor:pointer; border:none;}
+:focus-visible{outline:2px solid var(--brass); outline-offset:3px;}
+.wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+@media (max-width:640px){.wrap{padding:0 18px;}}
+
+/* ---------- HEADER ---------- */
+header{
+  position:sticky; top:0; z-index:60;
+  background:rgba(244,240,231,.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--foam-dim);
+}
+.nav{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 0;
+}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{width:38px; height:38px; flex-shrink:0;}
+.brand-name{font-family:'Amiri',serif; font-weight:700; font-size:1.3rem; color:var(--sea-deep);}
+.brand-tag{font-family:'Tajawal',sans-serif; font-size:.68rem; color:var(--ink-soft); letter-spacing:.04em;}
+.nav-links{display:flex; gap:30px; font-family:'Tajawal',sans-serif; font-weight:500; font-size:.95rem;}
+.nav-links a{position:relative; padding:4px 0; color:var(--ink);}
+.nav-links a::after{
+  content:""; position:absolute; right:0; bottom:0; width:0; height:2px;
+  background:var(--brass); transition:width .25s ease;
+}
+.nav-links a:hover::after{width:100%;}
+.nav-cta{
+  background:var(--sea-deep); color:var(--foam);
+  padding:10px 22px; border-radius:30px;
+  font-family:'Tajawal',sans-serif; font-weight:600; font-size:.9rem;
+  transition:background .2s ease;
+}
+.nav-cta:hover{background:var(--sea-mid);}
+.burger{display:none; background:none; width:30px; height:22px; position:relative;}
+.burger span{position:absolute; right:0; left:0; height:2px; background:var(--ink); border-radius:2px;}
+.burger span:nth-child(1){top:0;} .burger span:nth-child(2){top:10px;} .burger span:nth-child(3){top:20px;}
+@media (max-width:860px){
+  .nav-links{display:none;}
+  .burger{display:block;}
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  position:relative;
+  background:radial-gradient(120% 140% at 20% 0%, var(--sea-mid) 0%, var(--sea-deep) 55%, #082C43 100%);
+  color:var(--foam);
+  overflow:hidden;
+  padding:72px 0 40px;
+}
+.hero-grid{
+  display:grid; grid-template-columns:1.05fr 1fr; align-items:center; gap:20px;
+  position:relative; z-index:2;
+}
+@media (max-width:920px){.hero-grid{grid-template-columns:1fr;}}
+.hero h1{
+  font-size:clamp(2.4rem, 5vw, 3.6rem);
+  line-height:1.18;
+  margin-bottom:18px;
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--brass-light);
+}
+.hero p.lede{
+  font-family:'Tajawal',sans-serif; font-weight:300;
+  font-size:1.08rem; color:#DCE7ED; max-width:480px; margin-bottom:30px;
+}
+.hero-stats{display:flex; gap:34px; margin-top:38px; flex-wrap:wrap;}
+.hstat b{font-family:'Amiri',serif; font-size:1.7rem; color:var(--brass-light); display:block;}
+.hstat span{font-family:'Tajawal',sans-serif; font-size:.78rem; color:#CBDAE1;}
+
+.search-card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(6px);
+  border-radius:var(--radius);
+  padding:20px;
+  display:flex; flex-wrap:wrap; gap:14px; margin-top:8px;
+}
+.search-field{flex:1 1 160px; display:flex; flex-direction:column; gap:6px;}
+.search-field label{font-family:'Tajawal',sans-serif; font-size:.72rem; color:#CBDAE1;}
+.search-field select, .search-field input{
+  background:rgba(255,255,255,.92); border:none; border-radius:8px;
+  padding:11px 12px; font-family:'Tajawal',sans-serif; color:var(--ink); font-size:.9rem;
+}
+.search-btn{
+  align-self:flex-end;
+  background:var(--brass); color:var(--sea-deep); font-weight:700;
+  padding:12px 26px; border-radius:8px; font-family:'Tajawal',sans-serif;
+  transition:transform .15s ease, background .2s ease;
+}
+.search-btn:hover{background:var(--brass-light); transform:translateY(-1px);}
+
+.hero-art{position:relative;}
+.hero-art svg{width:100%; height:auto;}
+.route-line{
+  stroke-dasharray:600; stroke-dashoffset:600;
+  animation:draw 1.8s ease forwards;
+}
+.route-line.d1{animation-delay:.15s;} .route-line.d2{animation-delay:.35s;}
+.route-line.d3{animation-delay:.55s;} .route-line.d4{animation-delay:.75s;}
+.route-line.d5{animation-delay:.95s;} .route-line.d6{animation-delay:1.15s;}
+@keyframes draw{to{stroke-dashoffset:0;}}
+.pulse-dot{animation:pulse 2.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.55; r:6;} 50%{opacity:1; r:9;}}
+@media (prefers-reduced-motion:reduce){
+  .route-line{animation:none; stroke-dashoffset:0;}
+  .pulse-dot{animation:none;}
+}
+.dest-label{font-family:'Tajawal',sans-serif; font-size:12px; fill:#E9F1F4;}
+.dest-label.strong{font-weight:700;}
+
+/* ---------- SECTION GENERIC ---------- */
+section{padding:84px 0;}
+.section-head{max-width:640px; margin-bottom:46px;}
+.section-head h2{font-size:clamp(1.7rem,3vw,2.4rem); margin-top:10px; color:var(--sea-deep);}
+.section-head p{font-family:'Tajawal',sans-serif; color:var(--ink-soft); margin-top:12px; font-weight:300;}
+
+/* ---------- STRIP ---------- */
+.strip{
+  background:var(--sea-deep); color:var(--foam); padding:26px 0;
+}
+.strip .wrap{display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px; text-align:center;}
+.strip-item{font-family:'Tajawal',sans-serif; font-size:.85rem; display:flex; align-items:center; gap:8px; color:#DCE7ED;}
+.strip-item b{color:var(--brass-light); font-family:'Amiri',serif; font-size:1.15rem;}
+
+/* ---------- DESTINATIONS ---------- */
+.dest-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+@media (max-width:920px){.dest-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:600px){.dest-grid{grid-template-columns:1fr;}}
+.dest-card{
+  background:#fff; border-radius:var(--radius); overflow:hidden;
+  border:1px solid var(--foam-dim);
+  transition:transform .25s ease, box-shadow .25s ease;
+  display:flex; flex-direction:column;
+}
+.dest-card:hover{transform:translateY(-6px); box-shadow:0 18px 34px -18px rgba(10,61,92,.35);}
+.dest-visual{
+  height:150px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(150deg, var(--sea-mid-a), var(--foam-dim));
+  position:relative;
+}
+.dest-visual svg{width:74px; height:74px;}
+.dest-badge{
+  position:absolute; top:12px; left:12px;
+  background:var(--bougain); color:#fff; font-family:'Tajawal',sans-serif;
+  font-size:.65rem; padding:4px 10px; border-radius:30px; font-weight:600;
+}
+.dest-body{padding:18px 20px 22px; display:flex; flex-direction:column; gap:8px; flex:1;}
+.dest-body h3{font-size:1.2rem; color:var(--sea-deep);}
+.dest-body p{font-family:'Tajawal',sans-serif; font-size:.82rem; color:var(--ink-soft); font-weight:300; flex:1;}
+.dest-foot{display:flex; align-items:center; justify-content:space-between; margin-top:6px;}
+.dest-price{font-family:'Tajawal',sans-serif; font-size:.75rem; color:var(--ink-soft);}
+.dest-price b{color:var(--zellige); font-family:'Amiri',serif; font-size:1.15rem;}
+.dest-cta{
+  background:var(--foam); border:1px solid var(--sea-deep); color:var(--sea-deep);
+  padding:8px 16px; border-radius:8px; font-family:'Tajawal',sans-serif; font-size:.78rem; font-weight:600;
+  transition:all .2s ease;
+}
+.dest-cta:hover{background:var(--sea-deep); color:#fff;}
+
+/* ---------- HAJJ FEATURE ---------- */
+.feature{
+  position:relative; border-radius:22px; overflow:hidden;
+  background:var(--sea-deep); color:var(--foam);
+  padding:56px; display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center;
+}
+@media (max-width:860px){.feature{grid-template-columns:1fr; padding:36px 24px;}}
+.feature::before{
+  content:""; position:absolute; inset:0; opacity:.10; pointer-events:none;
+  background-image:
+    linear-gradient(45deg, var(--brass) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--brass) 25%, transparent 25%);
+  background-size:34px 34px;
+}
+.feature h2{color:#fff; font-size:clamp(1.7rem,3vw,2.3rem); margin-bottom:16px; position:relative;}
+.feature p{font-family:'Tajawal',sans-serif; font-weight:300; color:#DCE7ED; margin-bottom:24px; position:relative;}
+.feature-list{list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:28px; position:relative;}
+.feature-list li{display:flex; align-items:center; gap:10px; font-family:'Tajawal',sans-serif; font-size:.9rem; color:#EAF1F4;}
+.feature-list li svg{width:18px; height:18px; flex-shrink:0; color:var(--brass-light);}
+.feature-cta{
+  background:var(--brass); color:var(--sea-deep); font-weight:700; padding:13px 30px;
+  border-radius:8px; font-family:'Tajawal',sans-serif; display:inline-block; position:relative;
+  transition:background .2s ease;
+}
+.feature-cta:hover{background:var(--brass-light);}
+.feature-visual{position:relative; display:flex; justify-content:center;}
+.feature-visual svg{width:100%; max-width:280px;}
+
+/* ---------- SERVICES ---------- */
+.services-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+@media (max-width:920px){.services-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.services-grid{grid-template-columns:1fr;}}
+.service-card{
+  padding:26px 22px; border-radius:var(--radius); background:#fff;
+  border:1px solid var(--foam-dim); text-align:right;
+  transition:border-color .2s ease, transform .2s ease;
+}
+.service-card:hover{border-color:var(--brass); transform:translateY(-4px);}
+.service-icon{
+  width:48px; height:48px; border-radius:12px; background:var(--sea-deep);
+  display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+}
+.service-icon svg{width:24px; height:24px; color:var(--brass-light);}
+.service-card h3{font-size:1.05rem; margin-bottom:8px; color:var(--sea-deep); font-family:'Amiri',serif;}
+.service-card p{font-family:'Tajawal',sans-serif; font-size:.8rem; color:var(--ink-soft); font-weight:300;}
+
+/* ---------- TESTIMONIALS ---------- */
+.testi-section{background:var(--foam-dim);}
+.testi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+@media (max-width:860px){.testi-grid{grid-template-columns:1fr;}}
+.testi-card{background:#fff; padding:26px; border-radius:var(--radius); position:relative;}
+.testi-stars{color:var(--brass); font-size:.85rem; margin-bottom:12px; letter-spacing:2px;}
+.testi-card p{font-family:'Tajawal',sans-serif; font-weight:300; font-size:.9rem; color:var(--ink-soft); margin-bottom:18px;}
+.testi-who{display:flex; align-items:center; gap:10px;}
+.testi-avatar{
+  width:38px; height:38px; border-radius:50%; background:var(--sea-mid);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-family:'Amiri',serif; font-weight:700;
+}
+.testi-who b{display:block; font-size:.88rem; color:var(--ink);}
+.testi-who span{font-family:'Tajawal',sans-serif; font-size:.72rem; color:var(--ink-soft);}
+
+/* ---------- CONTACT ---------- */
+.contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start;}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr;}}
+.contact-info{display:flex; flex-direction:column; gap:20px;}
+.contact-row{display:flex; align-items:flex-start; gap:14px;}
+.contact-row svg{width:22px; height:22px; color:var(--brass); flex-shrink:0; margin-top:2px;}
+.contact-row b{display:block; font-size:.92rem; color:var(--sea-deep); font-family:'Amiri',serif;}
+.contact-row span{font-family:'Tajawal',sans-serif; font-size:.85rem; color:var(--ink-soft);}
+.map-frame{
+  border-radius:var(--radius); overflow:hidden; border:1px solid var(--foam-dim);
+  height:320px;
+}
+.map-frame iframe{width:100%; height:100%; border:0; filter:saturate(.85);}
+
+/* ---------- FOOTER ---------- */
+footer{background:var(--sea-deep); color:#CBDAE1; padding:50px 0 26px;}
+.foot-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:36px; margin-bottom:36px;}
+@media (max-width:720px){.foot-grid{grid-template-columns:1fr;}}
+.foot-brand{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.foot-brand span{font-family:'Amiri',serif; font-size:1.15rem; color:#fff;}
+footer p{font-family:'Tajawal',sans-serif; font-size:.82rem; font-weight:300; max-width:280px;}
+footer h4{font-family:'Tajawal',sans-serif; font-size:.82rem; color:var(--brass-light); margin-bottom:14px; letter-spacing:.03em;}
+footer ul{list-style:none; display:flex; flex-direction:column; gap:9px;}
+footer ul a{font-family:'Tajawal',sans-serif; font-size:.82rem; font-weight:300; transition:color .2s ease;}
+footer ul a:hover{color:#fff;}
+.foot-bottom{
+  border-top:1px solid rgba(255,255,255,.12); padding-top:20px;
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  font-family:'Tajawal',sans-serif; font-size:.75rem; color:#8CA6B3;
+}
+
+/* ---------- MODAL (booking inquiry) ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(10,30,45,.55); backdrop-filter:blur(3px);
+  display:none; align-items:center; justify-content:center; z-index:200; padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:#fff; border-radius:16px; padding:32px; max-width:440px; width:100%;
+  position:relative; max-height:88vh; overflow:auto;
+}
+.modal-close{
+  position:absolute; top:16px; left:16px; width:30px; height:30px; border-radius:50%;
+  background:var(--foam-dim); display:flex; align-items:center; justify-content:center; font-size:1rem;
+}
+.modal-box h3{font-family:'Amiri',serif; color:var(--sea-deep); font-size:1.4rem; margin-bottom:6px;}
+.modal-box .sub{font-family:'Tajawal',sans-serif; font-size:.8rem; color:var(--ink-soft); margin-bottom:20px;}
+.form-row{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.form-row label{font-family:'Tajawal',sans-serif; font-size:.78rem; color:var(--ink-soft);}
+.form-row input, .form-row select{
+  padding:11px 12px; border-radius:8px; border:1px solid var(--foam-dim); font-family:'Tajawal',sans-serif;
+  font-size:.88rem; background:var(--foam);
+}
+.form-submit{
+  width:100%; background:var(--sea-deep); color:#fff; padding:13px; border-radius:8px;
+  font-family:'Tajawal',sans-serif; font-weight:700; margin-top:6px; transition:background .2s ease;
+}
+.form-submit:hover{background:var(--sea-mid);}
+.form-success{
+  display:none; text-align:center; padding:10px 0; font-family:'Tajawal',sans-serif;
+}
+.form-success.show{display:block;}
+.form-success svg{width:46px; height:46px; color:var(--zellige); margin:0 auto 12px;}
+
+/* ---------- CHAT WIDGET ---------- */
+.chat-toggle{
+  position:fixed; bottom:24px; left:24px; z-index:150;
+  width:60px; height:60px; border-radius:50%; background:var(--sea-deep);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 26px -8px rgba(10,61,92,.55);
+  transition:transform .2s ease;
+}
+.chat-toggle:hover{transform:scale(1.06);}
+.chat-toggle svg{width:26px; height:26px; color:var(--brass-light);}
+.chat-badge{
+  position:absolute; top:-4px; right:-4px; background:var(--bougain); color:#fff;
+  font-size:.65rem; width:19px; height:19px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-family:'Tajawal',sans-serif;
+  animation:badgepulse 2.2s ease-in-out infinite;
+}
+@keyframes badgepulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.15);}}
+@media (prefers-reduced-motion:reduce){.chat-badge{animation:none;}}
+
+.chat-panel{
+  position:fixed; bottom:96px; left:24px; z-index:150;
+  width:340px; max-width:88vw; height:460px; max-height:70vh;
+  background:#fff; border-radius:18px; box-shadow:0 24px 50px -16px rgba(10,30,45,.4);
+  display:none; flex-direction:column; overflow:hidden; border:1px solid var(--foam-dim);
+}
+.chat-panel.open{display:flex;}
+.chat-head{
+  background:var(--sea-deep); color:#fff; padding:16px 18px; display:flex; align-items:center; gap:10px;
+}
+.chat-head-av{
+  width:36px; height:36px; border-radius:50%; background:var(--brass);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.chat-head-av svg{width:19px; height:19px; color:var(--sea-deep);}
+.chat-head b{display:block; font-family:'Tajawal',sans-serif; font-size:.9rem;}
+.chat-head span{font-family:'Tajawal',sans-serif; font-size:.7rem; color:#BFE3C2; display:flex; align-items:center; gap:5px;}
+.chat-head span::before{content:""; width:6px; height:6px; border-radius:50%; background:#4CD07A; display:inline-block;}
+.chat-body{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:var(--foam);}
+.msg{max-width:82%; padding:10px 14px; border-radius:14px; font-family:'Tajawal',sans-serif; font-size:.84rem; line-height:1.55; white-space:pre-wrap;}
+.msg.bot{background:#fff; border:1px solid var(--foam-dim); align-self:flex-start; border-bottom-left-radius:4px; color:var(--ink);}
+.msg.user{background:var(--sea-deep); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;}
+.chips{display:flex; flex-wrap:wrap; gap:8px; padding:0 16px 12px;}
+.chip{
+  background:#fff; border:1px solid var(--brass); color:var(--sea-deep); font-family:'Tajawal',sans-serif;
+  font-size:.72rem; padding:6px 12px; border-radius:20px; transition:background .2s ease;
+}
+.chip:hover{background:var(--brass); color:#fff;}
+.typing{display:flex; gap:4px; align-self:flex-start; padding:10px 14px; background:#fff; border-radius:14px; border:1px solid var(--foam-dim);}
+.typing span{width:6px; height:6px; border-radius:50%; background:var(--ink-soft); animation:bounce 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0); opacity:.5;} 30%{transform:translateY(-4px); opacity:1;}}
+.chat-input-row{display:flex; gap:8px; padding:14px; border-top:1px solid var(--foam-dim); background:#fff;}
+.chat-input-row input{
+  flex:1; border:1px solid var(--foam-dim); border-radius:24px; padding:11px 16px;
+  font-family:'Tajawal',sans-serif; font-size:.84rem; background:var(--foam);
+}
+.chat-send{
+  width:42px; height:42px; border-radius:50%; background:var(--brass); display:flex;
+  align-items:center; justify-content:center; flex-shrink:0;
+}
+.chat-send svg{width:18px; height:18px; color:var(--sea-deep); transform:scaleX(-1);}
+@media (max-width:480px){
+  .chat-panel{left:12px; bottom:88px; width:calc(100vw - 24px);}
+  .chat-toggle{left:16px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="28" stroke="#C08A3E" stroke-width="2"/>
+        <path d="M30 6 L34 27 L30 30 L26 27 Z" fill="#C08A3E"/>
+        <path d="M30 54 L26 33 L30 30 L34 33 Z" fill="#0A3D5C"/>
+        <path d="M6 30 L27 26 L30 30 L27 34 Z" fill="#0A3D5C"/>
+        <path d="M54 30 L33 34 L30 30 L33 26 Z" fill="#0A3D5C"/>
+        <circle cx="30" cy="30" r="3.2" fill="#0A3D5C"/>
+      </svg>
+      <div>
+        <div class="brand-name">أسفار السلام</div>
+        <div class="brand-tag">وكالة أسفار · طنجة</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#destinations">وجهاتنا</a>
+      <a href="#hajj">الحج والعمرة</a>
+      <a href="#services">خدماتنا</a>
+      <a href="#testimonials">آراء عملائنا</a>
+      <a href="#contact">تواصل معنا</a>
+    </nav>
+    <a href="#contact" class="nav-cta">احجز رحلتك</a>
+    <button class="burger" aria-label="القائمة"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">طنجة · بوابة قارتين، ملتقى بحرين</p>
+      <h1>نرسم لكم طريق السفر<br>من <em>مضيق طنجة</em> إلى العالم</h1>
+      <p class="lede">أسفار السلام وكالة أسفار مرخّصة في قلب طنجة، نرافقكم في حجز الطيران والفنادق والتأشيرات، وننظّم رحلات الحج والعمرة والرحلات الجماعية منذ أكثر من عقد من الزمن.</p>
+
+      <div class="search-card">
+        <div class="search-field">
+          <label>الوجهة</label>
+          <select>
+            <option>إسطنبول</option>
+            <option>دبي</option>
+            <option>مكة المكرمة</option>
+            <option>برشلونة</option>
+            <option>باريس</option>
+            <option>القاهرة</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>تاريخ السفر</label>
+          <input type="date">
+        </div>
+        <div class="search-field">
+          <label>عدد المسافرين</label>
+          <input type="number" min="1" value="1">
+        </div>
+        <button class="search-btn" onclick="openModal('بحث عام')">ابحث عن رحلة</button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hstat"><b>12+</b><span>سنة خبرة</span></div>
+        <div class="hstat"><b>5,000+</b><span>مسافر وثق بنا</span></div>
+        <div class="hstat"><b>20+</b><span>وجهة حول العالم</span></div>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 560 520" fill="none">
+        <circle class="pulse-dot" cx="110" cy="270" r="7" fill="#E0B876"/>
+        <circle cx="110" cy="270" r="16" stroke="#E0B876" stroke-width="1" opacity=".5"/>
+        <text x="70" y="300" class="dest-label strong">طنجة</text>
+
+        <path class="route-line d1" d="M110 270 C 220 150, 300 90, 430 70" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="430" cy="70" r="4" fill="#E0B876"/>
+        <text x="400" y="52" class="dest-label">إسطنبول</text>
+
+        <path class="route-line d2" d="M110 270 C 240 200, 360 190, 500 200" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="500" cy="200" r="4" fill="#E0B876"/>
+        <text x="470" y="188" class="dest-label">دبي</text>
+
+        <path class="route-line d3" d="M110 270 C 250 300, 380 340, 480 400" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="480" cy="400" r="4" fill="#E0B876"/>
+        <text x="440" y="422" class="dest-label">مكة المكرمة</text>
+
+        <path class="route-line d4" d="M110 270 C 180 200, 230 140, 260 90" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="260" cy="90" r="4" fill="#E0B876"/>
+        <text x="220" y="70" class="dest-label">برشلونة</text>
+
+        <path class="route-line d5" d="M110 270 C 190 340, 260 400, 330 460" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="330" cy="460" r="4" fill="#E0B876"/>
+        <text x="300" y="484" class="dest-label">باريس</text>
+
+        <path class="route-line d6" d="M110 270 C 230 330, 320 380, 420 460" stroke="#7FB6C9" stroke-width="1.4"/>
+        <circle cx="420" cy="460" r="4" fill="#E0B876"/>
+        <text x="390" y="482" class="dest-label">القاهرة</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <div class="wrap">
+    <div class="strip-item"><b>✓</b> وكالة معتمدة رسميًا</div>
+    <div class="strip-item"><b>✓</b> دعم على مدار الأسبوع</div>
+    <div class="strip-item"><b>✓</b> أسعار تنافسية وتقسيط ميسّر</div>
+    <div class="strip-item"><b>✓</b> مرافقة كاملة في السفر الجماعي</div>
+  </div>
+</div>
+
+<section id="destinations">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">وجهاتنا</p>
+      <h2>الوجهات الأكثر طلبًا هذا الموسم</h2>
+      <p>اخترنا لكم باقات متكاملة تشمل الطيران والإقامة، بأسعار تبدأ من:</p>
+    </div>
+
+    <div class="dest-grid">
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <span class="dest-badge">الأكثر حجزًا</span>
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M50 15 A35 35 0 1 1 20 60" stroke="#146B86" stroke-width="4" fill="none"/>
+            <circle cx="66" cy="20" r="6" fill="#C08A3E"/>
+            <line x1="30" y1="80" x2="70" y2="80" stroke="#146B86" stroke-width="4"/>
+            <line x1="40" y1="80" x2="40" y2="60" stroke="#146B86" stroke-width="3"/>
+            <line x1="60" y1="80" x2="60" y2="55" stroke="#146B86" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>إسطنبول</h3>
+          <p>جولة بين البوسفور والأسواق المسقوفة، مع إقامة فندقية 4 نجوم في قلب المدينة.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>3,290 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('إسطنبول')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M35 85 L35 30 L45 15 L45 85 Z" stroke="#146B86" stroke-width="3" fill="none"/>
+            <path d="M55 85 L55 40 L63 25 L63 85 Z" stroke="#146B86" stroke-width="3" fill="none"/>
+            <path d="M70 85 L70 50 L76 38 L76 85 Z" stroke="#146B86" stroke-width="3" fill="none"/>
+            <line x1="25" y1="85" x2="85" y2="85" stroke="#C08A3E" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>دبي</h3>
+          <p>تجربة مدينة المستقبل، من برج خليفة إلى الصحراء الذهبية، بباقات عائلية مرنة.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>4,590 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('دبي')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M35 55 L35 40 L45 30 L55 40 L55 55 Z" stroke="#146B86" stroke-width="3" fill="none"/>
+            <rect x="30" y="55" width="40" height="10" rx="2" stroke="#C08A3E" stroke-width="3" fill="none"/>
+            <line x1="20" y1="75" x2="80" y2="75" stroke="#146B86" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>برشلونة</h3>
+          <p>عمارة غاودي الساحرة وشواطئ المتوسط، ضمن باقة تجمع بين الثقافة والاسترخاء.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>3,890 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('برشلونة')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M50 20 L58 45 L82 45 L62 60 L70 85 L50 70 L30 85 L38 60 L18 45 L42 45 Z" stroke="#C08A3E" stroke-width="2.5" fill="none"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>باريس</h3>
+          <p>مدينة النور بأبراجها وأنيقتها الكلاسيكية، رحلة رومانسية أو عائلية بمذاق فرنسي.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>4,190 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('باريس')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M50 20 L75 65 L25 65 Z" stroke="#146B86" stroke-width="3" fill="none"/>
+            <line x1="15" y1="70" x2="85" y2="70" stroke="#C08A3E" stroke-width="3"/>
+            <circle cx="50" cy="35" r="6" stroke="#146B86" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>القاهرة</h3>
+          <p>رحلة إلى أرض الفراعنة، بين الأهرامات ونيل مصر الخالد، مع مرشد ناطق بالعربية.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>2,990 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('القاهرة')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-visual">
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect x="35" y="35" width="30" height="30" stroke="#C08A3E" stroke-width="3" fill="none"/>
+            <line x1="35" y1="45" x2="65" y2="45" stroke="#C08A3E" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="dest-body">
+          <h3>مكة المكرمة والمدينة المنورة</h3>
+          <p>باقات عمرة شهرية بإشراف مرشدين دينيين، إقامة قريبة من الحرمين الشريفين.</p>
+          <div class="dest-foot">
+            <div class="dest-price">ابتداءً من <b>9,900 د.م</b></div>
+            <button class="dest-cta" onclick="openModal('عمرة')">احجز الآن</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="hajj">
+  <div class="wrap">
+    <div class="feature">
+      <div>
+        <p class="eyebrow" style="color:#E0B876">موسم الحج والعمرة 1447هـ</p>
+        <h2>رحلة إيمانية بمرافقة كاملة، من طنجة إلى بيت الله الحرام</h2>
+        <p>تكفّل أسفار السلام بكل تفاصيل رحلتكم: من التأشيرة والطيران المباشر، إلى الإقامة القريبة من الحرمين والمرافقة الدينية طيلة الرحلة.</p>
+        <ul class="feature-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> إقامة على بعد خطوات من الحرم</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> مرشد ديني مرافق طوال الرحلة</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> إمكانية التقسيط على 6 أشهر</li>
+        </ul>
+        <a href="#" class="feature-cta" onclick="openModal('عمرة'); return false;">استفسر عن باقات العمرة</a>
+      </div>
+      <div class="feature-visual">
+        <svg viewBox="0 0 220 220" fill="none">
+          <circle cx="110" cy="110" r="95" stroke="#E0B876" stroke-width="1" opacity=".4"/>
+          <circle cx="110" cy="110" r="70" stroke="#E0B876" stroke-width="1" opacity=".6"/>
+          <rect x="80" y="80" width="60" height="60" fill="#F4F0E7" stroke="#C08A3E" stroke-width="2"/>
+          <rect x="95" y="95" width="30" height="6" fill="#C08A3E"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">خدماتنا</p>
+      <h2>كل ما يحتاجه سفركم تحت سقف واحد</h2>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16l20-8-8 20-3-8-8-4z"/></svg></div>
+        <h3>حجز تذاكر الطيران</h3>
+        <p>أفضل الأسعار على أهم شركات الطيران، مع متابعة أي تغيير في مواعيد رحلتكم.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></div>
+        <h3>حجز الفنادق</h3>
+        <p>شبكة واسعة من الفنادق المختارة بعناية في كل وجهاتنا، بجميع الفئات والميزانيات.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></div>
+        <h3>التأشيرات</h3>
+        <p>مواكبة كاملة لملف تأشيرتكم لدول الشنغن والخليج، من التحضير إلى غاية الموعد.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-2a5 5 0 0110-0v2M14 21v-2a5 5 0 018 0v2"/></svg></div>
+        <h3>الرحلات الجماعية</h3>
+        <p>تنظيم رحلات للمدارس والجمعيات والمقاولات، مع برنامج مصمم حسب رغباتكم.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="testi-section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">شهادات عملائنا</p>
+      <h2>ثقتكم هي بوصلتنا</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"تعامل راقي من أول اتصال إلى غاية الرجوع من الرحلة. تنظيم رحلة العمرة كان أكثر من رائع، جزاهم الله خيرًا."</p>
+        <div class="testi-who">
+          <div class="testi-avatar">ف</div>
+          <div><b>فاطمة الزهراء</b><span>رحلة عمرة، 2025</span></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"حجزت رحلة العائلة إلى إسطنبول عبر أسفار السلام، كل شيء كان مضبوط بالتوقيت والفندق فاق التوقعات."</p>
+        <div class="testi-who">
+          <div class="testi-avatar">ي</div>
+          <div><b>يوسف العلمي</b><span>رحلة عائلية، إسطنبول</span></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"فريق متجاوب جدًا، الروبوت المساعد رد علي بسرعة خارج أوقات العمل وحل لي مشكل التأشيرة."</p>
+        <div class="testi-who">
+          <div class="testi-avatar">س</div>
+          <div><b>سعاد بنعلي</b><span>رحلة عمل، دبي</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">تواصل معنا</p>
+      <h2>زوروا مكتبنا في طنجة، أو تحدثوا معنا مباشرة</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><b>العنوان</b><span>شارع محمد الخامس، بالقرب من ساحة فرنسا، طنجة</span></div>
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          <div><b>الهاتف</b><span dir="ltr">+212 5 39 12 34 56</span></div>
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+          <div><b>البريد الإلكتروني</b><span dir="ltr">contact@asfarassalam.ma</span></div>
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><b>ساعات العمل</b><span>من الإثنين إلى السبت، 9:00 صباحًا - 7:00 مساءً</span></div>
+        </div>
+      </div>
+      <div class="map-frame">
+        <iframe loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=-5.8560%2C35.7480%2C-5.8100%2C35.7720&layer=mapnik&marker=35.7595%2C-5.8340" title="موقع أسفار السلام في طنجة"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <svg width="30" height="30" viewBox="0 0 60 60" fill="none">
+            <circle cx="30" cy="30" r="28" stroke="#E0B876" stroke-width="2"/>
+            <path d="M30 6 L34 27 L30 30 L26 27 Z" fill="#E0B876"/>
+          </svg>
+          <span>أسفار السلام</span>
+        </div>
+        <p>وكالة أسفار مرخّصة في طنجة، نحوّل حلم السفر إلى رحلة منظمة بكل تفاصيلها، منذ 2013.</p>
+      </div>
+      <div>
+        <h4>روابط سريعة</h4>
+        <ul>
+          <li><a href="#destinations">وجهاتنا</a></li>
+          <li><a href="#hajj">الحج والعمرة</a></li>
+          <li><a href="#services">خدماتنا</a></li>
+          <li><a href="#contact">تواصل معنا</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>تابعونا</h4>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 أسفار السلام - جميع الحقوق محفوظة</span>
+      <span>طنجة، المملكة المغربية</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ---------- BOOKING MODAL ---------- -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="formView">
+      <h3>طلب حجز / استفسار</h3>
+      <p class="sub" id="modalSub">أرسلوا لنا معلوماتكم وسيتواصل معكم فريقنا في أقرب وقت.</p>
+      <form onsubmit="submitBooking(event)">
+        <div class="form-row"><label>الاسم الكامل</label><input type="text" required></div>
+        <div class="form-row"><label>رقم الهاتف</label><input type="tel" required dir="ltr"></div>
+        <div class="form-row"><label>الوجهة</label><input type="text" id="destInput"></div>
+        <div class="form-row"><label>تاريخ السفر المرغوب</label><input type="date"></div>
+        <button class="form-submit" type="submit">إرسال الطلب</button>
+      </form>
+    </div>
+    <div class="form-success" id="successView">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      <h3>تم استلام طلبكم!</h3>
+      <p class="sub">سيتصل بكم أحد مستشارينا خلال ساعات العمل لتأكيد التفاصيل.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- CHAT WIDGET ---------- -->
+<button class="chat-toggle" id="chatToggle" onclick="toggleChat()" aria-label="فتح المحادثة">
+  <span class="chat-badge">1</span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+</button>
+
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-head">
+    <div class="chat-head-av">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+    </div>
+    <div>
+      <b>مساعد أسفار السلام</b>
+      <span>متصل الآن</span>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="msg bot">أهلاً بكم في أسفار السلام! 👋 أنا المساعد الآلي، كيف يمكنني مساعدتكم اليوم؟</div>
+  </div>
+  <div class="chips" id="chatChips">
+    <button class="chip" onclick="quickSend('أسعار العمرة')">أسعار العمرة</button>
+    <button class="chip" onclick="quickSend('وجهات أوروبا المتوفرة')">وجهات أوروبا</button>
+    <button class="chip" onclick="quickSend('كيف أتواصل مع فريقكم؟')">التواصل مع فريقكم</button>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()" aria-label="إرسال">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+function openModal(dest){
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('destInput').value = dest === 'بحث عام' ? '' : dest;
+  document.getElementById('modalSub').textContent = dest === 'بحث عام'
+    ? 'أرسلوا لنا معلوماتكم وسيتواصل معكم فريقنا في أقرب وقت.'
+    : 'استفسار بخصوص: ' + dest;
+  document.getElementById('formView').style.display = 'block';
+  document.getElementById('successView').classList.remove('show');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function submitBooking(e){
+  e.preventDefault();
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('successView').classList.add('show');
+}
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+/* ---------- CHAT LOGIC ---------- */
+var chatOpen = false;
+var conversationHistory = [];
+
+var KNOWLEDGE_BASE = `
+معلومات عن وكالة أسفار السلام (استخدمها للرد على العملاء بدقة، ولا تخترع معلومات غير موجودة هنا):
+
+- الاسم: أسفار السلام - وكالة أسفار مرخّصة، ومقرها مدينة طنجة، المغرب.
+- العنوان: شارع محمد الخامس، بالقرب من ساحة فرنسا، طنجة.
+- الهاتف: +212 5 39 12 34 56
+- البريد الإلكتروني: contact@asfarassalam.ma
+- ساعات العمل: من الإثنين إلى السبت، 9:00 صباحًا إلى 7:00 مساءً.
+- تأسست الوكالة سنة 2013 (أكثر من 12 سنة خبرة)، وخدمت أكثر من 5000 مسافر.
+
+الوجهات المتوفرة والأسعار التقريبية (تشمل الطيران والإقامة):
+- إسطنبول: ابتداءً من 3,290 درهم
+- دبي: ابتداءً من 4,590 درهم
+- برشلونة: ابتداءً من 3,890 درهم
+- باريس: ابتداءً من 4,190 درهم
+- القاهرة: ابتداءً من 2,990 درهم
+- عمرة (مكة المكرمة والمدينة المنورة): ابتداءً من 9,900 درهم، مع إمكانية التقسيط على 6 أشهر، ومرشد ديني مرافق طوال الرحلة، وإقامة قريبة من الحرمين.
+
+الخدمات المقدمة:
+- حجز تذاكر الطيران
+- حجز الفنادق
+- المساعدة في التأشيرات (الشنغن ودول الخليج)
+- تنظيم الرحلات الجماعية (مدارس، جمعيات، مقاولات)
+- تنظيم رحلات الحج والعمرة
+
+تعليمات أسلوب الرد:
+- أجب دائمًا باللغة العربية (يمكن استخدام الدارجة المغربية بشكل خفيف إذا كتب العميل بالدارجة).
+- كن ودودًا ومختصرًا ومهنيًا، بدون مبالغة في الإيموجي.
+- إذا سُئلت عن سعر أو وجهة غير موجودة في القائمة أعلاه، اعتذر بلطف واقترح التواصل المباشر مع الفريق عبر الهاتف أو البريد الإلكتروني بدل اختلاق معلومة.
+- لا تعطِ أي وعود مالية أو قانونية ملزمة (كضمان قبول التأشيرة مثلاً)، واذكر أن القرار النهائي يعود للجهات الرسمية.
+- إذا طلب العميل الحجز الفعلي، وجّهه لتعبئة نموذج "طلب حجز" الموجود في الموقع أو الاتصال مباشرة بالوكالة.
+`;
+
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  var badge = document.querySelector('.chat-badge');
+  if(badge) badge.remove();
+}
+
+function quickSend(text){
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+function appendMessage(role, text){
+  var body = document.getElementById('chatBody');
+  var div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showTyping(){
+  var body = document.getElementById('chatBody');
+  var t = document.createElement('div');
+  t.className = 'typing';
+  t.id = 'typingIndicator';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  body.appendChild(t);
+  body.scrollTop = body.scrollHeight;
+}
+function hideTyping(){
+  var t = document.getElementById('typingIndicator');
+  if(t) t.remove();
+}
+
+async function sendChat(){
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  var chips = document.getElementById('chatChips');
+  if(chips) chips.style.display = 'none';
+
+  appendMessage('user', text);
+  conversationHistory.push({role:'user', content: text});
+  showTyping();
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: "أنت المساعد الآلي الرسمي لوكالة الأسفار \\"أسفار السلام\\" في طنجة، المغرب. مهمتك الرد على استفسارات العملاء بأدب ووضوح بناءً على المعلومات التالية فقط:\\n" + KNOWLEDGE_BASE,
+        messages: conversationHistory
+      })
+    });
+    const data = await response.json();
+    hideTyping();
+
+    let reply = "";
+    if(data && data.content){
+      reply = data.content.map(function(block){ return block.type === 'text' ? block.text : ''; }).join('\\n').trim();
+    }
+    if(!reply){
+      reply = "عذرًا، لم أتمكن من فهم طلبكم بشكل تام. يمكنكم الاتصال بفريقنا مباشرة على +212 5 39 12 34 56.";
+    }
+    appendMessage('bot', reply);
+    conversationHistory.push({role:'assistant', content: reply});
+  }catch(err){
+    hideTyping();
+    var fallback = "عذرًا، حدث خلل تقني مؤقت في الاتصال. يرجى التواصل معنا مباشرة على +212 5 39 12 34 56 أو contact@asfarassalam.ma وسنكون سعداء بمساعدتكم.";
+    appendMessage('bot', fallback);
+  }
+}
+</script>
+
+</body>
+</html>
