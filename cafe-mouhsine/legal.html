@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café Mouhsine — Legal</title>
+<meta name="description" content="Mentions légales, conditions générales de vente et politique de confidentialité de Café Mouhsine BOUAGHAZ.">
+<meta name="theme-color" content="#2B1A12">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .legal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; flex-wrap: wrap; }
+  .legal-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 22px; }
+  .legal-tabs a { padding: 10px 18px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: .92rem; }
+  .legal-tabs a.active { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
+  :root[data-theme="dark"] .legal-tabs a.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .legal-tabs a.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); } }
+  .legal-layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; padding-bottom: 80px; }
+  .toc { position: sticky; top: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; font-size: .86rem; }
+  .toc b { display: block; margin-bottom: 8px; }
+  .toc a { display: block; padding: 5px 0; color: var(--text-soft); }
+  .toc a:hover { color: var(--accent-strong); }
+  .doc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 34px clamp(18px, 4vw, 44px); line-height: 1.75; }
+  .doc h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin-bottom: 6px; }
+  .doc .meta { color: var(--text-soft); font-size: .85rem; margin-bottom: 22px; }
+  .doc h2 { font-size: 1.2rem; margin: 28px 0 10px; padding-top: 6px; scroll-margin-top: 20px; }
+  [dir="rtl"] .doc h2 { font-family: var(--font-ar); font-weight: 800; }
+  .doc p { margin-bottom: 10px; }
+  .doc ul { padding-inline-start: 22px; margin-bottom: 10px; display: grid; gap: 6px; }
+  .doc a { color: var(--accent-strong); text-decoration: underline; }
+  .todo { background: #FFE58F; color: #5C4300; padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: .9em; }
+  .draft { display: flex; gap: 10px; background: #FFF6DB; color: #5C4300; border: 1px solid #F0D58A; border-radius: 12px; padding: 12px 16px; font-size: .85rem; margin-bottom: 18px; }
+  @media (max-width: 860px) { .legal-layout { grid-template-columns: 1fr; } .toc { position: static; } }
+  @media print {
+    .legal-head, .legal-tabs, .toc, .draft { display: none !important; }
+    .legal-layout { display: block; }
+    .doc { border: 0; padding: 0; }
+    .todo { background: none; border: 1px dashed #999; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="legal-head">
+    <a href="index.html" class="brand" aria-label="Café Mouhsine BOUAGHAZ">
+      <img src="assets/icon.svg" alt="" class="brand-logo" width="44" height="44">
+      <span class="brand-text"><span class="brand-name">Café Mouhsine</span><span class="brand-sub">BOUAGHAZ</span></span>
+    </a>
+    <div class="nav-tools">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="ar">ع</button><button data-lang="fr">FR</button><button data-lang="en">EN</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="printBtn"></button>
+      <a class="btn btn-primary btn-sm" href="index.html" id="backBtn"></a>
+    </div>
+  </header>
+
+  <div class="draft" id="draft" role="note">⚠️ <span></span></div>
+  <nav class="legal-tabs" id="tabs" aria-label="Legal"></nav>
+  <div class="legal-layout">
+    <aside class="toc" id="toc"></aside>
+    <article class="doc" id="doc"></article>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/legal-texts.js"></script>
+<script>
+(() => {
+  "use strict";
+  const CFG = window.CAFE_CONFIG, LG = CFG.legal || {}, TX = window.LEGAL_TEXTS;
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("cm_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("cm_" + k, JSON.stringify(v)); } catch {} }
+  };
+  try { const th = JSON.parse(localStorage.getItem("cm_theme")); if (th) document.documentElement.dataset.theme = th; } catch {}
+  let lang = new URLSearchParams(location.search).get("lang") || store.get("lang", "fr");
+  if (!TX[lang]) lang = "fr";
+  const TABS = ["mentions", "cgv", "privacy"];
+  const tabOf = () => TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "mentions";
+
+  // {{token}} → value from CAFE_CONFIG; an empty value shows a highlighted "to complete" marker
+  function fill(html) {
+    const T = TX[lang].ui, L = v => (v && typeof v === "object") ? (v[lang] || v.fr) : v, hh = CFG.happyHour || {};
+    const values = {
+      name: CFG.name, address: L(CFG.address), email: CFG.email, phone: CFG.phoneDisplay,
+      company: LG.company, form: LG.form, capital: LG.capital, rc: LG.rc, ice: LG.ice, if: LG.if, patente: LG.patente,
+      director: LG.director, host: LG.host, cndp: LG.cndp, city: L(LG.city),
+      fee: CFG.deliveryFee, free: CFG.freeDeliveryFrom, hhpct: hh.pct, hhfrom: hh.from, hhto: hh.to
+    };
+    return html.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+      const v = values[k];
+      // <bdi> keeps numbers and Latin text (phone, ICE, e-mail) in the right order inside Arabic
+      return v === undefined || v === null || v === "" ? `<mark class="todo"><bdi>[${esc(T.todo)} : ${k}]</bdi></mark>` : `<bdi>${esc(v)}</bdi>`;
+    });
+  }
+
+  function render() {
+    const T = TX[lang].ui, tab = tabOf();
+    document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.title = `${T[tab]} — ${CFG.name}`;
+    document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+    $("#printBtn").textContent = "🖨 " + T.print; $("#backBtn").textContent = T.back;
+    $("#draft span").textContent = T.draft;
+    $("#tabs").innerHTML = TABS.map(t => `<a href="#${t}" class="${t === tab ? "active" : ""}" ${t === tab ? 'aria-current="page"' : ""}>${esc(T[t])}</a>`).join("");
+    const sections = TX[lang][tab];
+    $("#toc").innerHTML = `<b>${esc(T.toc)}</b>` + sections.map((s, i) => `<a href="#${tab}-${i}" data-goto="${tab}-${i}">${esc(s[0])}</a>`).join("");
+    const d = new Date(LG.updated || Date.now());
+    const dateTxt = new Intl.DateTimeFormat(lang === "ar" ? "ar-MA" : lang === "fr" ? "fr-FR" : "en-GB", { dateStyle: "long" }).format(d);
+    $("#doc").innerHTML = `<h1>${esc(T[tab])}</h1><p class="meta">${esc(CFG.name)} · ${esc(T.updated)} ${esc(dateTxt)}</p>` +
+      sections.map((s, i) => `<section><h2 id="${tab}-${i}">${esc(s[0])}</h2>${fill(s[1])}</section>`).join("");
+  }
+
+  // table-of-contents links scroll without replacing the tab in the URL hash
+  $("#toc").addEventListener("click", e => {
+    const a = e.target.closest("[data-goto]"); if (!a) return;
+    e.preventDefault(); document.getElementById(a.dataset.goto).scrollIntoView({ behavior: "smooth" });
+  });
+  document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => { lang = b.dataset.lang; store.set("lang", lang); render(); }));
+  $("#printBtn").addEventListener("click", () => print());
+  addEventListener("hashchange", () => { render(); scrollTo(0, 0); });
+  render();
+})();
+</script>
+</body>
+</html>

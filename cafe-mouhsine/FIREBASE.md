@@ -83,6 +83,12 @@ L'adresse sera `https://<projet>.web.app`. Pensez à réimprimer les chevalets Q
 - **Prix modifiés dans l'admin** : ils restent enregistrés dans le navigateur de l'admin. Pour les publier à tous, mettez à jour `js/data.js`.
 - **Coupure réseau :** si l'envoi en ligne échoue ou prend plus de 10 secondes, la commande part par WhatsApp. Elle n'est alors pas envoyée une seconde fois en ligne.
 
+## Données personnelles (loi 09-08)
+
+- La politique de confidentialité (`legal.html#privacy`) annonce des durées de conservation : commandes 3 ans, réservations 12 mois, cartes fidélité 24 mois sans commande. Pour protéger l'historique, l'application ne peut rien supprimer. Ces durées s'appliquent donc à la main depuis la console Firebase (Firestore → sélectionner les documents → Supprimer), par exemple une fois par trimestre.
+- Une demande d'accès ou de suppression envoyée par e-mail se traite de la même façon : retrouvez le document grâce à la référence de commande (`CMD-…`), de réservation (`RSV-…`) ou au numéro de carte fidélité (les 8 premiers caractères de l'identifiant du document `loyalty`).
+- Pensez à déclarer les traitements à la CNDP (www.cndp.ma) et à reporter le numéro de récépissé dans `js/data.js` (`CAFE_CONFIG.legal.cndp`).
+
 ## Tester en local sans compte Google
 
 ```bash

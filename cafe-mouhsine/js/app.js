@@ -94,6 +94,7 @@
     document.documentElement.dir = rtl ? "rtl" : "ltr";
     $$("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
     $$("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });   // trusted strings from i18n.js
     $$(".lang button").forEach(b => b.classList.toggle("active", b.dataset.lang === state.lang));
     store.set("lang", state.lang);
     renderAll();
@@ -656,7 +657,14 @@
 
   $("#waFloat").href = waLink(CFG.name);
   $("#year").textContent = new Date().getFullYear();
-  $("#mapFrame").src = `https://maps.google.com/maps?q=${encodeURIComponent(CFG.mapQuery)}&z=14&output=embed`;
+  // Google Maps sets its own cookies: load the embed only when the visitor asks
+  $("#mapLink").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CFG.mapQuery)}`;
+  $("#mapLoad").addEventListener("click", () => {
+    const f = document.createElement("iframe");
+    f.title = "Map"; f.referrerPolicy = "no-referrer-when-downgrade";
+    f.src = `https://maps.google.com/maps?q=${encodeURIComponent(CFG.mapQuery)}&z=14&output=embed`;
+    $("#mapConsent").replaceWith(f);
+  });
 
   const toTop = $("#toTop");
   addEventListener("scroll", () => {

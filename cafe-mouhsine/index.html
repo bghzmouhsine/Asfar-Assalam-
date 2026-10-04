@@ -236,6 +236,7 @@
       </label>
       <label><span data-i18n="bk.notes">ملاحظات</span><textarea name="notes" rows="3" maxlength="300"></textarea></label>
       <button class="btn btn-primary btn-block" type="submit" data-i18n="bk.submit">تأكيد الحجز عبر واتساب</button>
+      <p class="legal-notice" data-i18n-html="legal.booking"></p>
       <p class="form-msg" id="bookingMsg" role="status"></p>
       <div class="my-bookings" id="myBookings" hidden></div>
     </form>
@@ -285,7 +286,12 @@
       </div>
     </div>
     <div class="map">
-      <iframe id="mapFrame" title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="map-consent" id="mapConsent">
+        <span class="map-pin">📍</span>
+        <p data-i18n="map.info">تضع خريطة Google ملفات تعريف الارتباط الخاصة بها، لذلك لا تُحمَّل إلا بطلب منك.</p>
+        <button class="btn btn-primary btn-sm" id="mapLoad" data-i18n="map.show">عرض الخريطة</button>
+        <a class="btn btn-link" id="mapLink" target="_blank" rel="noopener" data-i18n="map.open">فتح في خرائط Google</a>
+      </div>
     </div>
   </div>
 </section>
@@ -298,6 +304,11 @@
       <span class="brand-text"><span class="brand-name">Café Mouhsine</span><span class="brand-sub">BOUAGHAZ</span></span>
     </div>
     <p data-i18n="ft.tag">قهوة مختصة · مخبوزات حرفية · خدمات رقمية</p>
+    <nav class="legal-links" aria-label="Legal">
+      <a href="legal.html#mentions" data-i18n="ft.mentions">البيانات القانونية</a>
+      <a href="legal.html#cgv" data-i18n="ft.cgv">الشروط العامة للبيع</a>
+      <a href="legal.html#privacy" data-i18n="ft.privacy">سياسة الخصوصية</a>
+    </nav>
     <p class="muted">© <span id="year"></span> Café Mouhsine BOUAGHAZ — <span data-i18n="ft.rights">جميع الحقوق محفوظة</span> · <a href="menu-print.html" data-i18n="ft.print">القائمة للطباعة</a> · <a href="admin.html" data-i18n="ft.admin">لوحة الإدارة</a></p>
   </div>
 </footer>
@@ -341,6 +352,7 @@
       <div class="pts"><dt data-i18n="cart.earn">نقاط ستربحها</dt><dd id="tPts">0</dd></div>
     </dl>
     <button class="btn btn-primary btn-block" id="checkoutBtn" data-i18n="cart.checkout">إرسال الطلب عبر واتساب</button>
+    <p class="legal-notice" data-i18n-html="legal.order"></p>
     <button class="btn btn-link" id="clearCart" data-i18n="cart.clear">إفراغ السلة</button>
   </div>
 </aside>

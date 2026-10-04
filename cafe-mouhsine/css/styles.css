@@ -610,3 +610,14 @@ a.feature:hover, button.feature:hover { background: rgba(255,255,255,.06); }
 .my-bk small { color: var(--text-soft); font-size: .78rem; }
 .my-bk .btn-link { width: auto; padding: 4px 6px; }
 .lc-inactive { font-size: .75rem; opacity: .85; }
+
+/* ---------- legal links, notices & map consent ---------- */
+.legal-links { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; font-size: .88rem; }
+.legal-links a { opacity: .85; text-decoration: underline; text-underline-offset: 3px; }
+.legal-notice { font-size: .75rem; color: var(--text-soft); line-height: 1.5; }
+.legal-notice a { text-decoration: underline; }
+.map-consent { height: 100%; min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--caramel) 18%, transparent), transparent 65%), var(--surface-2); }
+.map-consent p { max-width: 320px; color: var(--text-soft); font-size: .88rem; }
+.map-pin { font-size: 2.4rem; }
+.map-consent .btn-link { width: auto; }

@@ -1,6 +1,10 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
+    "ft.mentions": "البيانات القانونية", "ft.cgv": "الشروط العامة للبيع", "ft.privacy": "سياسة الخصوصية",
+    "map.info": "تضع خريطة Google ملفات تعريف الارتباط الخاصة بها، لذلك لا تُحمَّل إلا بطلب منك.", "map.show": "عرض الخريطة", "map.open": "فتح في خرائط Google",
+    "legal.booking": "تُستعمل هذه المعلومات فقط لتدبير حجزك وفق القانون 09.08. <a href=\"legal.html#privacy\">سياسة الخصوصية</a> · <a href=\"legal.html#cgv\">الشروط العامة للبيع</a>",
+    "legal.order": "بإرسال الطلب فإنك تقبل <a href=\"legal.html#cgv\">الشروط العامة للبيع</a> و<a href=\"legal.html#privacy\">سياسة الخصوصية</a>.",
     "cart.sentNoPts": "تم إرسال طلبك عبر واتساب.",
     "loy.inactive": "اطلب لأول مرة لتفعيل بطاقتك.",
     "bk.okOnline": "تم تسجيل طلب الحجز رقم {code}. ستتابع حالته أسفله.", "bk.mine": "حجوزاتي", "bk.people": "أشخاص",
@@ -64,6 +68,10 @@ window.I18N = {
   },
 
   fr: {
+    "ft.mentions": "Mentions légales", "ft.cgv": "CGV", "ft.privacy": "Confidentialité",
+    "map.info": "La carte Google dépose ses propres cookies : elle n'est chargée qu'à votre demande.", "map.show": "Afficher la carte", "map.open": "Ouvrir dans Google Maps",
+    "legal.booking": "Ces informations servent uniquement à gérer votre réservation (loi 09-08). <a href=\"legal.html#privacy\">Confidentialité</a> · <a href=\"legal.html#cgv\">CGV</a>",
+    "legal.order": "En envoyant la commande, vous acceptez les <a href=\"legal.html#cgv\">CGV</a> et la <a href=\"legal.html#privacy\">politique de confidentialité</a>.",
     "cart.sentNoPts": "Commande envoyée par WhatsApp.",
     "loy.inactive": "Passez votre première commande pour activer votre carte.",
     "bk.okOnline": "Demande n° {code} enregistrée. Suivez son statut ci-dessous.", "bk.mine": "Mes réservations", "bk.people": "pers.",
@@ -127,6 +135,10 @@ window.I18N = {
   },
 
   en: {
+    "ft.mentions": "Legal notice", "ft.cgv": "Terms of sale", "ft.privacy": "Privacy",
+    "map.info": "Google Maps sets its own cookies, so the map only loads when you ask.", "map.show": "Show map", "map.open": "Open in Google Maps",
+    "legal.booking": "This information is only used to manage your booking (Moroccan Law 09-08). <a href=\"legal.html#privacy\">Privacy</a> · <a href=\"legal.html#cgv\">Terms</a>",
+    "legal.order": "By sending the order you accept our <a href=\"legal.html#cgv\">terms of sale</a> and <a href=\"legal.html#privacy\">privacy policy</a>.",
     "cart.sentNoPts": "Order sent via WhatsApp.",
     "loy.inactive": "Place your first order to activate your card.",
     "bk.okOnline": "Request #{code} saved. Follow its status below.", "bk.mine": "My bookings", "bk.people": "guests",

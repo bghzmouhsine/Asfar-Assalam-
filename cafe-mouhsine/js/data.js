@@ -23,6 +23,21 @@ window.CAFE_CONFIG = {
     4: ["07:00", "23:30"], 5: ["07:00", "00:30"], 6: ["08:00", "00:30"]
   },
   socials: { instagram: "#", facebook: "#", tiktok: "#" },
+  // legal identity shown on legal.html — fill in the empty values ("" = highlighted as "to complete")
+  legal: {
+    company: "",            // raison sociale, e.g. "Café Mouhsine SARL AU"
+    form: "",               // SARL, SARL AU, entreprise individuelle…
+    capital: "",            // e.g. "100 000 DH"
+    rc: "",                 // registre du commerce, e.g. "RC 12345 – Meknès"
+    ice: "",                // identifiant commun de l'entreprise (15 chiffres)
+    if: "",                 // identifiant fiscal
+    patente: "",            // taxe professionnelle
+    director: "Mouhsine BOUAGHAZ",   // directeur de la publication
+    host: "",               // hébergeur du site: name + address (e.g. Firebase Hosting / Netlify)
+    cndp: "",               // n° de récépissé de déclaration CNDP (loi 09-08)
+    city: { ar: "مكناس", fr: "Meknès", en: "Meknes" },   // tribunal compétent, zone de livraison
+    updated: "2026-10-04"
+  },
   // automatic discount: days (0 = Sunday), time window, categories, percentage
   happyHour: { days: [1, 2, 3, 4, 5], from: "15:00", to: "17:00", cats: ["cold", "juice"], pct: 20 }
 };
