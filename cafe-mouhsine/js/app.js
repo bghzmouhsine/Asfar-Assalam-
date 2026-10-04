@@ -8,6 +8,7 @@
 
   const CFG = window.CAFE_CONFIG;
   const CATS = window.CAFE_CATEGORIES;
+  const EXTRAS = window.CAFE_EXTRAS;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
@@ -26,8 +27,9 @@
   /* ---------- state ---------- */
   const state = {
     lang: store.get("lang", (navigator.language || "ar").slice(0, 2)),
-    cat: "all", q: "", sort: "default", view: store.get("view", "grid"),
+    cat: "all", q: "", sort: "default", view: store.get("view", "grid"), diet: "",
     cart: store.get("cart", []).filter(i => byId[i.id]),
+    drawerTab: "cart",
     promo: null,
     points: store.get("points", 0),
     loyaltyId: store.get("loyaltyId", null)
@@ -44,10 +46,38 @@
   const cur = () => state.lang === "ar" ? "درهم" : CFG.currency;
   const money = n => `${Number(n).toLocaleString(state.lang === "en" ? "en-US" : "fr-MA", { maximumFractionDigits: 2 })} ${cur()}`;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const priceOf = (p, size) => {
+  const hm = s => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+
+  /* ---------- pricing: size + extras, minus happy-hour discount ---------- */
+  function happyHour(now = new Date()) {
+    const h = CFG.happyHour; if (!h) return null;
+    const m = now.getHours() * 60 + now.getMinutes();
+    return h.days.includes(now.getDay()) && m >= hm(h.from) && m < hm(h.to) ? h : null;
+  }
+  const hhPct = p => { const h = happyHour(); return h && h.cats.includes(p.cat) ? h.pct : 0; };
+  const optionOf = (g, id) => (EXTRAS[g] && EXTRAS[g].options.find(o => o[0] === id)) || null;
+  const extrasCost = opts => Object.entries(opts || {}).reduce((sum, [g, v]) =>
+    sum + [].concat(v).reduce((a, id) => a + ((optionOf(g, id) || [0, 0])[1]), 0), 0);
+  const priceOf = (p, size, opts) => {
     const s = (p.sizes || []).find(x => x[0] === size);
-    return p.price + (s ? s[1] : 0);
+    const base = p.price + (s ? s[1] : 0) + extrasCost(opts);
+    const pct = hhPct(p);
+    // discounted prices are rounded to the nearest half dirham
+    return pct ? Math.round(base * (100 - pct) / 50) / 2 : base;
   };
+  // human label for chosen options, skipping defaults
+  const optsLabel = opts => Object.entries(opts || {}).flatMap(([g, v]) =>
+    [].concat(v).map(id => optionOf(g, id)).filter(Boolean).map(o => L(o[2]))).join(", ");
+  // drop default choices so identical drinks share one cart line
+  function cleanOpts(p, opts) {
+    const out = {};
+    (p.extras || []).forEach(g => {
+      const v = opts && opts[g]; if (v == null) return;
+      if (EXTRAS[g].multi) { if (v.length) out[g] = [...v].sort(); }
+      else if (v !== EXTRAS[g].options[0][0]) out[g] = v;
+    });
+    return out;
+  }
 
   /* ---------- toast ---------- */
   let toastTimer;
@@ -93,7 +123,8 @@
 
   function filtered() {
     const q = state.q.trim().toLowerCase();
-    let list = PRODUCTS.filter(p => (state.cat === "all" || p.cat === state.cat) &&
+    const dietOk = p => !state.diet || p.diet.includes(state.diet) || (state.diet === "veg" && p.diet.includes("vegan"));
+    let list = PRODUCTS.filter(p => (state.cat === "all" || p.cat === state.cat) && dietOk(p) &&
       (!q || [p.ar, p.fr, p.en].flat().join(" ").toLowerCase().includes(q)));
     if (state.sort === "asc") list.sort((a, b) => a.price - b.price);
     if (state.sort === "desc") list.sort((a, b) => b.price - a.price);
@@ -101,7 +132,17 @@
     return list;
   }
 
-  const tagHtml = p => p.tags.map(tg => `<span class="tag tag-${tg}">${t("tag." + tg)}</span>`).join("");
+  const tagHtml = p => {
+    const pct = hhPct(p);
+    return (pct ? `<span class="tag tag-hh">−${pct}%</span>` : "") +
+      (p.was ? `<span class="tag tag-save">${esc(t("offer.save", { n: money(p.was - p.price) }))}</span>` : "") +
+      p.tags.map(tg => `<span class="tag tag-${tg}">${t("tag." + tg)}</span>`).join("");
+  };
+  const priceHtml = p => {
+    const was = hhPct(p) ? p.price : p.was;
+    return `<span class="price-wrap">${was ? `<s class="was">${money(was)}</s>` : ""}<span class="price">${money(priceOf(p, p.sizes ? p.sizes[0][0] : null))}</span></span>`;
+  };
+  const dietHtml = p => p.diet.map(d => `<span class="diet-ico" title="${esc(t("diet." + d))}">${{ veg: "🌿", vegan: "🌱", gf: "🌾" }[d]}</span>`).join("");
 
   function renderGrid() {
     const list = filtered();
@@ -119,7 +160,7 @@
             <div class="price-row ${p.available ? "" : "off"}" data-open="${p.id}" tabindex="0">
               <span class="pr-name">${esc(L(p)[0])}${p.sizes ? `<small>${p.sizes.map(s => esc(s[0])).join(" / ")}</small>` : ""}</span>
               <span class="pr-dots"></span>
-              <span class="pr-price">${p.sizes ? p.sizes.map(s => p.price + s[1]).join(" / ") + " " + cur() : money(p.price)}</span>
+              <span class="pr-price">${p.sizes ? p.sizes.map(s => priceOf(p, s[0])).join(" / ") + " " + cur() : money(priceOf(p))}</span>
               <button class="add-mini" data-add="${p.id}" aria-label="${esc(t("p.add"))}" ${p.available ? "" : "disabled"}>+</button>
             </div>`).join("")}
         </div>`).join("");
@@ -135,11 +176,11 @@
         <div class="p-body">
           <div class="p-head">
             <h3>${esc(L(p)[0])}</h3>
-            <span class="price">${money(p.price)}</span>
+            ${priceHtml(p)}
           </div>
           <p>${esc(L(p)[1])}</p>
           <div class="p-foot">
-            <small>${p.kcal ? p.kcal + " " + t("p.kcal") : ""}${p.sizes ? ` · ${p.sizes.map(s => esc(s[0])).join(" / ")}` : ""}</small>
+            <small>${dietHtml(p)}${p.kcal ? " " + p.kcal + " " + t("p.kcal") : ""}${p.sizes ? ` · ${p.sizes.map(s => esc(s[0])).join(" / ")}` : ""}</small>
             <button class="add" data-add="${p.id}" ${p.available ? "" : "disabled"}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               <span>${t("p.add")}</span>
@@ -154,6 +195,24 @@
     state.cat = b.dataset.cat; renderTabs(); renderGrid();
   });
   $("#search").addEventListener("input", e => { state.q = e.target.value; renderGrid(); });
+  function renderDiet() {
+    $("#dietFilter").innerHTML = `<span>${t("diet.label")}</span>` + ["veg", "vegan", "gf"].map(d =>
+      `<button class="diet-chip ${state.diet === d ? "active" : ""}" data-diet="${d}" aria-pressed="${state.diet === d}">${{ veg: "🌿", vegan: "🌱", gf: "🌾" }[d]} ${t("diet." + d)}</button>`).join("");
+  }
+  $("#dietFilter").addEventListener("click", e => {
+    const b = e.target.closest("[data-diet]"); if (!b) return;
+    state.diet = state.diet === b.dataset.diet ? "" : b.dataset.diet; renderDiet(); renderGrid();
+  });
+  function renderHappyHour() {
+    const h = CFG.happyHour, el = $("#hhBanner"); if (!h) { el.hidden = true; return; }
+    const cats = h.cats.map(c => L(CATS.find(x => x.id === c))).join(" · ");
+    const days = h.days.map(d => I18N[state.lang].days[d].slice(0, state.lang === "ar" ? 10 : 3)).join(", ");
+    const on = !!happyHour();
+    el.classList.toggle("on", on);
+    el.innerHTML = on
+      ? `<b>🍹 ${t("hh.now", { pct: h.pct, t: h.to })}</b><span>${esc(cats)}</span>`
+      : `<b>🍹 ${t("hh.title")}</b><span>${t("hh.info", { pct: h.pct, from: h.from, to: h.to })} — ${esc(cats)} · ${esc(days)}</span>`;
+  }
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; renderGrid(); });
   $$(".view-toggle button").forEach(b => b.addEventListener("click", () => {
     state.view = b.dataset.view; store.set("view", state.view);
@@ -163,7 +222,12 @@
 
   $("#grid").addEventListener("click", e => {
     const add = e.target.closest("[data-add]");
-    if (add) { e.stopPropagation(); const p = byId[add.dataset.add]; addToCart(p.id, p.sizes ? p.sizes[0][0] : null, 1); return; }
+    if (add) {
+      e.stopPropagation(); const p = byId[add.dataset.add];
+      // drinks with options open the customiser; everything else goes straight in
+      if (p.extras.length) openProduct(p.id); else addToCart(p.id, p.sizes ? p.sizes[0][0] : null, 1);
+      return;
+    }
     const open = e.target.closest("[data-open]");
     if (open) openProduct(open.dataset.open);
   });
@@ -175,30 +239,48 @@
   function openProduct(id) {
     const p = byId[id]; if (!p) return;
     let size = p.sizes ? p.sizes[0][0] : null, qty = 1;
+    const opts = {};
+    p.extras.forEach(g => { opts[g] = EXTRAS[g].multi ? [] : EXTRAS[g].options[0][0]; });
     const body = $("#productBody");
+    // the photo is rendered once; option clicks only redraw the info panel
+    body.innerHTML = `<div class="pm"><img src="${p.img.replace("w=640", "w=900")}" alt="${esc(L(p)[0])}"><div class="pm-info"></div></div>`;
+    const info = $(".pm-info", body);
     const draw = () => {
-      body.innerHTML = `
-        <div class="pm">
-          <img src="${p.img.replace("w=640", "w=900")}" alt="${esc(L(p)[0])}">
-          <div class="pm-info">
+      const scroll = info.scrollTop;
+      info.innerHTML = `
             <div class="p-tags static">${tagHtml(p)}</div>
             <h3>${esc(L(p)[0])}</h3>
             <p>${esc(L(p)[1])}</p>
-            ${p.kcal ? `<small class="muted">${p.kcal} ${t("p.kcal")}</small>` : ""}
+            ${p.was ? `<p class="pm-was">${t("offer.instead")} <s>${money(p.was)}</s></p>` : ""}
+            <div class="pm-meta">
+              ${p.kcal ? `<span>${p.kcal} ${t("p.kcal")}</span>` : ""}
+              ${p.diet.map(d => `<span class="pill">${dietHtml({ diet: [d] })} ${t("diet." + d)}</span>`).join("")}
+            </div>
+            ${p.allergens.length ? `<p class="allergens"><b>${t("p.allergens")}:</b> ${p.allergens.map(a => t("al." + a)).join(" · ")}</p>` : ""}
             ${p.sizes ? `<div class="opt"><b>${t("p.size")}</b><div class="chips">${p.sizes.map(s =>
               `<button type="button" class="chip ${s[0] === size ? "active" : ""}" data-size="${esc(s[0])}">${esc(s[0])}<small>${money(p.price + s[1])}</small></button>`).join("")}</div></div>` : ""}
+            ${p.extras.map(g => { const G = EXTRAS[g]; return `<div class="opt"><b>${esc(L(G))}</b><div class="chips">${G.options.map(o => {
+              const on = G.multi ? opts[g].includes(o[0]) : opts[g] === o[0];
+              return `<button type="button" class="chip ${on ? "active" : ""}" data-g="${g}" data-o="${o[0]}" aria-pressed="${on}">${esc(L(o[2]))}${o[1] ? `<small>+${money(o[1])}</small>` : ""}</button>`;
+            }).join("")}</div></div>`; }).join("")}
             <div class="opt"><b>${t("p.qty")}</b>
               <div class="qty"><button type="button" data-q="-1">−</button><span>${qty}</span><button type="button" data-q="1">+</button></div>
             </div>
-            <button type="button" class="btn btn-primary btn-block" id="pmAdd" ${p.available ? "" : "disabled"}>${t("p.add")} · ${money(priceOf(p, size) * qty)}</button>
-          </div>
-        </div>`;
+            <button type="button" class="btn btn-primary btn-block" id="pmAdd" ${p.available ? "" : "disabled"}>${t("p.add")} · ${money(priceOf(p, size, opts) * qty)}</button>`;
+      info.scrollTop = scroll;
     };
     draw();
     body.onclick = e => {
       const s = e.target.closest("[data-size]"); if (s) { size = s.dataset.size; draw(); }
+      const o = e.target.closest("[data-g]");
+      if (o) {
+        const g = o.dataset.g, id = o.dataset.o;
+        if (EXTRAS[g].multi) opts[g] = opts[g].includes(id) ? opts[g].filter(x => x !== id) : [...opts[g], id];
+        else opts[g] = id;
+        draw();
+      }
       const q = e.target.closest("[data-q]"); if (q) { qty = Math.max(1, qty + +q.dataset.q); draw(); }
-      if (e.target.closest("#pmAdd")) { addToCart(p.id, size, qty); $("#productModal").close(); }
+      if (e.target.closest("#pmAdd")) { addToCart(p.id, size, qty, opts); $("#productModal").close(); }
     };
     $("#productModal").showModal();
   }
@@ -208,19 +290,23 @@
   const PROMOS = { MOUHSINE10: { pct: 10 }, BIENVENUE: { amt: 15 }, COFFEE20: { pct: 20, min: 200 } };
   const tierOf = pts => pts >= 300 ? { name: "Gold", pct: 15 } : pts >= 100 ? { name: "Silver", pct: 10 } : { name: "Bronze", pct: 0 };
 
-  function addToCart(id, size, qty) {
-    const p = byId[id]; if (!p || !p.available) return;
-    const key = id + "|" + (size || "");
+  function addToCart(id, size, qty, opts, silent) {
+    const p = byId[id]; if (!p || !p.available) return false;
+    const o = cleanOpts(p, opts);
+    const key = id + "|" + (size || "") + "|" + JSON.stringify(o);
     const line = state.cart.find(i => i.key === key);
-    if (line) line.qty += qty; else state.cart.push({ key, id, size, qty });
-    saveCart(); toast(`${t("cart.added")} · ${L(p)[0]}`);
+    if (line) line.qty += qty; else state.cart.push({ key, id, size, qty, opts: o });
+    saveCart();
+    if (silent) return true;
+    toast(`${t("cart.added")} · ${L(p)[0]}`);
     const btn = $("#cartBtn"); btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump");
+    return true;
   }
   function saveCart() { store.set("cart", state.cart); renderCart(); }
 
   function totals() {
     const mode = $("input[name=mode]:checked").value;
-    const sub = state.cart.reduce((s, i) => s + priceOf(byId[i.id], i.size) * i.qty, 0);
+    const sub = state.cart.reduce((s, i) => s + priceOf(byId[i.id], i.size, i.opts) * i.qty, 0);
     let disc = 0;
     if (state.promo) {
       const pr = PROMOS[state.promo];
@@ -237,13 +323,15 @@
     $("#cartCount").textContent = count;
     $("#cartCount").hidden = count === 0;
     const box = $("#cartItems");
+    $$(".drawer-tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === state.drawerTab));
+    if (state.drawerTab === "history") { $("#cartFoot").hidden = true; renderHistory(); return; }
     $("#cartFoot").hidden = count === 0;
     if (!count) { box.innerHTML = `<p class="cart-empty">${t("cart.empty")}</p>`; return; }
     box.innerHTML = state.cart.map(i => {
       const p = byId[i.id];
       return `<div class="line">
         <img src="${p.img.replace("w=640", "w=160")}" alt="">
-        <div class="line-info"><b>${esc(L(p)[0])}</b>${i.size ? `<small>${esc(i.size)}</small>` : ""}<span>${money(priceOf(p, i.size) * i.qty)}</span></div>
+        <div class="line-info"><b>${esc(L(p)[0])}</b>${i.size || optsLabel(i.opts) ? `<small>${esc([i.size, optsLabel(i.opts)].filter(Boolean).join(" · "))}</small>` : ""}<span>${money(priceOf(p, i.size, i.opts) * i.qty)}</span></div>
         <div class="qty sm"><button data-k="${esc(i.key)}" data-d="-1">−</button><span>${i.qty}</span><button data-k="${esc(i.key)}" data-d="1">+</button></div>
       </div>`;
     }).join("");
@@ -265,6 +353,34 @@
     saveCart();
   });
   $$("input[name=mode]").forEach(r => r.addEventListener("change", renderCart));
+
+  /* ---------- order history & reorder ---------- */
+  function renderHistory() {
+    const orders = store.get("orders", []).slice(-15).reverse();
+    const dateFmt = new Intl.DateTimeFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-GB", { dateStyle: "medium", timeStyle: "short" });
+    $("#cartItems").innerHTML = orders.length ? orders.map(o => `
+      <div class="hist">
+        <div class="hist-top"><b>${esc(o.ref)}</b><span>${money(o.total)}</span></div>
+        <small>${dateFmt.format(o.at)} · ${t("cart." + o.mode)}</small>
+        <p>${o.items.map(i => {
+          if (!byId[i.id]) return "";
+          const extra = [i.size, optsLabel(i.opts)].filter(Boolean).join(", ");
+          return `${i.qty}× ${esc(L(byId[i.id])[0])}${extra ? ` <small>(${esc(extra)})</small>` : ""}`;
+        }).filter(Boolean).join(" · ")}</p>
+        <button class="btn btn-ghost btn-sm" data-reorder="${esc(o.ref)}">↻ ${t("hist.reorder")}</button>
+      </div>`).join("") : `<p class="cart-empty">${t("hist.empty")}</p>`;
+  }
+  $(".drawer-tabs").addEventListener("click", e => {
+    const b = e.target.closest("[data-tab]"); if (!b) return;
+    state.drawerTab = b.dataset.tab; renderCart();
+  });
+  $("#cartItems").addEventListener("click", e => {
+    const b = e.target.closest("[data-reorder]"); if (!b) return;
+    const o = store.get("orders", []).find(x => x.ref === b.dataset.reorder); if (!o) return;
+    const added = o.items.filter(i => addToCart(i.id, i.size, i.qty, i.opts, true)).length;
+    state.drawerTab = "cart"; renderCart();
+    toast(t("hist.done", { n: added, m: o.items.length }));
+  });
   $("#promoBtn").addEventListener("click", () => {
     const code = $("#promoInput").value.trim().toUpperCase();
     if (PROMOS[code]) { state.promo = code; toast(t("cart.promoOk")); } else { state.promo = null; toast(t("cart.promoBad")); }
@@ -278,7 +394,7 @@
     $("#overlay").hidden = !open;
     document.body.classList.toggle("lock", open);
   }
-  $("#cartBtn").addEventListener("click", () => openDrawer(true));
+  $("#cartBtn").addEventListener("click", () => { state.drawerTab = "cart"; renderCart(); openDrawer(true); });
   $("#overlay").addEventListener("click", () => openDrawer(false));
   $("[data-close]").addEventListener("click", () => openDrawer(false));
   document.addEventListener("keydown", e => { if (e.key === "Escape") openDrawer(false); });
@@ -291,7 +407,10 @@
     if (tt.mode !== "takeaway" && !detail) { toast(t("cart.needDetail")); $("#modeDetail").focus(); return; }
     const W = I18N[state.lang].wa;
     const ref = "CMD-" + Date.now().toString(36).toUpperCase().slice(-6);
-    const lines = state.cart.map(i => `• ${i.qty} × ${L(byId[i.id])[0]}${i.size ? ` (${i.size})` : ""} — ${money(priceOf(byId[i.id], i.size) * i.qty)}`);
+    const lines = state.cart.map(i => {
+      const extra = [i.size, optsLabel(i.opts)].filter(Boolean).join(", ");
+      return `• ${i.qty} × ${L(byId[i.id])[0]}${extra ? ` (${extra})` : ""} — ${money(priceOf(byId[i.id], i.size, i.opts) * i.qty)}`;
+    });
     const msg = [
       `☕ *${CFG.name}* — ${W.order}`, `${W.code}: ${ref}`, "",
       ...lines, "",
@@ -306,7 +425,7 @@
 
     // record locally for the admin dashboard
     const orders = store.get("orders", []);
-    orders.push({ ref, at: Date.now(), mode: tt.mode, total: tt.total, items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty })) });
+    orders.push({ ref, at: Date.now(), mode: tt.mode, total: tt.total, items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts })) });
     store.set("orders", orders.slice(-500));
 
     state.points += tt.pts; store.set("points", state.points);
@@ -354,7 +473,7 @@
   }
 
   /* ================= HOURS ================= */
-  const toMin = s => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+  const toMin = hm;
   function openStatus(now = new Date()) {
     const d = now.getDay(), m = now.getHours() * 60 + now.getMinutes();
     const win = day => { const [o, c] = CFG.hours[day]; let oc = toMin(c); const oo = toMin(o); if (oc <= oo) oc += 1440; return [oo, oc, c]; };
@@ -475,12 +594,24 @@
   $$("[data-count], .section-head, .feature, .review, .loyalty-card").forEach(el => { if (!el.dataset.count) el.classList.add("reveal"); io.observe(el); });
 
   function renderAll() {
-    renderTabs(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart();
+    renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart();
+  }
+
+  // QR table cards link to ?table=N — preselect dine-in with that table
+  const tableNo = new URLSearchParams(location.search).get("table");
+  if (tableNo && /^\d{1,3}$/.test(tableNo)) {
+    $("input[name=mode][value=table]").checked = true;
+    $("#modeDetail").value = tableNo;
   }
 
   applyLang();
   renderGallery();
-  setInterval(renderHours, 60000);
+  let hhWas = !!happyHour();
+  setInterval(() => {
+    renderHours();
+    const hhNow = !!happyHour();
+    if (hhNow !== hhWas) { hhWas = hhNow; renderHappyHour(); renderGrid(); renderCart(); }
+  }, 60000);
 
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

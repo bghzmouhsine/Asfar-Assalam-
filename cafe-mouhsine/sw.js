@@ -1,6 +1,6 @@
 /* Café Mouhsine BOUAGHAZ — offline support (app shell + cached images) */
-const CACHE = "cafe-mouhsine-v1";
-const SHELL = ["./", "./index.html", "./css/styles.css", "./js/data.js", "./js/i18n.js", "./js/app.js", "./assets/icon.svg", "./manifest.webmanifest"];
+const CACHE = "cafe-mouhsine-v2";
+const SHELL = ["./", "./index.html", "./menu-print.html", "./css/styles.css", "./js/data.js", "./js/i18n.js", "./js/app.js", "./assets/icon.svg", "./manifest.webmanifest"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -22,11 +22,14 @@ window.CAFE_CONFIG = {
     0: ["08:00", "00:00"], 1: ["07:00", "23:30"], 2: ["07:00", "23:30"], 3: ["07:00", "23:30"],
     4: ["07:00", "23:30"], 5: ["07:00", "00:30"], 6: ["08:00", "00:30"]
   },
-  socials: { instagram: "#", facebook: "#", tiktok: "#" }
+  socials: { instagram: "#", facebook: "#", tiktok: "#" },
+  // automatic discount: days (0 = Sunday), time window, categories, percentage
+  happyHour: { days: [1, 2, 3, 4, 5], from: "15:00", to: "17:00", cats: ["cold", "juice"], pct: 20 }
 };
 
 window.CAFE_CATEGORIES = [
   { id: "all",       icon: "✦",  ar: "الكل",            fr: "Tout",              en: "All" },
+  { id: "offers",    icon: "🎁", ar: "العروض",          fr: "Formules",          en: "Set menus" },
   { id: "hot",       icon: "☕", ar: "قهوة ساخنة",      fr: "Cafés chauds",      en: "Hot coffee" },
   { id: "cold",      icon: "🧊", ar: "مشروبات باردة",   fr: "Boissons glacées",  en: "Iced drinks" },
   { id: "tea",       icon: "🍃", ar: "شاي وأعشاب",      fr: "Thés & infusions",  en: "Tea & infusions" },
@@ -38,6 +41,28 @@ window.CAFE_CATEGORIES = [
 ];
 
 window.CAFE_PRODUCTS = [
+  /* ---------------- SET MENUS (was = price if bought separately) ---------------- */
+  { id: "combo-morning", cat: "offers", price: 35, was: 42, img: IMG("photo-1555507036-ab1f4038808a"), tags: ["best"], kcal: 0,
+    ar: ["فطور سريع", "نص نص أو قهوة + كرواسون بالزبدة + عصير برتقال طبيعي. إلى غاية 11:00."],
+    fr: ["Formule Matin", "Nos-Nos ou café + croissant pur beurre + jus d'orange pressé. Jusqu'à 11 h."],
+    en: ["Morning set", "Nos-Nos or coffee + butter croissant + fresh orange juice. Until 11 am."] },
+  { id: "combo-student", cat: "offers", price: 22, was: 26, img: IMG("photo-1558961363-fa8fdf82db35"), tags: ["new"], kcal: 0,
+    ar: ["عرض الطالب", "نص نص + كوكيز + ساعتان من الويفي. بتقديم بطاقة الطالب."],
+    fr: ["Formule Étudiant", "Nos-Nos + cookie + 2 h de Wi-Fi. Sur présentation de la carte étudiant."],
+    en: ["Student deal", "Nos-Nos + cookie + 2 h of Wi-Fi. Student card required."] },
+  { id: "combo-duo", cat: "offers", price: 99, was: 104, img: IMG("photo-1495474472287-4d71bcdd2085"), tags: [], kcal: 0,
+    ar: ["عرض الثنائي", "2 كابتشينو + 2 حلويات من اختياركم."],
+    fr: ["Formule Duo", "2 cappuccinos + 2 desserts au choix."],
+    en: ["Duo deal", "2 cappuccinos + 2 desserts of your choice."] },
+  { id: "combo-brunch", cat: "offers", price: 99, was: 125, img: IMG("photo-1567620905732-2d1ec7ab7445"), tags: ["local"], kcal: 0,
+    ar: ["برانش بلدي لشخصين", "2 فطور بلدي + براد أتاي بالنعناع. السبت والأحد."],
+    fr: ["Brunch Beldi pour 2", "2 petits-déj Beldi + une théière de thé à la menthe. Samedi et dimanche."],
+    en: ["Beldi brunch for 2", "2 Beldi breakfasts + a pot of mint tea. Saturday & Sunday."] },
+  { id: "combo-office", cat: "offers", price: 149, was: 180, img: IMG("photo-1497515114629-f71d768fd07c"), tags: ["signature"], kcal: 0,
+    ar: ["علبة المكتب", "6 مشروبات قهوة + 6 مخبوزات، توصل لمكتبكم ساخنة."],
+    fr: ["Box Bureau", "6 cafés + 6 viennoiseries, livrés chauds à votre bureau."],
+    en: ["Office box", "6 coffees + 6 pastries, delivered hot to your office."] },
+
   /* ---------------- HOT COFFEE ---------------- */
   { id: "espresso", cat: "hot", price: 12, img: IMG("photo-1610889556528-9a770e32642f"), tags: ["best"], kcal: 5,
     sizes: [["S", 0], ["Double", 6]],
@@ -245,3 +270,73 @@ window.CAFE_GALLERY = [
   IMG("photo-1559925393-8be0ec4767c8", 900),
   IMG("photo-1497935586351-b67a49e012bf", 900)
 ];
+
+/* ---------- drink customisation (price added per unit) ---------- */
+window.CAFE_EXTRAS = {
+  milk: { multi: false, ar: "نوع الحليب", fr: "Lait", en: "Milk", options: [
+    ["whole", 0, { ar: "حليب عادي", fr: "Lait entier", en: "Whole milk" }],
+    ["lactose", 3, { ar: "بدون لاكتوز", fr: "Sans lactose", en: "Lactose-free" }],
+    ["oat", 5, { ar: "حليب الشوفان", fr: "Lait d'avoine", en: "Oat milk" }],
+    ["almond", 5, { ar: "حليب اللوز", fr: "Lait d'amande", en: "Almond milk" }]] },
+  shot: { multi: true, ar: "إضافات", fr: "Suppléments", en: "Add-ons", options: [
+    ["shot", 6, { ar: "جرعة إسبريسو إضافية", fr: "Shot d'espresso", en: "Extra espresso shot" }],
+    ["cream", 4, { ar: "كريمة مخفوقة", fr: "Chantilly", en: "Whipped cream" }]] },
+  syrup: { multi: false, ar: "النكهة", fr: "Sirop", en: "Syrup", options: [
+    ["none", 0, { ar: "بدون", fr: "Aucun", en: "None" }],
+    ["vanilla", 4, { ar: "فانيليا", fr: "Vanille", en: "Vanilla" }],
+    ["caramel", 4, { ar: "كراميل", fr: "Caramel", en: "Caramel" }],
+    ["hazelnut", 4, { ar: "بندق", fr: "Noisette", en: "Hazelnut" }]] },
+  sugar: { multi: false, ar: "السكر", fr: "Sucre", en: "Sugar", options: [
+    ["normal", 0, { ar: "عادي", fr: "Normal", en: "Regular" }],
+    ["less", 0, { ar: "قليل", fr: "Peu sucré", en: "Less sugar" }],
+    ["none", 0, { ar: "بدون سكر", fr: "Sans sucre", en: "No sugar" }]] }
+};
+
+/* ---------- per-product extras, diet labels & allergens ----------
+   diet: veg (vegetarian), vegan, gf (gluten-free)
+   allergens: milk, gluten, egg, nuts */
+(() => {
+  const M = "milk", G = "gluten", E = "egg", N = "nuts";
+  const FULL = ["milk", "shot", "syrup", "sugar"];
+  const META = {
+    "espresso":      { extras: ["shot", "sugar"], diet: ["vegan", "gf"] },
+    "americano":     { extras: ["shot", "syrup", "sugar"], diet: ["vegan", "gf"] },
+    "noss-noss":     { extras: ["milk", "sugar"], diet: ["veg", "gf"], allergens: [M] },
+    "cappuccino":    { extras: FULL, diet: ["veg", "gf"], allergens: [M] },
+    "latte":         { extras: FULL, diet: ["veg", "gf"], allergens: [M] },
+    "flat-white":    { extras: FULL, diet: ["veg", "gf"], allergens: [M] },
+    "spanish-latte": { extras: ["milk", "shot"], diet: ["veg", "gf"], allergens: [M] },
+    "pour-over":     { extras: ["sugar"], diet: ["vegan", "gf"] },
+    "iced-latte":    { extras: FULL, diet: ["veg", "gf"], allergens: [M] },
+    "cold-brew":     { extras: ["milk", "syrup", "sugar"], diet: ["vegan", "gf"] },
+    "bubble-coffee": { extras: ["milk", "sugar"], diet: ["veg", "gf"], allergens: [M] },
+    "iced-tea":      { extras: ["sugar"], diet: ["vegan", "gf"] },
+    "atay":          { extras: ["sugar"], diet: ["vegan", "gf"] },
+    "herbal":        { extras: ["sugar"], diet: ["vegan", "gf"] },
+    "chai":          { extras: ["milk", "sugar"], diet: ["veg", "gf"], allergens: [M] },
+    "orange":        { diet: ["vegan", "gf"] },
+    "lemonade":      { diet: ["veg", "gf"] },
+    "mojito":        { diet: ["vegan", "gf"] },
+    "avocado":       { diet: ["veg", "gf"], allergens: [M, N] },
+    "detox":         { diet: ["veg", "gf"], allergens: [M] },
+    "beldi":         { diet: ["veg"], allergens: [G, E, M, N] },
+    "avo-toast":     { diet: ["veg"], allergens: [G, E] },
+    "pancakes":      { diet: ["veg"], allergens: [G, E, M] },
+    "french-toast":  { diet: ["veg"], allergens: [G, E, M] },
+    "croissant":     { diet: ["veg"], allergens: [G, M, E] },
+    "cookies":       { diet: ["veg"], allergens: [G, M, E] },
+    "sourdough":     { diet: ["vegan"], allergens: [G] },
+    "tiramisu":      { diet: ["veg"], allergens: [G, E, M] },
+    "choco-cake":    { diet: ["veg"], allergens: [G, E, M] },
+    "raspberry":     { diet: ["veg"], allergens: [G, E, M, N] },
+    "brownie":       { diet: ["veg"], allergens: [G, E, M, N] },
+    "panna":         { diet: ["veg", "gf"], allergens: [M] },
+    "beans-250":     { diet: ["vegan", "gf"] },
+    "combo-morning": { diet: ["veg"], allergens: [G, M, E] },
+    "combo-student": { diet: ["veg"], allergens: [G, M, E] },
+    "combo-duo":     { diet: ["veg"], allergens: [G, M, E] },
+    "combo-brunch":  { diet: ["veg"], allergens: [G, E, M, N] },
+    "combo-office":  { diet: ["veg"], allergens: [G, M, E] }
+  };
+  window.CAFE_PRODUCTS.forEach(p => Object.assign(p, { extras: [], diet: [], allergens: [] }, META[p.id] || {}));
+})();

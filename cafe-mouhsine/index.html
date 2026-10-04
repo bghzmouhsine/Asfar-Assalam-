@@ -165,7 +165,9 @@
       </div>
     </div>
 
+    <div class="hh-banner" id="hhBanner" role="status"></div>
     <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="diet-filter" id="dietFilter" role="group"></div>
     <div class="grid" id="grid" aria-live="polite"></div>
     <p class="empty" id="empty" hidden data-i18n="menu.empty">لا توجد نتائج مطابقة.</p>
   </div>
@@ -294,7 +296,7 @@
       <span class="brand-text"><span class="brand-name">Café Mouhsine</span><span class="brand-sub">BOUAGHAZ</span></span>
     </div>
     <p data-i18n="ft.tag">قهوة مختصة · مخبوزات حرفية · خدمات رقمية</p>
-    <p class="muted">© <span id="year"></span> Café Mouhsine BOUAGHAZ — <span data-i18n="ft.rights">جميع الحقوق محفوظة</span> · <a href="admin.html" data-i18n="ft.admin">لوحة الإدارة</a></p>
+    <p class="muted">© <span id="year"></span> Café Mouhsine BOUAGHAZ — <span data-i18n="ft.rights">جميع الحقوق محفوظة</span> · <a href="menu-print.html" data-i18n="ft.print">القائمة للطباعة</a> · <a href="admin.html" data-i18n="ft.admin">لوحة الإدارة</a></p>
   </div>
 </footer>
 
@@ -310,6 +312,10 @@
   <div class="drawer-head">
     <h3 id="cartTitle" data-i18n="cart.title">سلة الطلبات</h3>
     <button class="icon-btn" data-close aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-tabs" role="tablist">
+    <button data-tab="cart" class="active" data-i18n="cart.tabCart">السلة</button>
+    <button data-tab="history" data-i18n="cart.tabHistory">طلباتي السابقة</button>
   </div>
   <div class="drawer-body" id="cartItems"></div>
   <div class="drawer-foot" id="cartFoot">
@@ -353,6 +359,7 @@
       <button class="btn btn-primary btn-sm" id="qrDownload" data-i18n="qr.download">تحميل</button>
       <button class="btn btn-ghost btn-sm" id="qrShare" data-i18n="qr.share">مشاركة الرابط</button>
     </div>
+    <a class="btn btn-link" href="menu-print.html" target="_blank" data-i18n="qr.print">🖨 طباعة القائمة وبطاقات الطاولات</a>
   </div>
 </dialog>
 

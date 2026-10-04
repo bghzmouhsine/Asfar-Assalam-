@@ -1,6 +1,13 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
+    "diet.label": "نظام غذائي:", "diet.veg": "نباتي", "diet.vegan": "نباتي صرف", "diet.gf": "بدون غلوتين",
+    "al.milk": "حليب", "al.gluten": "غلوتين", "al.egg": "بيض", "al.nuts": "مكسرات", "p.allergens": "مسببات الحساسية",
+    "offer.save": "وفّر {n}", "offer.instead": "بدلاً من",
+    "hh.title": "ساعة السعادة", "hh.info": "خصم {pct}٪ من {from} إلى {to}", "hh.now": "ساعة السعادة الآن: خصم {pct}٪ حتى {t}",
+    "cart.tabCart": "السلة", "cart.tabHistory": "طلباتي السابقة",
+    "hist.empty": "لا توجد طلبات سابقة على هذا الجهاز.", "hist.reorder": "إعادة الطلب", "hist.done": "أُضيف {n} من {m} منتوجات إلى السلة",
+    "qr.print": "🖨 طباعة القائمة وبطاقات الطاولات", "ft.print": "القائمة للطباعة",
     skip: "تخطَّ إلى القائمة",
     "nav.menu": "القائمة", "nav.services": "الخدمات", "nav.loyalty": "الولاء", "nav.booking": "الحجز", "nav.gallery": "المعرض", "nav.contact": "اتصل بنا", "nav.theme": "الوضع الليلي / النهاري",
     "hero.t1": "قهوة مختصة", "hero.t2": "بروح مغربية",
@@ -48,6 +55,13 @@ window.I18N = {
   },
 
   fr: {
+    "diet.label": "Régime :", "diet.veg": "Végétarien", "diet.vegan": "Vegan", "diet.gf": "Sans gluten",
+    "al.milk": "Lait", "al.gluten": "Gluten", "al.egg": "Œufs", "al.nuts": "Fruits à coque", "p.allergens": "Allergènes",
+    "offer.save": "−{n}", "offer.instead": "Au lieu de",
+    "hh.title": "Happy hour", "hh.info": "−{pct} % de {from} à {to}", "hh.now": "Happy hour en cours : −{pct} % jusqu'à {t}",
+    "cart.tabCart": "Panier", "cart.tabHistory": "Mes commandes",
+    "hist.empty": "Aucune commande précédente sur cet appareil.", "hist.reorder": "Recommander", "hist.done": "{n} sur {m} produits ajoutés au panier",
+    "qr.print": "🖨 Imprimer le menu et les chevalets de table", "ft.print": "Menu à imprimer",
     skip: "Aller au menu",
     "nav.menu": "Menu", "nav.services": "Services", "nav.loyalty": "Fidélité", "nav.booking": "Réserver", "nav.gallery": "Galerie", "nav.contact": "Contact", "nav.theme": "Mode sombre / clair",
     "hero.t1": "Café de spécialité", "hero.t2": "à l'âme marocaine",
@@ -95,6 +109,13 @@ window.I18N = {
   },
 
   en: {
+    "diet.label": "Diet:", "diet.veg": "Vegetarian", "diet.vegan": "Vegan", "diet.gf": "Gluten-free",
+    "al.milk": "Milk", "al.gluten": "Gluten", "al.egg": "Eggs", "al.nuts": "Nuts", "p.allergens": "Allergens",
+    "offer.save": "Save {n}", "offer.instead": "Instead of",
+    "hh.title": "Happy hour", "hh.info": "{pct}% off from {from} to {to}", "hh.now": "Happy hour now: {pct}% off until {t}",
+    "cart.tabCart": "Cart", "cart.tabHistory": "My orders",
+    "hist.empty": "No previous orders on this device.", "hist.reorder": "Order again", "hist.done": "{n} of {m} items added to your cart",
+    "qr.print": "🖨 Print the menu & table cards", "ft.print": "Printable menu",
     skip: "Skip to menu",
     "nav.menu": "Menu", "nav.services": "Services", "nav.loyalty": "Rewards", "nav.booking": "Book", "nav.gallery": "Gallery", "nav.contact": "Contact", "nav.theme": "Dark / light mode",
     "hero.t1": "Specialty coffee", "hero.t2": "with a Moroccan soul",

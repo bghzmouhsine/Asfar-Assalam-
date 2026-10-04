@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café Mouhsine — Printable Menu</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root { --espresso: #2B1A12; --caramel: #C8894B; --cream: #F7F0E6; --soft: #6B5446; --line: #E4D5C1; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Inter", sans-serif; background: #E9E1D6; color: var(--espresso); }
+  [dir="rtl"] body { font-family: "Cairo", sans-serif; }
+  h1, h2 { font-family: "Playfair Display", serif; }
+  [dir="rtl"] h1, [dir="rtl"] h2 { font-family: "Amiri", serif; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center;
+    padding: 12px 16px; background: var(--espresso); color: var(--cream); font-size: .9rem;
+  }
+  .toolbar select, .toolbar input { padding: 7px 10px; border-radius: 8px; border: 0; font: inherit; }
+  .toolbar input { width: 70px; }
+  .toolbar button, .toolbar a { padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--cream); background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .toolbar button.primary { background: var(--caramel); border-color: var(--caramel); color: #1A110C; }
+  .toolbar button.active { background: var(--cream); color: var(--espresso); }
+
+  .sheet {
+    width: 210mm; min-height: 297mm; margin: 20px auto; padding: 14mm 14mm 10mm; background: var(--cream);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,.35); display: flex; flex-direction: column;
+  }
+  @media (max-width: 860px) { .sheet { width: auto; min-height: 0; margin: 12px; padding: 20px 16px; } }
+
+  /* menu sheet */
+  .m-head { display: flex; align-items: center; gap: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--espresso); }
+  .m-head img { width: 54px; height: 54px; border-radius: 14px; }
+  .m-head h1 { font-size: 26pt; line-height: 1; }
+  .m-head .sub { font-size: 8pt; letter-spacing: .25em; color: var(--caramel); font-weight: 700; font-family: "Inter", sans-serif; }
+  .m-head .tag { margin-inline-start: auto; text-align: end; font-size: 8.5pt; color: var(--soft); }
+  .cols { columns: 2; column-gap: 10mm; margin-top: 8mm; flex: 1; }
+  .group { break-inside: avoid; margin-bottom: 6mm; }
+  .group h2 { font-size: 14pt; color: var(--caramel); margin-bottom: 2mm; display: flex; gap: 6px; align-items: center; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; padding: 1.6mm 0; border-bottom: 1px dotted var(--line); break-inside: avoid; }
+  .item b { font-size: 10pt; }
+  .item .p { font-weight: 700; font-size: 10pt; white-space: nowrap; font-family: "Inter", sans-serif; }
+  .item .p s { color: var(--soft); font-weight: 400; font-size: 8pt; margin-inline-end: 4px; }
+  .item small { grid-column: 1 / -1; color: var(--soft); font-size: 7.6pt; line-height: 1.35; }
+  .item .d { font-size: 7.5pt; }
+  .m-foot { display: flex; gap: 14px; align-items: center; margin-top: 6mm; padding-top: 4mm; border-top: 2px solid var(--espresso); font-size: 8.2pt; color: var(--soft); }
+  .m-foot .qr { flex-shrink: 0; background: #fff; padding: 4px; border-radius: 6px; }
+  .m-foot b { color: var(--espresso); }
+  .legend { margin-top: 2px; }
+
+  /* table cards */
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8mm; }
+  @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    border: 1.5px dashed #bba68f; border-radius: 6mm; padding: 7mm 6mm; text-align: center; background: #fff;
+    display: flex; flex-direction: column; align-items: center; gap: 3mm; break-inside: avoid;
+  }
+  .card img.logo { width: 40px; height: 40px; border-radius: 10px; }
+  .card .n { font-family: "Playfair Display", serif; font-size: 26pt; line-height: 1; }
+  .card .name { font-weight: 700; font-size: 10pt; }
+  .card .hint { font-size: 9pt; color: var(--soft); }
+  .card .wifi { font-size: 8pt; color: var(--soft); border-top: 1px solid var(--line); padding-top: 2mm; width: 100%; }
+
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: none; }
+    .toolbar { display: none; }
+    .sheet { margin: 0; box-shadow: none; width: 210mm; height: 297mm; min-height: 0; overflow: hidden; break-after: page; }
+    .sheet:last-child { break-after: auto; }
+    .cards-sheet { padding: 10mm; }
+    .cards-sheet .cards { height: 100%; grid-template-rows: 1fr 1fr; }
+  }
+  /* fits on one A4 page */
+  .menu-sheet { padding: 10mm 10mm 8mm; }
+  .menu-sheet .cols { columns: 2; column-gap: 8mm; margin-top: 5mm; }
+  .menu-sheet .group { margin-bottom: 3.5mm; }
+  .menu-sheet .group h2 { font-size: 12pt; margin-bottom: 1mm; }
+  .menu-sheet .item { padding: 1mm 0; }
+  .menu-sheet .item b, .menu-sheet .item .p { font-size: 8.6pt; }
+  .menu-sheet .item small { font-size: 6.8pt; line-height: 1.3; }
+  @media screen and (max-width: 560px) { .menu-sheet .cols { columns: 1; } }
+  .cards-sheet .card { justify-content: center; }
+  .cards-sheet .card .n { font-size: 34pt; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <label>🌐 <select id="lang"><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option></select></label>
+  <button id="showMenu" class="active">📄 Menu A4</button>
+  <button id="showCards">🪧 QR</button>
+  <label id="tablesWrap" hidden># <input id="tables" type="number" min="1" max="60" value="12"></label>
+  <button class="primary" onclick="print()">🖨 Print / PDF</button>
+  <a href="index.html">↩</a>
+</div>
+
+<div id="out"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script>
+(() => {
+  const CFG = window.CAFE_CONFIG, CATS = window.CAFE_CATEGORIES;
+  const $ = s => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  let lang = params.get("lang") || (() => { try { return JSON.parse(localStorage.getItem("cm_lang")); } catch { return null; } })() || "ar";
+  if (!I18N[lang]) lang = "ar";
+  let view = params.get("view") === "cards" ? "cards" : "menu";
+
+  const overrides = (() => { try { return JSON.parse(localStorage.getItem("cm_overrides")) || {}; } catch { return {}; } })();
+  const PRODUCTS = window.CAFE_PRODUCTS.map(p => ({ ...p, available: true, ...(overrides[p.id] || {}) })).filter(p => p.available);
+
+  const L = o => o[lang] || o.ar;
+  const t = k => I18N[lang][k] ?? I18N.ar[k] ?? k;
+  const cur = () => lang === "ar" ? "درهم" : CFG.currency;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const site = new URL("index.html", location.href).href;
+  const ICO = { veg: "🌿", vegan: "🌱", gf: "🌾" };
+
+  function qr(el, text, size) {
+    if (!window.QRCode) { el.textContent = text; return; }
+    new QRCode(el, { text, width: size, height: size, colorDark: "#2B1A12", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+  }
+
+  function renderMenu() {
+    const groups = CATS.filter(c => c.id !== "all").map(c => [c, PRODUCTS.filter(p => p.cat === c.id)]).filter(g => g[1].length);
+    const h = CFG.happyHour;
+    $("#out").innerHTML = `
+      <section class="sheet menu-sheet">
+        <header class="m-head">
+          <img src="assets/icon.svg" alt="">
+          <div><h1>Café Mouhsine</h1><div class="sub">BOUAGHAZ · SPECIALTY COFFEE</div></div>
+          <div class="tag">${esc(t("ft.tag"))}<br>${esc(L(CFG.address))}</div>
+        </header>
+        <div class="cols">
+          ${groups.map(([c, items]) => `
+            <div class="group">
+              <h2>${c.icon} ${esc(L(c))}</h2>
+              ${items.map(p => `
+                <div class="item">
+                  <b>${esc(L(p)[0])} <span class="d">${p.diet.map(d => ICO[d]).join("")}</span></b>
+                  <span class="p">${p.was ? `<s>${p.was}</s>` : ""}${p.sizes ? p.sizes.map(s => p.price + s[1]).join(" / ") : p.price} ${cur()}</span>
+                  <small>${esc(L(p)[1])}${p.sizes ? ` — ${p.sizes.map(s => esc(s[0])).join(" / ")}` : ""}</small>
+                </div>`).join("")}
+            </div>`).join("")}
+        </div>
+        <footer class="m-foot">
+          <div class="qr" id="menuQr"></div>
+          <div>
+            <b>${esc(t("qr.title"))}</b> — ${esc(t("feat.orderD"))} · WhatsApp ${esc(CFG.phoneDisplay)}<br>
+            ${h ? `🍹 ${esc(t("hh.title"))}: ${esc(t("hh.info").replace("{pct}", h.pct).replace("{from}", h.from).replace("{to}", h.to))} (${h.cats.map(c => esc(L(CATS.find(x => x.id === c)))).join(", ")})<br>` : ""}
+            <span class="legend">🌿 ${esc(t("diet.veg"))} · 🌱 ${esc(t("diet.vegan"))} · 🌾 ${esc(t("diet.gf"))} — ${esc(t("menu.sub"))}</span>
+          </div>
+        </footer>
+      </section>`;
+    qr($("#menuQr"), site + "#menu", 84);
+  }
+
+  function renderCards() {
+    const n = Math.max(1, Math.min(60, +$("#tables").value || 12));
+    const word = { ar: "طاولة", fr: "Table", en: "Table" }[lang];
+    const hint = { ar: "امسح الرمز لتصفح القائمة والطلب من مكانك", fr: "Scannez pour voir le menu et commander depuis votre table", en: "Scan to browse the menu and order from your table" }[lang];
+    const perPage = 4, pages = [];
+    for (let i = 1; i <= n; i += perPage) pages.push(Array.from({ length: Math.min(perPage, n - i + 1) }, (_, k) => i + k));
+    $("#out").innerHTML = pages.map(nums => `
+      <section class="sheet cards-sheet"><div class="cards">
+        ${nums.map(k => `
+          <div class="card">
+            <img class="logo" src="assets/icon.svg" alt="">
+            <div class="name">Café Mouhsine BOUAGHAZ</div>
+            <div class="n">${word} ${k}</div>
+            <div class="qr" data-table="${k}"></div>
+            <div class="hint">${hint}</div>
+            <div class="wifi">📶 Wi-Fi : CafeMouhsine · ☕ WhatsApp ${esc(CFG.phoneDisplay)}</div>
+          </div>`).join("")}
+      </div></section>`).join("");
+    document.querySelectorAll("[data-table]").forEach(el => qr(el, `${site}?table=${el.dataset.table}#menu`, 170));
+  }
+
+  function render() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    $("#lang").value = lang;
+    $("#showMenu").classList.toggle("active", view === "menu");
+    $("#showCards").classList.toggle("active", view === "cards");
+    $("#tablesWrap").hidden = view !== "cards";
+    view === "menu" ? renderMenu() : renderCards();
+  }
+  $("#lang").addEventListener("change", e => { lang = e.target.value; render(); });
+  $("#showMenu").addEventListener("click", () => { view = "menu"; render(); });
+  $("#showCards").addEventListener("click", () => { view = "cards"; render(); });
+  $("#tables").addEventListener("input", () => view === "cards" && renderCards());
+  render();
+})();
+</script>
+</body>
+</html>
