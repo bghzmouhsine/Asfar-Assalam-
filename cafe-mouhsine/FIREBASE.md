@@ -9,6 +9,7 @@ Une fois connectée, la plateforme enregistre en ligne les **commandes**, les **
 | Suivi client | sur le même appareil | « Reçue → En préparation → Prête » en direct sur le téléphone du client |
 | Réservations | envoyées par WhatsApp | enregistrées en ligne ; le client voit « En attente → Confirmée » et peut annuler ; le gérant confirme en un clic dans l'admin (avec message WhatsApp prêt pour le client) |
 | Points fidélité | comptés sur le téléphone du client (modifiables par lui) | crédités par le personnel au moment où la commande est servie, impossibles à falsifier, visibles dans l'admin (meilleurs clients, ajustement manuel) |
+| Avis clients | visibles sur l'appareil uniquement | enregistrés en ligne, relus par le personnel avant publication, visibles par tous ; badge « Commande vérifiée » quand l'avis est lié à une commande du client |
 | Accès cuisine / admin | code PIN | compte e-mail + mot de passe du personnel |
 
 Le plan gratuit de Firebase (« Spark ») suffit largement pour un café.
@@ -40,21 +41,22 @@ Ces valeurs ne sont pas secrètes : c'est le fichier `firestore.rules` qui prot�
 
 Sans cette étape, la base refuse tout en mode production. Deux façons de faire :
 
-- **Console :** Firestore → onglet **Règles** → collez le contenu de `firestore.rules` → **Publier**.
+- **Console :** Firestore → onglet **Règles** → collez le contenu de `firestore.rules` → **Publier**. Créez aussi l'index des avis : Firestore → **Index** → **Index composite** → collection `reviews`, champs `status` (croissant) puis `createdAt` (décroissant). Sinon, la liste publique des avis reste vide ; la console du navigateur affiche alors un lien direct pour créer l'index.
 - **Ligne de commande :**
   ```bash
   npm install -g firebase-tools
   firebase login
   cd cafe-mouhsine
   firebase use --add            # choisir le projet
-  firebase deploy --only firestore:rules
+  firebase deploy --only firestore      # règles + index des avis
   ```
 
-Ce que les règles garantissent (57 cas testés, voir `tests/`) :
+Ce que les règles garantissent (86 cas testés, voir `tests/`) :
 - un client ne peut créer que des commandes « nouvelles » et des réservations « en attente », à son nom, et ne lit que les siennes ;
 - un client ne peut ni changer un statut, ni modifier un prix, ni confirmer ou modifier une réservation (il peut seulement l'annuler), ni se déclarer membre du personnel ;
 - **les points fidélité ne sont écrits que par le personnel** : un client ne peut ni s'en ajouter ni lire ceux des autres ; une commande ne rapporte des points qu'une seule fois ;
 - le personnel ne peut changer que le statut d'une commande ou d'une réservation (pas son contenu ni son prix) ;
+- **avis :** un seul par client, invisible tant qu'il n'est pas approuvé ; le client ne peut ni l'approuver ni le modifier après envoi ; le badge « Commande vérifiée » n'est accepté que si la commande lui appartient ; le personnel peut publier, refuser, répondre ou supprimer, mais jamais changer la note ou le texte ;
 - personne ne peut supprimer une commande, une réservation ou une carte fidélité : l'historique est conservé.
 
 ## 4. Créer les comptes du personnel
@@ -94,5 +96,5 @@ L'adresse sera `https://<projet>.web.app`. Pensez à réimprimer les chevalets Q
 ```bash
 cd cafe-mouhsine/tests
 npm install
-npm run test:rules        # lance l'émulateur Firestore et les 57 tests de sécurité
+npm run test:rules        # lance l'émulateur Firestore et les 86 tests de sécurité
 ```

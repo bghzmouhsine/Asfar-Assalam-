@@ -4,6 +4,7 @@
      CafeOrders   — orders
      CafeBookings — table & service bookings
      CafeLoyalty  — loyalty points
+     CafeReviews  — customer reviews (moderated)
    - "firebase" mode when js/firebase-config.js holds a config:
      data lives in Cloud Firestore, customers sign in anonymously,
      staff sign in with email/password and must have a staff/{uid} doc.
@@ -278,6 +279,73 @@
     }
   };
 
+  /* ================= REVIEWS ================= */
+  // One review per customer, hidden until staff approve it. Staff can reply.
+  const LocalReviews = {
+    mode: "local",
+    watchPublic: cb => watchLocal("reviews", r => r.status === "approved", list => cb([...list].sort((a, b) => b.at - a.at))),
+    async mine() { return local.get("myReview", null) && local.get("reviews", []).find(r => r.id === local.get("myReview", null)) || null; },
+    async submit(review) {
+      if (await LocalReviews.mine()) return { ok: false, error: "exists" };
+      const r = { ...review, id: newRef("REV"), status: "pending" };
+      keepLocal("reviews", "id", r); local.set("myReview", r.id); ping("reviews");
+      return { ok: true };
+    },
+    watchAll: cb => watchLocal("reviews", () => true, list => cb([...list].sort((a, b) => b.at - a.at))),
+    async moderate(id, patch) { patchLocal("reviews", "id", id, { ...patch, moderatedAt: Date.now() }); },
+    async remove(id) { local.set("reviews", local.get("reviews", []).filter(r => r.id !== id)); ping("reviews"); }
+  };
+
+  const FirebaseReviews = {
+    mode: "firebase",
+    // approved reviews are public: no sign-in needed to read them
+    watchPublic(cb, onError) {
+      let stop = () => {}, closed = false;
+      init().then(() => {
+        if (closed) return;
+        const { fs, db } = fb;
+        const q = fs.query(fs.collection(db, "reviews"), fs.where("status", "==", "approved"), fs.orderBy("createdAt", "desc"), fs.limit(60));
+        stop = fs.onSnapshot(q, snap => cb(snap.docs.map(d => ({ id: d.id, ...withAt(d) }))), err => onError && onError(err));
+      }).catch(err => onError && onError(err));
+      return () => { closed = true; stop(); };
+    },
+    // my own review (any status), without creating an account
+    async mine() {
+      await init();
+      const u = fb.auth.currentUser; if (!u) return null;
+      try { const snap = await fb.fs.getDoc(fb.fs.doc(fb.db, "reviews", u.uid)); return snap.exists() ? { id: snap.id, ...withAt(snap) } : null; }
+      catch { return null; }
+    },
+    async submit(review) {
+      try {
+        await withTimeout((async () => {
+          const user = await ensureUser();
+          const { fs, db } = fb;
+          if ((await fs.getDoc(fs.doc(db, "reviews", user.uid))).exists()) throw new Error("exists");
+          await fs.setDoc(fs.doc(db, "reviews", user.uid), { ...review, uid: user.uid, status: "pending", createdAt: fs.serverTimestamp() });
+        })(), SUBMIT_TIMEOUT);
+        return { ok: true };
+      } catch (err) {
+        if (err.message === "timeout" && fb) { try { await fb.fs.terminate(fb.db); } catch { /* gone */ } }
+        return { ok: false, error: err.message === "exists" ? "exists" : err.message === "timeout" ? "network" : "error" };
+      }
+    },
+    watchAll(cb, onError) {
+      const { fs, db } = fb;
+      const q = fs.query(fs.collection(db, "reviews"), fs.orderBy("createdAt", "desc"), fs.limit(200));
+      return fs.onSnapshot(q, snap => cb(snap.docs.map(d => ({ id: d.id, ...withAt(d) }))), err => onError && onError(err));
+    },
+    async moderate(id, patch) {
+      const { fs, db } = fb;
+      await fs.updateDoc(fs.doc(db, "reviews", id), { ...patch, moderatedAt: Date.now() });
+    },
+    async remove(id) {
+      const { fs, db } = fb;
+      await fs.deleteDoc(fs.doc(db, "reviews", id));
+    }
+  };
+
+  window.CafeReviews = ONLINE ? FirebaseReviews : LocalReviews;
   window.CafeOrders = ONLINE ? FirebaseOrders : LocalOrders;
   window.CafeBookings = ONLINE ? FirebaseBookings : LocalBookings;
   window.CafeLoyalty = ONLINE ? FirebaseLoyalty : LocalLoyalty;

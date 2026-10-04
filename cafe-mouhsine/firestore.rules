@@ -1,8 +1,9 @@
 rules_version = '2';
 
 // Café Mouhsine BOUAGHAZ — who may read and write what.
-// Customers (anonymous sign-in) create their own orders and bookings and
-// read only their own. Loyalty points are written by staff only.
+// Customers (anonymous sign-in) create their own orders, bookings and one
+// review, and read only their own. Loyalty points are written by staff only.
+// Approved reviews are public.
 // Staff = users with a document at staff/{uid} (create it in the console).
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -80,6 +81,38 @@ service cloud.firestore {
         && request.resource.data.points is int && request.resource.data.points >= 0
         && request.resource.data.orders is int && request.resource.data.orders >= 0;
       allow delete: if false;
+    }
+
+    // one review per customer (document id = their uid), hidden until staff approve it
+    function validNewReview(id) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'createdAt', 'at', 'rating', 'name', 'text', 'lang', 'orderRef', 'status'])
+        && id == request.auth.uid
+        && d.uid == request.auth.uid
+        && d.createdAt == request.time
+        && d.status == 'pending'
+        && d.rating is int && d.rating >= 1 && d.rating <= 5
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
+        && d.text is string && d.text.size() >= 10 && d.text.size() <= 600
+        && d.lang in ['ar', 'fr', 'en']
+        // "verified order" badge: the referenced order must belong to the reviewer
+        && (!('orderRef' in d) || (d.orderRef is string
+            && exists(/databases/$(database)/documents/orders/$(d.orderRef))
+            && get(/databases/$(database)/documents/orders/$(d.orderRef)).data.uid == request.auth.uid));
+    }
+
+    match /reviews/{id} {
+      allow create: if signedIn() && validNewReview(id);
+      // approved reviews are public, even without signing in; my own slot (id = my uid)
+      // is readable even before it exists, so the site can check "already reviewed?"
+      allow read: if (signedIn() && id == request.auth.uid) || isStaff()
+        || (resource != null && resource.data.status == 'approved');
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reply', 'replyAt', 'moderatedAt'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected']
+        && (!('reply' in request.resource.data) || (request.resource.data.reply is string && request.resource.data.reply.size() <= 600));
+      // staff may delete spam or honour an erasure request
+      allow delete: if isStaff();
     }
 
     // staff list is managed from the Firebase console only

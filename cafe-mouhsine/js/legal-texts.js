@@ -60,6 +60,7 @@ window.LEGAL_TEXTS = {
         <li><b>Commandes</b> : nom (facultatif), numéro de table ou adresse de livraison, produits, note pour la cuisine, montant. <i>Finalité :</i> préparer et livrer la commande. <i>Base :</i> exécution du contrat.</li>
         <li><b>Réservations</b> : nom, téléphone, date, heure, nombre de personnes, type de prestation, remarques. <i>Finalité :</i> gérer la réservation et vous la confirmer. <i>Base :</i> exécution du contrat.</li>
         <li><b>Programme fidélité</b> : identifiant technique anonyme, solde de points, nombre de commandes. <i>Finalité :</i> calculer vos avantages. <i>Base :</i> votre consentement, en utilisant le programme.</li>
+        <li><b>Avis clients</b> : note, prénom, commentaire, référence de commande éventuelle. <i>Finalité :</i> publier les avis après relecture et y répondre. <i>Base :</i> votre consentement, en publiant l'avis. Le prénom, la note, le commentaire et notre réponse sont visibles publiquement.</li>
         <li><b>Préférences locales</b> (langue, thème, panier, historique sur l'appareil) : enregistrées uniquement dans votre navigateur, jamais transmises.</li></ul>
         <p>Nous ne collectons aucune donnée bancaire, ne faisons pas de publicité ciblée et ne vendons aucune donnée.</p>`],
       ["Destinataires et sous-traitants", `<ul><li>Le personnel du café habilité (cuisine, comptoir, gérance), via un compte nominatif.</li>
@@ -71,6 +72,7 @@ window.LEGAL_TEXTS = {
       ["Durées de conservation", `<ul><li>Commandes : 3 ans, puis anonymisation (les pièces comptables sont conservées 10 ans conformément au Code de commerce).</li>
         <li>Réservations : 12 mois après la date réservée.</li>
         <li>Carte fidélité : jusqu'à 24 mois sans commande.</li>
+        <li>Avis : tant qu'ils sont publiés, ou jusqu'à votre demande de suppression ; les avis refusés sont supprimés sous 3 mois.</li>
         <li>Données du navigateur : jusqu'à ce que vous les effaciez.</li></ul>`],
       ["Vos droits", `<p>Conformément aux articles 7 à 9 de la loi n° 09-08, vous disposez d'un droit d'accès, de rectification et d'opposition, pour des motifs légitimes, au traitement de vos données. Pour l'exercer, écrivez à {{email}} en indiquant la référence de votre commande, de votre réservation ou de votre carte fidélité ; nous répondons dans les meilleurs délais. Vous pouvez aussi saisir la CNDP (www.cndp.ma).</p>
         <p>Vous pouvez à tout moment effacer les données enregistrées sur votre appareil depuis les réglages de votre navigateur (cela réinitialise aussi votre carte fidélité sur cet appareil).</p>`],
@@ -136,6 +138,7 @@ window.LEGAL_TEXTS = {
         <li><b>Orders</b>: name (optional), table number or delivery address, products, note for the kitchen, amount. <i>Purpose:</i> preparing and delivering the order. <i>Basis:</i> performance of the contract.</li>
         <li><b>Bookings</b>: name, phone, date, time, number of guests, type of service, notes. <i>Purpose:</i> managing and confirming the booking. <i>Basis:</i> performance of the contract.</li>
         <li><b>Loyalty programme</b>: anonymous technical ID, points balance, number of orders. <i>Purpose:</i> calculating your benefits. <i>Basis:</i> your consent, by using the programme.</li>
+        <li><b>Customer reviews</b>: rating, first name, comment, optional order reference. <i>Purpose:</i> publishing reviews after checking them and replying. <i>Basis:</i> your consent, by posting the review. Your first name, rating, comment and our reply are publicly visible.</li>
         <li><b>Local preferences</b> (language, theme, cart, history on the device): stored only in your browser, never sent.</li></ul>
         <p>We collect no payment data, run no targeted advertising and sell no data.</p>`],
       ["Recipients and processors", `<ul><li>Authorised café staff (kitchen, counter, management), through individual accounts.</li>
@@ -147,6 +150,7 @@ window.LEGAL_TEXTS = {
       ["Retention periods", `<ul><li>Orders: 3 years, then anonymised (accounting records are kept for 10 years under the Commercial Code).</li>
         <li>Bookings: 12 months after the booked date.</li>
         <li>Loyalty card: until 24 months without an order.</li>
+        <li>Reviews: as long as they are published, or until you ask for deletion; rejected reviews are deleted within 3 months.</li>
         <li>Browser data: until you delete it.</li></ul>`],
       ["Your rights", `<p>Under Articles 7 to 9 of Law No. 09-08, you have the right to access and rectify your data and to object, on legitimate grounds, to its processing. To exercise these rights, email {{email}} with the reference of your order, booking or loyalty card; we will reply as soon as possible. You may also contact the CNDP (www.cndp.ma).</p>
         <p>You can delete the data stored on your device at any time from your browser settings (this also resets your loyalty card on that device).</p>`],
@@ -212,6 +216,7 @@ window.LEGAL_TEXTS = {
         <li><b>الطلبات</b>: الاسم (اختياري)، رقم الطاولة أو عنوان التوصيل، المنتوجات، ملاحظة للمطبخ، المبلغ. <i>الغاية:</i> تحضير الطلب وتوصيله. <i>الأساس:</i> تنفيذ العقد.</li>
         <li><b>الحجوزات</b>: الاسم، الهاتف، التاريخ، الساعة، عدد الأشخاص، نوع الخدمة، الملاحظات. <i>الغاية:</i> تدبير الحجز وتأكيده. <i>الأساس:</i> تنفيذ العقد.</li>
         <li><b>برنامج الولاء</b>: معرّف تقني مجهول، رصيد النقاط، عدد الطلبات. <i>الغاية:</i> احتساب مزاياك. <i>الأساس:</i> موافقتك عبر استعمال البرنامج.</li>
+        <li><b>آراء الزبناء</b>: التقييم، الاسم الأول، التعليق، ومرجع الطلب عند الاقتضاء. <i>الغاية:</i> نشر الآراء بعد مراجعتها والرد عليها. <i>الأساس:</i> موافقتك عند نشر الرأي. يظهر للعموم الاسم الأول والتقييم والتعليق وردنا.</li>
         <li><b>التفضيلات المحلية</b> (اللغة، المظهر، السلة، السجل على الجهاز): تُحفظ في متصفحك فقط ولا تُرسل.</li></ul>
         <p>لا نجمع أي معطيات بنكية، ولا نقوم بإشهار موجه، ولا نبيع أي معطيات.</p>`],
       ["المستفيدون والمتعاقدون من الباطن", `<ul><li>موظفو المقهى المؤهلون (المطبخ، الكونتوار، التسيير) عبر حسابات شخصية.</li>
@@ -223,6 +228,7 @@ window.LEGAL_TEXTS = {
       ["مدة الاحتفاظ", `<ul><li>الطلبات: 3 سنوات ثم إخفاء الهوية (تُحفظ الوثائق المحاسبية 10 سنوات وفق مدونة التجارة).</li>
         <li>الحجوزات: 12 شهراً بعد تاريخ الحجز.</li>
         <li>بطاقة الولاء: إلى غاية 24 شهراً دون طلب.</li>
+        <li>الآراء: ما دامت منشورة أو إلى أن تطلب حذفها؛ وتُحذف الآراء المرفوضة داخل أجل 3 أشهر.</li>
         <li>معطيات المتصفح: إلى أن تحذفها.</li></ul>`],
       ["حقوقك", `<p>طبقاً للمواد من 7 إلى 9 من القانون رقم 09.08، لك الحق في الولوج إلى معطياتك وتصحيحها والتعرض على معالجتها لأسباب مشروعة. لممارسة هذه الحقوق، راسلنا على {{email}} مع ذكر مرجع طلبك أو حجزك أو بطاقة الولاء، وسنرد في أقرب الآجال. يمكنك أيضاً اللجوء إلى اللجنة الوطنية (www.cndp.ma).</p>
         <p>يمكنك في أي وقت حذف المعطيات المحفوظة على جهازك من إعدادات المتصفح (ويؤدي ذلك أيضاً إلى إعادة تعيين بطاقة الولاء على هذا الجهاز).</p>`],

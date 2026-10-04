@@ -621,3 +621,51 @@ a.feature:hover, button.feature:hover { background: rgba(255,255,255,.06); }
 .map-consent p { max-width: 320px; color: var(--text-soft); font-size: .88rem; }
 .map-pin { font-size: 2.4rem; }
 .map-consent .btn-link { width: auto; }
+
+/* ---------- customer reviews ---------- */
+.rv-layout { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+.rv-summary { background: rgba(255,255,255,.05); border: 1px solid rgba(233,214,185,.14); border-radius: var(--radius); padding: 24px; display: grid; gap: 8px; position: sticky; top: 90px; }
+.rv-avg { display: flex; align-items: baseline; gap: 4px; color: #fff; }
+.rv-avg b { font-family: var(--font-display); font-size: 3.4rem; line-height: 1; }
+.rv-avg span { opacity: .6; }
+.rv-avg-stars { position: relative; display: inline-block; font-size: 1.4rem; letter-spacing: 3px; color: rgba(233,214,185,.25); width: max-content; }
+.rv-avg-stars::before { content: "★★★★★"; position: absolute; inset-inline-start: 0; top: 0; width: var(--pct); overflow: hidden; color: var(--caramel); white-space: nowrap; }
+.rv-summary small { opacity: .7; }
+.rv-dist { list-style: none; display: grid; gap: 6px; margin-top: 8px; font-size: .8rem; font-family: var(--font-latin); }
+.rv-dist li { display: grid; grid-template-columns: 30px 1fr 24px; gap: 8px; align-items: center; }
+.rv-dist i { height: 7px; border-radius: 4px; background: rgba(233,214,185,.14); overflow: hidden; }
+.rv-dist em { display: block; height: 100%; background: var(--caramel); border-radius: 4px; }
+.rv-none { opacity: .85; }
+.reviews .stars .off { color: rgba(233,214,185,.25); }
+.review blockquote { white-space: pre-line; overflow-wrap: anywhere; }
+.verified { color: #8FD19E; font-weight: 600; }
+.rv-reply { border-inline-start: 3px solid var(--caramel); padding: 8px 12px; background: rgba(255,255,255,.04); border-radius: 0 10px 10px 0; font-size: .9rem; }
+[dir="rtl"] .rv-reply { border-radius: 10px 0 0 10px; }
+.rv-reply b { color: var(--caramel); font-size: .8rem; }
+.rv-more { margin-top: 18px; color: var(--crema); }
+.rv-form { margin-top: 36px; max-width: 720px; margin-inline: auto; background: var(--surface); color: var(--text); border-radius: var(--radius); padding: 28px; display: grid; gap: 14px; }
+.rv-form h3 { font-size: 1.4rem; color: var(--text) !important; }
+.rv-fields { display: grid; gap: 14px; }
+.rv-form label { display: flex; flex-direction: column; gap: 6px; }
+.rv-form label > span { font-size: .82rem; font-weight: 600; color: var(--text-soft); }
+.rv-form input, .rv-form textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; width: 100%; }
+.rv-text { position: relative; }
+.rv-count { position: absolute; bottom: 8px; inset-inline-end: 12px; font-size: .72rem; color: var(--text-soft); font-family: var(--font-latin); }
+.rv-mine { padding: 14px 16px; border-radius: 12px; background: var(--surface-2); font-weight: 600; }
+.rv-linked { font-size: .85rem; color: var(--pistachio); font-weight: 600; }
+.stars-input { border: 0; display: grid; gap: 6px; }
+.stars-input legend { font-size: .82rem; font-weight: 600; color: var(--text-soft); margin-bottom: 6px; }
+.stars-row { display: flex; gap: 4px; }
+.stars-row label { cursor: pointer; flex-direction: row; }
+.stars-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rv-form .stars-row label > span { font-size: 2.4rem; line-height: 1; font-weight: 400; color: var(--line); transition: color .15s, transform .15s; padding: 2px; }
+.rv-form .stars-row label.on > span { color: var(--caramel); }
+.stars-row label:hover span { transform: scale(1.12); }
+.stars-row input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.stars-input small { font-weight: 600; color: var(--accent-strong); min-height: 1.2em; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* honeypot: invisible without off-screen offsets (those create sideways scroll in RTL) */
+.hp { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; opacity: 0; pointer-events: none; }
+.hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 860px) { .rv-layout { grid-template-columns: 1fr; } .rv-summary { position: static; } }
+@media (max-width: 560px) { .rv-form { padding: 20px; } }

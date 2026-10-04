@@ -36,6 +36,8 @@
     myBookings: []
   };
   if (!I18N[state.lang]) state.lang = "ar";
+  // customer reviews: published list, my own review, order linked from history
+  const rv = { list: [], shown: 6, mine: null, linkedOrder: null, startedAt: 0 };
 
   const t = (k, vars) => {
     let s = (I18N[state.lang] && I18N[state.lang][k]) ?? I18N.ar[k] ?? k;
@@ -368,7 +370,10 @@
           const extra = [i.size, optsLabel(i.opts)].filter(Boolean).join(", ");
           return `${i.qty}× ${esc(L(byId[i.id])[0])}${extra ? ` <small>(${esc(extra)})</small>` : ""}`;
         }).filter(Boolean).join(" · ")}</p>
-        <button class="btn btn-ghost btn-sm" data-reorder="${esc(o.ref)}">↻ ${t("hist.reorder")}</button>
+        <div class="hist-actions">
+          <button class="btn btn-ghost btn-sm" data-reorder="${esc(o.ref)}">↻ ${t("hist.reorder")}</button>
+          ${!rv.mine && o.source !== "counter" && (o.status === "served" || CafeOrders.mode === "local") ? `<button class="btn btn-ghost btn-sm" data-review-order="${esc(o.ref)}">★ ${t("hist.review")}</button>` : ""}
+        </div>
       </div>`).join("") : `<p class="cart-empty">${t("hist.empty")}</p>`;
   }
   addEventListener("storage", e => { if (e.key === "cm_orders" && state.drawerTab === "history") renderCart(); });
@@ -393,6 +398,12 @@
     if (state.drawerTab === "history") watchMyOrders();
   });
   $("#cartItems").addEventListener("click", e => {
+    const rb = e.target.closest("[data-review-order]");
+    if (rb) {
+      rv.linkedOrder = rb.dataset.reviewOrder; openDrawer(false); renderMyReview();
+      $("#reviewForm").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const b = e.target.closest("[data-reorder]"); if (!b) return;
     const o = store.get("orders", []).find(x => x.ref === b.dataset.reorder); if (!o) return;
     const added = o.items.filter(i => addToCart(i.id, i.size, i.qty, i.opts, true)).length;
@@ -618,6 +629,78 @@
   });
   CafeBookings.watchMine(list => { state.myBookings = list; renderMyBookings(); }, err => console.warn(err));
 
+  /* ================= REVIEWS ================= */
+  const numFmt = (n, d = 1) => new Intl.NumberFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-US", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+  const starsHtml = n => `<span class="stars" aria-label="${n}/5">${"★".repeat(n)}<span class="off">${"★".repeat(5 - n)}</span></span>`;
+
+  function renderReviews() {
+    const list = rv.list, n = list.length;
+    const avg = n ? list.reduce((s, r) => s + r.rating, 0) / n : 0;
+    $("#ratingStat").hidden = !n;
+    $("#ratingStatVal").textContent = n ? numFmt(avg) + "★" : "—";
+    if (!n) {
+      $("#rvSummary").innerHTML = `<p class="rv-none">${t("rev.none")}</p>`;
+      $("#rvList").innerHTML = ""; $("#rvMore").hidden = true;
+    } else {
+      const dist = [5, 4, 3, 2, 1].map(s => [s, list.filter(r => r.rating === s).length]);
+      $("#rvSummary").innerHTML = `
+        <div class="rv-avg"><b>${numFmt(avg)}</b><span>/5</span></div>
+        <div class="rv-avg-stars" style="--pct:${avg / 5 * 100}%"><span>★★★★★</span></div>
+        <small>${t("rev.count", { n })}</small>
+        <ul class="rv-dist">${dist.map(([s, c]) => `<li><span>${s}★</span><i><em style="width:${c / n * 100}%"></em></i><span>${c}</span></li>`).join("")}</ul>`;
+      const dateFmt = new Intl.DateTimeFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-GB", { month: "long", year: "numeric" });
+      $("#rvList").innerHTML = list.slice(0, rv.shown).map(r => `
+        <figure class="review">
+          ${starsHtml(r.rating)}
+          <blockquote dir="auto">${esc(r.text)}</blockquote>
+          <figcaption><bdi>${esc(r.name)}</bdi> · ${dateFmt.format(r.at)}${r.orderRef ? ` · <span class="verified">✓ ${t("rev.verified")}</span>` : ""}</figcaption>
+          ${r.reply ? `<div class="rv-reply"><b>${t("rev.reply")}</b><p dir="auto">${esc(r.reply)}</p></div>` : ""}
+        </figure>`).join("");
+      $("#rvMore").hidden = n <= rv.shown;
+    }
+    renderMyReview();
+  }
+  function renderMyReview() {
+    const m = rv.mine, box = $("#rvMine");
+    box.hidden = !m; $("#rvFields").hidden = !!m;
+    if (m) box.textContent = t("rev.mine." + (m.status || "pending"), { r: m.rating });
+    $("#rvLinked").hidden = !rv.linkedOrder;
+    if (rv.linkedOrder) $("#rvLinked").textContent = t("rev.linked", { r: rv.linkedOrder });
+    const v = +($("#reviewForm input[name=rating]:checked") || {}).value || 0;
+    $("#starsLabel").textContent = v ? I18N[state.lang]["rev.stars"][v] : "";
+  }
+  const refreshMine = async () => { rv.mine = await CafeReviews.mine(); renderMyReview(); };
+  CafeReviews.watchPublic(list => { rv.list = list; renderReviews(); refreshMine(); }, err => console.warn("Reviews unavailable", err));
+  $("#rvMore").addEventListener("click", () => { rv.shown += 6; renderReviews(); });
+
+  // star picker: highlight up to the hovered / chosen star
+  const paintStars = upTo => $$("#starsInput label").forEach((l, i) => l.classList.toggle("on", i < upTo));
+  $("#starsInput").addEventListener("change", () => { paintStars(+$("#reviewForm input[name=rating]:checked").value); renderMyReview(); });
+  $("#starsInput").addEventListener("mouseover", e => { const l = e.target.closest("label"); if (l) paintStars($$("#starsInput label").indexOf(l) + 1); });
+  $("#starsInput").addEventListener("mouseleave", () => paintStars(+($("#reviewForm input[name=rating]:checked") || {}).value || 0));
+  $("#reviewForm textarea").addEventListener("input", e => { $("#rvCount").textContent = e.target.value.length; });
+  $("#reviewForm").addEventListener("focusin", () => { rv.startedAt = rv.startedAt || Date.now(); });
+
+  $("#reviewForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, msg = $("#reviewMsg"), d = Object.fromEntries(new FormData(f));
+    msg.className = "form-msg";
+    const fail = k => { msg.textContent = t(k); msg.classList.add("err"); };
+    if (d.website) { msg.textContent = t("rev.ok"); msg.classList.add("ok"); return; }   // bot filled the hidden field
+    const rating = parseInt(d.rating, 10), text = (d.text || "").trim(), name = (d.name || "").trim();
+    if (!(rating >= 1 && rating <= 5) || text.length < 10 || !name) return fail("rev.invalid");
+    if (!rv.startedAt || Date.now() - rv.startedAt < 3000) return fail("rev.tooFast");
+    const btn = $("[type=submit]", f); btn.disabled = true;
+    const review = { at: Date.now(), rating, name: name.slice(0, 40), text: text.slice(0, 600), lang: state.lang };
+    if (rv.linkedOrder) review.orderRef = rv.linkedOrder;
+    const res = await CafeReviews.submit(review);
+    btn.disabled = false;
+    if (!res.ok) return fail(res.error === "exists" ? "rev.exists" : "rev.err");
+    msg.textContent = t("rev.ok"); msg.classList.add("ok");
+    f.reset(); paintStars(0); $("#rvCount").textContent = 0; rv.linkedOrder = null;
+    await refreshMine();
+  });
+
   /* ================= GALLERY ================= */
   function renderGallery() {
     $("#galleryGrid").innerHTML = window.CAFE_GALLERY.map((src, i) =>
@@ -688,7 +771,7 @@
   $$("[data-count], .section-head, .feature, .review, .loyalty-card").forEach(el => { if (!el.dataset.count) el.classList.add("reveal"); io.observe(el); });
 
   function renderAll() {
-    renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart(); renderMyBookings();
+    renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart(); renderMyBookings(); renderReviews();
   }
 
   // QR table cards link to ?table=N — preselect dine-in with that table

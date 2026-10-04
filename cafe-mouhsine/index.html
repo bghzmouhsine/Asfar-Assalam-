@@ -90,7 +90,7 @@
       <ul class="hero-stats">
         <li><b data-count="35">0</b><span data-i18n="stats.items">منتوج</span></li>
         <li><b data-count="6">0</b><span data-i18n="stats.services">خدمات</span></li>
-        <li><b>4.9★</b><span data-i18n="stats.rating">تقييم الزبناء</span></li>
+        <li id="ratingStat" hidden><b id="ratingStatVal">—</b><span data-i18n="stats.rating">تقييم الزبناء</span></li>
       </ul>
     </div>
     <div class="hero-visual">
@@ -254,18 +254,50 @@
   </div>
 </section>
 
-<!-- ================= TESTIMONIALS ================= -->
-<section class="section section-dark">
+<!-- ================= REVIEWS ================= -->
+<section class="section section-dark" id="reviews">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow" data-i18n="rev.eyebrow">آراء الزبناء</span>
       <h2 data-i18n="rev.title">ماذا يقولون عنا</h2>
     </div>
-    <div class="reviews">
-      <figure class="review"><div class="stars">★★★★★</div><blockquote data-i18n="rev.1">أفضل فلات وايت في المدينة، والطلب من الهاتف سهل جداً.</blockquote><figcaption>Salma · Google</figcaption></figure>
-      <figure class="review"><div class="stars">★★★★★</div><blockquote data-i18n="rev.2">نظمنا اجتماع الشركة في القاعة الخاصة: خدمة احترافية وكوفي بريك رائع.</blockquote><figcaption>Youssef · TripAdvisor</figcaption></figure>
-      <figure class="review"><div class="stars">★★★★★</div><blockquote data-i18n="rev.3">ورشة الباريستا كانت ممتعة ومفيدة. أنصح بها بشدة!</blockquote><figcaption>Camille · Instagram</figcaption></figure>
+    <div class="rv-layout">
+      <aside class="rv-summary" id="rvSummary"></aside>
+      <div>
+        <div class="reviews" id="rvList"></div>
+        <button class="btn btn-ghost btn-sm rv-more" id="rvMore" hidden data-i18n="rev.more">عرض المزيد</button>
+      </div>
     </div>
+
+    <form class="rv-form" id="reviewForm" novalidate>
+      <h3 data-i18n="rev.formTitle">شاركنا رأيك</h3>
+      <p class="rv-mine" id="rvMine" hidden></p>
+      <div class="rv-fields" id="rvFields">
+        <fieldset class="stars-input" id="starsInput">
+          <legend data-i18n="rev.rating">تقييمك</legend>
+          <div class="stars-row" role="radiogroup">
+            <label><input type="radio" name="rating" value="1" required><span aria-hidden="true">★</span><b class="sr">1</b></label>
+            <label><input type="radio" name="rating" value="2"><span aria-hidden="true">★</span><b class="sr">2</b></label>
+            <label><input type="radio" name="rating" value="3"><span aria-hidden="true">★</span><b class="sr">3</b></label>
+            <label><input type="radio" name="rating" value="4"><span aria-hidden="true">★</span><b class="sr">4</b></label>
+            <label><input type="radio" name="rating" value="5"><span aria-hidden="true">★</span><b class="sr">5</b></label>
+          </div>
+          <small id="starsLabel"></small>
+        </fieldset>
+        <label><span data-i18n="rev.name">الاسم الأول</span><input name="name" required maxlength="40" autocomplete="given-name"></label>
+        <label class="rv-text"><span data-i18n="rev.text">تعليقك</span>
+          <textarea name="text" rows="4" required minlength="10" maxlength="600"></textarea>
+          <small class="rv-count"><span id="rvCount">0</span>/600</small>
+        </label>
+        <!-- anti-spam: real visitors never see or fill this field -->
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <p class="rv-linked" id="rvLinked" hidden></p>
+        <p class="legal-notice rv-policy" data-i18n="rev.policy">ننشر جميع الآراء، الإيجابية والسلبية، بعد مراجعتها، باستثناء المحتوى المسيء أو الخارج عن الموضوع أو الذي يتضمن معطيات شخصية.</p>
+        <p class="legal-notice" data-i18n-html="legal.review"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="rev.submit">إرسال رأيي</button>
+        <p class="form-msg" id="reviewMsg" role="status"></p>
+      </div>
+    </form>
   </div>
 </section>
 
