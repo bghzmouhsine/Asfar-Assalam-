@@ -62,6 +62,7 @@ cafe-mouhsine/
 ├── js/data.js          المنتوجات، الخدمات، الإعدادات
 ├── js/i18n.js          الترجمات (ar / fr / en)
 ├── js/app.js           منطق التطبيق
+├── js/ui.js            نوافذ التأكيد وزر واتساب الاحتياطي
 ├── js/sales-dashboard.js  لوحة المبيعات (رسوم بيانية دون مكتبة خارجية)
 ├── js/firebase-config.js  إعدادات مشروع Firebase (فارغة افتراضياً)
 ├── js/cloud-store.js      الطلبات والحجوزات والولاء: Firebase أو محلي

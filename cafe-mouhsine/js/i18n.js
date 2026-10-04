@@ -1,6 +1,7 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
+    "wa.blocked": "لم يفتح المتصفح واتساب تلقائياً. اضغط هنا لإرسال رسالتك:", "wa.open": "فتح واتساب", "ui.keep": "رجوع",
     "rev.more": "عرض المزيد", "rev.formTitle": "شاركنا رأيك", "rev.rating": "تقييمك", "rev.name": "الاسم الأول", "rev.text": "تعليقك",
     "rev.submit": "إرسال رأيي", "rev.policy": "ننشر جميع الآراء، الإيجابية والسلبية، بعد مراجعتها، باستثناء المحتوى المسيء أو الخارج عن الموضوع أو الذي يتضمن معطيات شخصية.",
     "rev.count": "{n} رأي", "rev.none": "لا توجد آراء منشورة بعد. كن أول من يشاركنا تجربته!", "rev.verified": "طلب موثّق", "rev.reply": "رد المقهى",
@@ -74,6 +75,7 @@ window.I18N = {
   },
 
   fr: {
+    "wa.blocked": "Votre navigateur n'a pas ouvert WhatsApp. Touchez le bouton pour envoyer votre message :", "wa.open": "Ouvrir WhatsApp", "ui.keep": "Retour",
     "rev.more": "Voir plus d'avis", "rev.formTitle": "Donnez votre avis", "rev.rating": "Votre note", "rev.name": "Prénom", "rev.text": "Votre avis",
     "rev.submit": "Publier mon avis", "rev.policy": "Nous publions tous les avis, positifs comme négatifs, après relecture, sauf contenu injurieux, hors sujet ou contenant des données personnelles.",
     "rev.count": "{n} avis", "rev.none": "Aucun avis publié pour l'instant. Soyez le premier à partager votre expérience !", "rev.verified": "Commande vérifiée", "rev.reply": "Réponse du café",
@@ -147,6 +149,7 @@ window.I18N = {
   },
 
   en: {
+    "wa.blocked": "Your browser didn't open WhatsApp. Tap the button to send your message:", "wa.open": "Open WhatsApp", "ui.keep": "Go back",
     "rev.more": "Show more reviews", "rev.formTitle": "Leave a review", "rev.rating": "Your rating", "rev.name": "First name", "rev.text": "Your review",
     "rev.submit": "Post my review", "rev.policy": "We publish every review, positive or negative, after checking it, except abusive or off-topic content or content containing personal data.",
     "rev.count": "{n} reviews", "rev.none": "No reviews published yet. Be the first to share your experience!", "rev.verified": "Verified order", "rev.reply": "Reply from the café",

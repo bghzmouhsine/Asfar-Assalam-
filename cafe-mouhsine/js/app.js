@@ -429,6 +429,15 @@
   document.addEventListener("keydown", e => { if (e.key === "Escape") openDrawer(false); });
 
   const waLink = text => `https://wa.me/${CFG.phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
+  // open WhatsApp in a new tab; if the browser blocks it (common after an await),
+  // show a real link the customer can tap. ("noopener" would make window.open
+  // always return null, so the opener is cut by hand instead.)
+  function openWhatsApp(url) {
+    let w = null;
+    try { w = window.open(url, "_blank"); } catch { /* blocked */ }
+    if (w) { try { w.opener = null; } catch { /* cross-origin */ } return; }
+    uiLinkNotice(t("wa.blocked"), url, t("wa.open"));
+  }
 
   $("#checkoutBtn").addEventListener("click", async () => {
     const tt = totals();
@@ -470,8 +479,7 @@
     }
     if (!online) {
       await CafeOrders.submit(order).catch(() => {});   // local copy (and local kitchen screen)
-      const w = window.open(waLink(msg), "_blank", "noopener");
-      if (w === null && CafeOrders.mode === "firebase") location.href = waLink(msg);   // popup blocked after await
+      openWhatsApp(waLink(msg));
     }
 
     // local mode credits now; online, staff credit the points when the order is served
@@ -586,8 +594,7 @@
     }
     if (!online) {
       await LocalOnly.saveBooking(booking);
-      const w = window.open(waLink(text), "_blank", "noopener");
-      if (w === null && CafeBookings.mode === "firebase") location.href = waLink(text);
+      openWhatsApp(waLink(text));
     }
     msgEl.textContent = t(online ? "bk.okOnline" : "bk.ok", { code }); msgEl.classList.add("ok");
     f.reset(); f.guests.value = 2;
@@ -624,7 +631,7 @@
   }
   $("#myBookings").addEventListener("click", async e => {
     const b = e.target.closest("[data-cancel-bk]"); if (!b) return;
-    if (!confirm(t("bk.cancelQ"))) return;
+    if (!await uiConfirm(t("bk.cancelQ"), { ok: t("bk.cancel"), cancel: t("ui.keep"), danger: true })) return;
     try { await CafeBookings.cancelMine(b.dataset.cancelBk); toast(t("bk.cancelled")); }
     catch { toast(t("bk.cancelErr")); }
   });

@@ -30,6 +30,7 @@
   .acts { display: flex; gap: 6px; }
   .acts button { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; background: var(--surface); }
   .acts button:hover { border-color: var(--accent); }
+  .acts .wa-link { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; background: var(--surface); text-decoration: none; }
   /* ---- sales dashboard: chart tokens (palette validated light #FFFCF7 / dark #221812) ---- */
   .viz-root { --viz-1: #B0601C; --viz-2: #2A78D6; --viz-3: #8B3A7A; --viz-grid: #E4D5C1; --viz-axis: #C9B79F;
     --viz-up: #2C7A3F; --viz-down: #A13A26; --viz-ink: var(--text); --viz-muted: #6B5446; }
@@ -203,6 +204,7 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/cloud-store.js"></script>
 <script src="js/sales-dashboard.js"></script>
+<script src="js/ui.js"></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -297,7 +299,7 @@
             ${st === "pending" ? `<button data-bk="${esc(b.code)}" data-to="confirmed">✓ تأكيد</button>` : ""}
             ${st === "confirmed" ? `<button data-bk="${esc(b.code)}" data-to="done">منتهٍ</button>` : ""}
             ${["pending", "confirmed"].includes(st) ? `<button data-bk="${esc(b.code)}" data-to="cancelled">✕ إلغاء</button>` : ""}
-            ${b.phone ? `<button data-wa="${esc(b.code)}" title="WhatsApp">💬</button>` : ""}
+            ${b.phone ? `<a class="wa-link" href="${esc(custWa(b))}" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp">💬</a>` : ""}
           </div></td></tr>`; }).join("")
       : `<tr><td class="note">لا توجد حجوزات.</td></tr>`;
     document.querySelectorAll("[data-bkf]").forEach(x => x.className = "btn btn-sm " + (x.dataset.bkf === bkFilter ? "btn-primary" : "btn-ghost"));
@@ -318,17 +320,20 @@
     return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
   };
   $("#bookTable").addEventListener("click", async e => {
-    const w = e.target.closest("[data-wa]");
-    if (w) { const b = BOOKINGS.find(x => x.code === w.dataset.wa); if (b) window.open(custWa(b), "_blank", "noopener"); return; }
     const btn = e.target.closest("[data-bk]"); if (!btn) return;
     const code = btn.dataset.bk, to = btn.dataset.to;
-    if (to === "cancelled" && !confirm("إلغاء هذا الحجز؟")) return;
+    if (to === "cancelled" && !await uiConfirm("إلغاء هذا الحجز؟", { ok: "إلغاء الحجز", cancel: "رجوع", danger: true })) return;
     const b = BOOKINGS.find(x => x.code === code);
     // open the window during the click so popup blockers allow it
-    const win = to === "confirmed" && b && b.phone ? window.open("about:blank", "_blank") : null;
+    // open the window during the click so popup blockers allow it; fall back to a link
+    const wantWa = to === "confirmed" && b && b.phone;
+    let win = null;
+    if (wantWa) { try { win = window.open("about:blank", "_blank"); } catch { /* blocked */ } }
     try {
       await CafeBookings.setStatus(code, to);
-      if (win) win.location = custWa({ ...b, status: to });
+      const url = wantWa ? custWa({ ...b, status: to }) : null;
+      if (win) { win.opener = null; win.location = url; }
+      else if (url) uiLinkNotice(`تم تأكيد الحجز. أرسل التأكيد إلى ${b.name}:`, url, "فتح واتساب");
       toast("تم التحديث ✓");
     } catch { if (win) win.close(); toast("تعذر التحديث"); }
   });
@@ -365,7 +370,7 @@
         const v = document.querySelector(`[data-reply-in="${rp.dataset.reply}"]`).value.trim().slice(0, 600);
         await CafeReviews.moderate(rp.dataset.reply, { reply: v, replyAt: Date.now() }); document.activeElement.blur(); toast("تم حفظ الرد ✓");
       }
-      if (del && confirm("حذف هذا الرأي نهائياً؟")) { await CafeReviews.remove(del.dataset.rvdel); toast("تم الحذف"); }
+      if (del && await uiConfirm("حذف هذا الرأي نهائياً؟", { ok: "حذف", cancel: "رجوع", danger: true })) { await CafeReviews.remove(del.dataset.rvdel); toast("تم الحذف"); }
     } catch { toast("تعذر التحديث"); }
   });
   document.querySelectorAll("[data-rvf]").forEach(x => x.addEventListener("click", () => { rvFilter = x.dataset.rvf; renderReviewsAdmin(); }));
@@ -427,10 +432,10 @@
     const v = $("#newPin").value.trim(); if (v.length < 4) { toast("4 أرقام على الأقل"); return; }
     store.set("pin", v); $("#newPin").value = ""; toast("تم تغيير الرمز");
   });
-  $("#clearStats").addEventListener("click", () => {
+  $("#clearStats").addEventListener("click", async () => {
     // online orders are an audit trail: the rules forbid deleting them
-    if (ONLINE) { alert("البيانات على Firebase (الطلبات والحجوزات والنقاط) سجل دائم ولا يمكن مسحها من هنا."); return; }
-    if (!confirm("مسح جميع الطلبات والحجوزات المسجلة؟")) return;
+    if (ONLINE) { toast("بيانات Firebase سجل دائم ولا يمكن مسحها من هنا"); return; }
+    if (!await uiConfirm("مسح جميع الطلبات والحجوزات المسجلة على هذا الجهاز؟", { ok: "مسح", cancel: "رجوع", danger: true })) return;
     store.set("orders", []); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" }));
     store.set("bookings", []); dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" }));
   });
@@ -441,7 +446,7 @@
   } else {
     try { if (sessionStorage.getItem("cm_admin") === "1") setTimeout(unlock); } catch {}
   }
-  $("#resetPrices").addEventListener("click", () => { if (confirm("استرجاع الأسعار الأصلية؟")) { overrides = {}; store.set("overrides", {}); render(); renderPrices(); } });
+  $("#resetPrices").addEventListener("click", async () => { if (await uiConfirm("استرجاع الأسعار الأصلية؟", { ok: "استرجاع", cancel: "رجوع" })) { overrides = {}; store.set("overrides", {}); render(); renderPrices(); } });
 })();
 </script>
 </body>

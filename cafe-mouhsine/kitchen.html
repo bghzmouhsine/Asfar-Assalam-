@@ -176,6 +176,7 @@
 <script src="js/data.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/cloud-store.js"></script>
+<script src="js/ui.js"></script>
 <script>
 (() => {
   "use strict";
@@ -192,7 +193,7 @@
     fr: { title: "Écran cuisine", enter: "Entrer", pinHint: "Même code que l'administration (1234 par défaut)", bad: "Code incorrect",
       stAll: "Tout", stBar: "☕ Bar", stKitchen: "🍳 Cuisine", add: "＋ Commande",
       colNew: "Nouvelles", colPrep: "En préparation", colReady: "Prêtes", empty: "Aucune commande",
-      start: "▶ Commencer", ready: "✓ Prête", serve: "🛎 Servie", back: "↩", cancelQ: "Annuler la commande {r} ?",
+      start: "▶ Commencer", ready: "✓ Prête", serve: "🛎 Servie", back: "↩", cancelQ: "Annuler la commande {r} ?", cancelOk: "Annuler la commande",
       table: "Table", takeaway: "À emporter", delivery: "Livraison", mTable: "Sur place", mTakeaway: "À emporter", mDelivery: "Livraison",
       served: "servies aujourd'hui", avg: "temps moyen", min: "min", newOrder: "Nouvelle commande : {r}",
       newTitle: "Nouvelle commande (comptoir / WhatsApp)", search: "Rechercher…", detail: "Table / adresse", name: "Nom", note: "Note",
@@ -204,7 +205,7 @@
     ar: { title: "شاشة المطبخ", enter: "دخول", pinHint: "نفس رمز لوحة الإدارة (1234 افتراضياً)", bad: "رمز خاطئ",
       stAll: "الكل", stBar: "☕ البار", stKitchen: "🍳 المطبخ", add: "＋ طلب",
       colNew: "جديدة", colPrep: "قيد التحضير", colReady: "جاهزة", empty: "لا توجد طلبات",
-      start: "▶ ابدأ", ready: "✓ جاهز", serve: "🛎 قُدِّم", back: "↩", cancelQ: "إلغاء الطلب {r}؟",
+      start: "▶ ابدأ", ready: "✓ جاهز", serve: "🛎 قُدِّم", back: "↩", cancelQ: "إلغاء الطلب {r}؟", cancelOk: "إلغاء الطلب",
       table: "طاولة", takeaway: "سفري", delivery: "توصيل", mTable: "في المقهى", mTakeaway: "سفري", mDelivery: "توصيل",
       served: "قُدّمت اليوم", avg: "متوسط الوقت", min: "د", newOrder: "طلب جديد: {r}",
       newTitle: "طلب جديد (الكونتوار / واتساب)", search: "بحث…", detail: "الطاولة / العنوان", name: "الاسم", note: "ملاحظة",
@@ -340,7 +341,10 @@
     const ref = card.dataset.ref;
     const act = e.target.closest("[data-do]");
     if (act) {
-      if (act.dataset.do === "cancel") { if (confirm(T("cancelQ", { r: ref }))) setStatus(ref, "cancelled"); return; }
+      if (act.dataset.do === "cancel") {
+        uiConfirm(T("cancelQ", { r: ref }), { ok: T("cancelOk"), cancel: T("back"), danger: true }).then(yes => { if (yes) setStatus(ref, "cancelled"); });
+        return;
+      }
       setStatus(ref, act.dataset.do); return;
     }
     const li = e.target.closest("[data-item]");
