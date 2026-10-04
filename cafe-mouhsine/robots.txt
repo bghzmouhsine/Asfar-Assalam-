@@ -1,0 +1,7 @@
+# Café Mouhsine BOUAGHAZ — search engines may index the public site,
+# not the staff screens.
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /kitchen.html
+Disallow: /tests/

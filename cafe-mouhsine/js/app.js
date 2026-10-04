@@ -782,6 +782,33 @@
     renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart(); renderMyBookings(); renderReviews();
   }
 
+  /* ---------- search engines: structured data + canonical URL from CAFE_CONFIG ---------- */
+  // Built at runtime (Google renders JavaScript) so editing data.js is enough.
+  // Placeholder contact details are left out rather than published to Google.
+  (function seo() {
+    if (!/^https?:$/.test(location.protocol)) return;
+    const site = location.origin + location.pathname.replace(/index\.html$/, "");
+    const isPlaceholder = v => !v || /600000000|00 00 00 00/.test(v);
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const data = {
+      "@context": "https://schema.org", "@type": "CafeOrCoffeeShop",
+      name: CFG.name, url: site, image: new URL("assets/icon.svg", site).href,
+      servesCuisine: ["Coffee", "Moroccan", "Pastry", "Breakfast"],
+      priceRange: `${Math.min(...PRODUCTS.map(p => p.price))}–${Math.max(...SERVICES.map(s => s.price))} MAD`,
+      currenciesAccepted: "MAD", paymentAccepted: "Cash, Credit Card",
+      acceptsReservations: true, hasMenu: new URL("menu-print.html", site).href,
+      address: { "@type": "PostalAddress", streetAddress: CFG.address.fr.split(",")[0], addressLocality: (CFG.legal && CFG.legal.city && CFG.legal.city.fr) || "Meknès", addressCountry: "MA" },
+      openingHoursSpecification: Object.entries(CFG.hours).map(([d, [opens, closes]]) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: dayNames[d], opens, closes }))
+    };
+    if (!isPlaceholder(CFG.phone)) data.telephone = CFG.phone;
+    if (CFG.email && CFG.email !== "contact@cafe-mouhsine.ma") data.email = CFG.email;   // skip the template address
+    const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(data);
+    document.head.append(s);
+    if (!document.querySelector('link[rel="canonical"]')) {
+      const l = document.createElement("link"); l.rel = "canonical"; l.href = site; document.head.append(l);
+    }
+  })();
+
   // QR table cards link to ?table=N — preselect dine-in with that table
   const tableNo = new URLSearchParams(location.search).get("table");
   if (tableNo && /^\d{1,3}$/.test(tableNo)) {
