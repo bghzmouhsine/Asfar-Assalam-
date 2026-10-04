@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Café Mouhsine BOUAGHAZ — who may read and write orders.
+// Customers (anonymous sign-in) can create orders and read only their own.
+// Staff = users with a document at staff/{uid} (create it in the console).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isStaff() {
+      return signedIn() && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+    function shortText(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
+
+    function validNewOrder(ref) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['ref', 'at', 'createdAt', 'uid', 'mode', 'detail', 'name', 'note',
+                               'total', 'items', 'status', 'times', 'done', 'source', 'lang'])
+        && d.ref == ref
+        && d.uid == request.auth.uid
+        && d.createdAt == request.time
+        && d.status == 'new'
+        && d.mode in ['table', 'takeaway', 'delivery']
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 50
+        && d.total is number && d.total >= 0 && d.total <= 50000
+        && shortText(d, 'detail', 160) && shortText(d, 'name', 80) && shortText(d, 'note', 160)
+        && (d.source == 'web' || (d.source == 'counter' && isStaff()));
+    }
+
+    match /orders/{ref} {
+      allow create: if signedIn() && validNewOrder(ref);
+      allow read: if isStaff() || (signedIn() && resource.data.uid == request.auth.uid);
+      // staff only move an order along; contents and prices stay as ordered
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'times', 'done'])
+        && request.resource.data.status in ['new', 'preparing', 'ready', 'served', 'cancelled'];
+      allow delete: if false;
+    }
+
+    // staff list is managed from the Firebase console only
+    match /staff/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

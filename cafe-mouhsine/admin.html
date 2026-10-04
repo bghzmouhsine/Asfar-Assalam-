@@ -40,7 +40,8 @@
   <form class="lock-card" id="lockForm">
     <img src="assets/icon.svg" alt="" width="60" height="60" style="margin:0 auto;border-radius:14px">
     <h1 style="font-size:1.4rem">لوحة الإدارة</h1>
-    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autofocus>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" autocomplete="username" hidden style="letter-spacing:0;font-size:1rem">
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autocomplete="current-password" autofocus>
     <button class="btn btn-primary btn-block">دخول</button>
     <p class="note">الرمز الافتراضي: 1234 — غيّره من الإعدادات أسفل اللوحة.</p>
   </form>
@@ -96,6 +97,8 @@
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/orders-store.js"></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -107,25 +110,37 @@
   const money = n => `${Number(n).toLocaleString("fr-MA", { maximumFractionDigits: 2 })} درهم`;
   const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); };
 
+  const ONLINE = CafeOrders.mode === "firebase";
+  let ORDERS = [], started = false;
   const pinOk = p => p === store.get("pin", "1234");
-  $("#lockForm").addEventListener("submit", e => {
+  $("#lockForm").addEventListener("submit", async e => {
     e.preventDefault();
+    if (ONLINE) {
+      const res = await CafeOrders.signIn($("#email").value.trim(), $("#pin").value);
+      if (res.ok) unlock(); else { toast(res.error === "not-staff" ? "الحساب غير مسجل ضمن الموظفين" : "بيانات الدخول غير صحيحة"); $("#pin").value = ""; }
+      return;
+    }
     if (pinOk($("#pin").value)) { sessionStorage.setItem("cm_admin", "1"); unlock(); } else { toast("رمز خاطئ"); $("#pin").value = ""; }
   });
-  function unlock() { $("#lock").hidden = true; $("#app").hidden = false; render(); }
-  try { if (sessionStorage.getItem("cm_admin") === "1") unlock(); } catch {}
+  // orders come from Firestore (last 30 days) online, from this browser otherwise
+  function unlock() {
+    if (started) return; started = true;
+    $("#lock").hidden = true; $("#app").hidden = false;
+    CafeOrders.watchAll(ONLINE ? Date.now() - 30 * 86400e3 : 0, list => { ORDERS = list; render(); },
+      () => toast("تعذر تحميل الطلبات"));
+  }
 
   let overrides = store.get("overrides", {});
   const P = window.CAFE_PRODUCTS, S = window.CAFE_SERVICES;
   const catName = Object.fromEntries(window.CAFE_CATEGORIES.map(c => [c.id, c.icon + " " + c.ar]));
 
   function render() {
-    const orders = store.get("orders", []), bookings = store.get("bookings", []);
+    const orders = ORDERS.filter(o => o.status !== "cancelled"), bookings = store.get("bookings", []);
     const revenue = orders.reduce((s, o) => s + o.total, 0);
     const today = new Date().toDateString();
     const todayOrders = orders.filter(o => new Date(o.at).toDateString() === today);
     $("#kpis").innerHTML = [
-      ["الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
+      [ONLINE ? "الطلبات (30 يوماً)" : "الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
       ["متوسط السلة", money(orders.length ? revenue / orders.length : 0)],
       ["طلبات اليوم", todayOrders.length], ["الحجوزات", bookings.length],
       ["متوسط وقت التحضير", (() => { const w = orders.filter(o => o.times && o.times.ready).map(o => o.times.ready - o.at);
@@ -180,7 +195,7 @@
   });
 
   $("#exportBtn").addEventListener("click", () => {
-    const data = { exportedAt: new Date().toISOString(), overrides, orders: store.get("orders", []), bookings: store.get("bookings", []) };
+    const data = { exportedAt: new Date().toISOString(), overrides, orders: ORDERS, bookings: store.get("bookings", []) };
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
     a.download = `cafe-mouhsine-${new Date().toISOString().slice(0, 10)}.json`; a.click();
@@ -199,7 +214,19 @@
     const v = $("#newPin").value.trim(); if (v.length < 4) { toast("4 أرقام على الأقل"); return; }
     store.set("pin", v); $("#newPin").value = ""; toast("تم تغيير الرمز");
   });
-  $("#clearStats").addEventListener("click", () => { if (confirm("مسح جميع الطلبات والحجوزات المسجلة؟")) { store.set("orders", []); store.set("bookings", []); render(); } });
+  $("#clearStats").addEventListener("click", () => {
+    // online orders are an audit trail: the rules forbid deleting them
+    if (!confirm(ONLINE ? "مسح الحجوزات المسجلة في هذا المتصفح؟ (طلبات Firebase تبقى محفوظة)" : "مسح جميع الطلبات والحجوزات المسجلة؟")) return;
+    if (!ONLINE) { store.set("orders", []); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" })); }
+    store.set("bookings", []); render();
+  });
+  if (ONLINE) {
+    $("#email").hidden = false; $("#pin").removeAttribute("maxlength"); $("#pin").removeAttribute("inputmode");
+    $("#pin").placeholder = "كلمة المرور"; $(".lock-card .note").textContent = "ادخل بحساب الموظفين على Firebase.";
+    CafeOrders.staffUser().then(u => { if (u) unlock(); });
+  } else {
+    try { if (sessionStorage.getItem("cm_admin") === "1") setTimeout(unlock); } catch {}
+  }
   $("#resetPrices").addEventListener("click", () => { if (confirm("استرجاع الأسعار الأصلية؟")) { overrides = {}; store.set("overrides", {}); render(); } });
 })();
 </script>

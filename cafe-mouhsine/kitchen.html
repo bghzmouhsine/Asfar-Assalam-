@@ -37,6 +37,8 @@
   .tool:hover { border-color: var(--caramel); }
   .tool.primary { background: var(--caramel); color: #1A110C; border-color: var(--caramel); }
   .tool.off { opacity: .55; }
+  .mode-pill { font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--line); color: var(--soft); }
+  .mode-pill.on { background: rgba(76,184,114,.18); color: var(--ready); }
   .stats { display: flex; gap: 14px; font-size: .8rem; color: var(--soft); }
   .stats b { color: var(--text); font-size: 1rem; }
 
@@ -114,7 +116,8 @@
   <form id="lockForm">
     <img src="assets/icon.svg" alt="">
     <h1 style="font-size:1.2rem" data-k="title">Écran cuisine</h1>
-    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autofocus>
+    <input type="email" id="email" data-kp="email" placeholder="E-mail" autocomplete="username" hidden>
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autocomplete="current-password" autofocus>
     <button class="tool primary" data-k="enter">Entrer</button>
     <small data-k="pinHint">Même code que l'administration (1234 par défaut)</small>
   </form>
@@ -134,6 +137,8 @@
   <button class="tool off" id="soundBtn">🔕</button>
   <button class="tool" id="langBtn">ع</button>
   <button class="tool" id="fsBtn" aria-label="Fullscreen">⛶</button>
+  <span class="mode-pill" id="modePill"></span>
+  <button class="tool" id="logoutBtn" hidden aria-label="Logout" title="Déconnexion / خروج">⏻</button>
   <a class="tool" href="admin.html" aria-label="Admin">⚙</a>
 </header>
 
@@ -169,6 +174,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/orders-store.js"></script>
 <script>
 (() => {
   "use strict";
@@ -190,7 +197,10 @@
       served: "servies aujourd'hui", avg: "temps moyen", min: "min", newOrder: "Nouvelle commande : {r}",
       newTitle: "Nouvelle commande (comptoir / WhatsApp)", search: "Rechercher…", detail: "Table / adresse", name: "Nom", note: "Note",
       cancel: "Annuler", create: "Envoyer en cuisine", needItems: "Ajoutez au moins un produit", created: "Commande {r} envoyée",
-      soundOn: "Son activé", web: "Site", counter: "Comptoir" },
+      soundOn: "Son activé", web: "Site", counter: "Comptoir",
+      email: "E-mail", password: "Mot de passe", loginHint: "Compte staff Firebase", loginErr: "E-mail ou mot de passe incorrect",
+      notStaff: "Ce compte n'est pas dans la liste du personnel (collection staff)", syncErr: "Erreur de synchronisation — vérifiez la connexion",
+      online: "● En ligne", local: "Mode local (cet appareil)" },
     ar: { title: "شاشة المطبخ", enter: "دخول", pinHint: "نفس رمز لوحة الإدارة (1234 افتراضياً)", bad: "رمز خاطئ",
       stAll: "الكل", stBar: "☕ البار", stKitchen: "🍳 المطبخ", add: "＋ طلب",
       colNew: "جديدة", colPrep: "قيد التحضير", colReady: "جاهزة", empty: "لا توجد طلبات",
@@ -199,7 +209,10 @@
       served: "قُدّمت اليوم", avg: "متوسط الوقت", min: "د", newOrder: "طلب جديد: {r}",
       newTitle: "طلب جديد (الكونتوار / واتساب)", search: "بحث…", detail: "الطاولة / العنوان", name: "الاسم", note: "ملاحظة",
       cancel: "إلغاء", create: "إرسال إلى المطبخ", needItems: "أضف منتوجاً واحداً على الأقل", created: "تم إرسال الطلب {r}",
-      soundOn: "تم تفعيل الصوت", web: "الموقع", counter: "الكونتوار" }
+      soundOn: "تم تفعيل الصوت", web: "الموقع", counter: "الكونتوار",
+      email: "البريد الإلكتروني", password: "كلمة المرور", loginHint: "حساب الموظفين على Firebase", loginErr: "البريد أو كلمة المرور غير صحيحة",
+      notStaff: "هذا الحساب غير مسجل ضمن الموظفين (staff)", syncErr: "خطأ في المزامنة — تحقق من الاتصال",
+      online: "● متصل", local: "وضع محلي (هذا الجهاز)" }
   };
   let lang = store.get("kdsLang", "fr");
   const T = (k, v) => { let s = TXT[lang][k] ?? k; if (v) for (const [a, b] of Object.entries(v)) s = s.replace(`{${a}}`, b); return s; };
@@ -221,11 +234,14 @@
   const DAY = 18 * 3600e3;
   // orders recorded before the kitchen screen existed have no status
   const statusOf = o => o.status || (Date.now() - o.at < DAY ? "new" : "served");
-  const load = () => store.get("orders", []);
+  let ORDERS = [];
+  const load = () => ORDERS;
+  // apply a change to status / times / done and save it (Firestore or local)
   function update(ref, fn) {
-    const orders = load(); const o = orders.find(x => x.ref === ref); if (!o) return;
-    o.status = statusOf(o); o.times = o.times || {}; o.done = o.done || [];
-    fn(o); store.set("orders", orders); render();
+    const o = ORDERS.find(x => x.ref === ref); if (!o) return;
+    const next = { status: statusOf(o), times: { ...(o.times || {}) }, done: [...(o.done || [])] };
+    fn(next);
+    CafeOrders.update(ref, next).catch(err => { console.warn(err); toast(T("syncErr")); });
   }
   const setStatus = (ref, s) => update(ref, o => { o.status = s; o.times[s] = Date.now(); });
 
@@ -338,8 +354,6 @@
   });
   $("#fsBtn").addEventListener("click", () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.().catch(() => {}));
   $("#langBtn").addEventListener("click", () => { lang = lang === "fr" ? "ar" : "fr"; store.set("kdsLang", lang); applyLang(); });
-  // another tab (the customer site, admin) changed the orders
-  addEventListener("storage", e => { if (e.key === "cm_orders") render(); });
 
   function applyLang() {
     document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
@@ -374,26 +388,46 @@
   $("#newForm").addEventListener("submit", e => {
     e.preventDefault();
     const ids = Object.keys(draft); if (!ids.length) { toast(T("needItems")); return; }
-    const ref = "CPT-" + Date.now().toString(36).toUpperCase().slice(-5);
+    const ref = CafeOrders.newRef("CPT");
     const items = ids.map(id => ({ id, size: byId[id].sizes ? byId[id].sizes[0][0] : null, qty: draft[id], opts: {} }));
-    const orders = load();
-    orders.push({ ref, at: Date.now(), mode: $("#newMode").value, detail: $("#newDetail").value.trim(), name: $("#newName").value.trim(),
+    const order = { ref, at: Date.now(), mode: $("#newMode").value, detail: $("#newDetail").value.trim(), name: $("#newName").value.trim(),
       note: $("#newNote").value.trim(), total: items.reduce((s, i) => s + byId[i.id].price * i.qty, 0),
-      status: "new", times: {}, done: [], source: "counter", items });
-    store.set("orders", orders.slice(-500));
+      status: "new", times: {}, done: [], source: "counter", lang, items };
     seen && seen.add(ref);   // no chime for orders entered on this screen
-    $("#newDlg").close(); render(); toast(T("created", { r: ref }));
+    $("#newDlg").close();
+    CafeOrders.addCounter(order).then(() => toast(T("created", { r: ref }))).catch(err => { console.warn(err); toast(T("syncErr")); });
   });
 
-  /* ---------- PIN lock (shared with admin) ---------- */
-  function unlock() { $("#lock").hidden = true; applyLang(); tick(); setInterval(tick, 1000); setInterval(render, 15000); }
-  $("#lockForm").addEventListener("submit", e => {
+  /* ---------- access: staff account (Firebase) or PIN (local mode) ---------- */
+  const ONLINE = CafeOrders.mode === "firebase";
+  let started = false;
+  function unlock() {
+    if (started) return; started = true;
+    $("#lock").hidden = true; applyLang(); tick(); setInterval(tick, 1000); setInterval(render, 15000);
+    $("#modePill").textContent = T(ONLINE ? "online" : "local"); $("#modePill").classList.toggle("on", ONLINE);
+    $("#logoutBtn").hidden = !ONLINE;
+    CafeOrders.watchAll(Date.now() - DAY, list => { ORDERS = list; render(); }, err => { console.warn(err); toast(T("syncErr")); });
+  }
+  $("#lockForm").addEventListener("submit", async e => {
     e.preventDefault();
+    if (ONLINE) {
+      const res = await CafeOrders.signIn($("#email").value.trim(), $("#pin").value);
+      if (res.ok) unlock(); else { $("#pin").value = ""; toast(T(res.error === "not-staff" ? "notStaff" : "loginErr")); }
+      return;
+    }
     if ($("#pin").value === store.get("pin", "1234")) { try { sessionStorage.setItem("cm_admin", "1"); } catch {} unlock(); }
     else { $("#pin").value = ""; toast(T("bad")); }
   });
+  $("#logoutBtn").addEventListener("click", async () => { await CafeOrders.signOut(); location.reload(); });
   $$("[data-k]").forEach(el => { el.textContent = T(el.dataset.k); });
-  try { if (sessionStorage.getItem("cm_admin") === "1") unlock(); } catch {}
+  if (ONLINE) {
+    $("#email").hidden = false;
+    $("#pin").removeAttribute("maxlength"); $("#pin").removeAttribute("inputmode");
+    $("#pin").placeholder = T("password"); $(".lock small").textContent = T("loginHint");
+    CafeOrders.staffUser().then(u => { if (u) unlock(); });
+  } else {
+    try { if (sessionStorage.getItem("cm_admin") === "1") unlock(); } catch {}
+  }
 })();
 </script>
 </body>

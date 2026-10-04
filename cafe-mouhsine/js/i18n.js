@@ -1,6 +1,8 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
+    "cart.checkoutOnline": "إرسال الطلب", "cart.sending": "جارٍ الإرسال…", "cart.sentKitchen": "وصل طلبك إلى المطبخ! ربحت {n} نقطة.",
+    "st.readyToast": "طلبك {r} جاهز ☕",
     "cart.note": "ملاحظة للمطبخ (اختياري)",
     "st.new": "مستلم", "st.preparing": "قيد التحضير", "st.ready": "جاهز", "st.served": "تم التقديم", "st.cancelled": "ملغى",
     "diet.label": "نظام غذائي:", "diet.veg": "نباتي", "diet.vegan": "نباتي صرف", "diet.gf": "بدون غلوتين",
@@ -57,6 +59,8 @@ window.I18N = {
   },
 
   fr: {
+    "cart.checkoutOnline": "Envoyer la commande", "cart.sending": "Envoi…", "cart.sentKitchen": "Commande reçue en cuisine ! +{n} points.",
+    "st.readyToast": "Votre commande {r} est prête ☕",
     "cart.note": "Note pour la cuisine (optionnel)",
     "st.new": "Reçue", "st.preparing": "En préparation", "st.ready": "Prête", "st.served": "Servie", "st.cancelled": "Annulée",
     "diet.label": "Régime :", "diet.veg": "Végétarien", "diet.vegan": "Vegan", "diet.gf": "Sans gluten",
@@ -113,6 +117,8 @@ window.I18N = {
   },
 
   en: {
+    "cart.checkoutOnline": "Place order", "cart.sending": "Sending…", "cart.sentKitchen": "Order received by the kitchen! +{n} points.",
+    "st.readyToast": "Your order {r} is ready ☕",
     "cart.note": "Note for the kitchen (optional)",
     "st.new": "Received", "st.preparing": "Preparing", "st.ready": "Ready", "st.served": "Served", "st.cancelled": "Cancelled",
     "diet.label": "Diet:", "diet.veg": "Vegetarian", "diet.vegan": "Vegan", "diet.gf": "Gluten-free",

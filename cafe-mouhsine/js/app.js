@@ -356,7 +356,7 @@
 
   /* ---------- order history & reorder ---------- */
   function renderHistory() {
-    const orders = store.get("orders", []).slice(-15).reverse();
+    const orders = (state.myOrders || store.get("orders", [])).slice(-15).reverse();
     const dateFmt = new Intl.DateTimeFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-GB", { dateStyle: "medium", timeStyle: "short" });
     $("#cartItems").innerHTML = orders.length ? orders.map(o => `
       <div class="hist">
@@ -371,9 +371,25 @@
       </div>`).join("") : `<p class="cart-empty">${t("hist.empty")}</p>`;
   }
   addEventListener("storage", e => { if (e.key === "cm_orders" && state.drawerTab === "history") renderCart(); });
+
+  // Firebase mode: follow the status of my orders live and say when one is ready
+  let mineStop = null;
+  const lastStatus = {};
+  function watchMyOrders() {
+    if (mineStop || CafeOrders.mode !== "firebase") return;
+    mineStop = CafeOrders.watchMine(list => {
+      list.forEach(o => {
+        if (lastStatus[o.ref] && lastStatus[o.ref] !== o.status && o.status === "ready") toast(t("st.readyToast", { r: o.ref }));
+        lastStatus[o.ref] = o.status;
+      });
+      state.myOrders = list;
+      if (state.drawerTab === "history") renderCart();
+    }, err => console.warn("Order status unavailable", err));
+  }
   $(".drawer-tabs").addEventListener("click", e => {
     const b = e.target.closest("[data-tab]"); if (!b) return;
     state.drawerTab = b.dataset.tab; renderCart();
+    if (state.drawerTab === "history") watchMyOrders();
   });
   $("#cartItems").addEventListener("click", e => {
     const b = e.target.closest("[data-reorder]"); if (!b) return;
@@ -402,12 +418,12 @@
 
   const waLink = text => `https://wa.me/${CFG.phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 
-  $("#checkoutBtn").addEventListener("click", () => {
+  $("#checkoutBtn").addEventListener("click", async () => {
     const tt = totals();
     const detail = $("#modeDetail").value.trim();
     if (tt.mode !== "takeaway" && !detail) { toast(t("cart.needDetail")); $("#modeDetail").focus(); return; }
     const W = I18N[state.lang].wa;
-    const ref = "CMD-" + Date.now().toString(36).toUpperCase().slice(-6);
+    const ref = CafeOrders.newRef("CMD");
     const lines = state.cart.map(i => {
       const extra = [i.size, optsLabel(i.opts)].filter(Boolean).join(", ");
       return `• ${i.qty} × ${L(byId[i.id])[0]}${extra ? ` (${extra})` : ""} — ${money(priceOf(byId[i.id], i.size, i.opts) * i.qty)}`;
@@ -425,20 +441,32 @@
       `Loyalty: ${state.loyaltyId}`
     ].filter((l, idx, a) => l !== "" || a[idx - 1] !== "").join("\n");
 
-    // record locally for the admin dashboard and the kitchen screen
-    const orders = store.get("orders", []);
-    orders.push({
+    const order = {
       ref, at: Date.now(), mode: tt.mode, total: tt.total, detail, status: "new", times: {}, done: [],
-      name: $("#orderName").value.trim(), note: $("#orderNote").value.trim(), source: "web",
-      items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts }))
-    });
-    store.set("orders", orders.slice(-500));
+      name: $("#orderName").value.trim(), note: $("#orderNote").value.trim(), source: "web", lang: state.lang,
+      items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts || {} }))
+    };
+    const btn = $("#checkoutBtn");
+    let online = false;
+    if (CafeOrders.mode === "firebase") {
+      // straight to the kitchen screen; WhatsApp only if the network fails
+      btn.disabled = true; btn.textContent = t("cart.sending");
+      try { await CafeOrders.submit(order); online = true; }
+      catch (err) { console.warn("Order not saved online, falling back to WhatsApp", err); }
+      btn.disabled = false; btn.textContent = t("cart.checkoutOnline");
+    }
+    if (!online) {
+      await CafeOrders.submit(order).catch(() => {});   // local copy (and local kitchen screen)
+      const w = window.open(waLink(msg), "_blank", "noopener");
+      if (w === null && CafeOrders.mode === "firebase") location.href = waLink(msg);   // popup blocked after await
+    }
 
     state.points += tt.pts; store.set("points", state.points);
-    window.open(waLink(msg), "_blank", "noopener");
-    toast(t("cart.sent", { n: tt.pts }));
+    toast(t(online ? "cart.sentKitchen" : "cart.sent", { n: tt.pts }));
     state.cart = []; state.promo = null; $("#promoInput").value = ""; $("#modeDetail").value = ""; $("#orderNote").value = "";
-    saveCart(); renderLoyalty(); openDrawer(false);
+    renderLoyalty();
+    if (online) { watchMyOrders(); state.drawerTab = "history"; saveCart(); }
+    else { saveCart(); openDrawer(false); }
   });
 
   /* ================= SERVICES ================= */
@@ -612,6 +640,11 @@
 
   applyLang();
   renderGallery();
+  if (CafeOrders.mode === "firebase") {
+    $("#checkoutBtn").dataset.i18n = "cart.checkoutOnline"; $("#checkoutBtn").textContent = t("cart.checkoutOnline");
+    const open = store.get("orders", []).some(o => Date.now() - o.at < 18 * 3600e3 && !["served", "cancelled"].includes(o.status));
+    if (open) watchMyOrders();
+  }
   let hhWas = !!happyHour();
   setInterval(() => {
     renderHours();

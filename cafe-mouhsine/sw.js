@@ -1,6 +1,6 @@
 /* Café Mouhsine BOUAGHAZ — offline support (app shell + cached images) */
-const CACHE = "cafe-mouhsine-v3";
-const SHELL = ["./", "./index.html", "./menu-print.html", "./kitchen.html", "./css/styles.css", "./js/data.js", "./js/i18n.js", "./js/app.js", "./assets/icon.svg", "./manifest.webmanifest"];
+const CACHE = "cafe-mouhsine-v4";
+const SHELL = ["./", "./index.html", "./menu-print.html", "./kitchen.html", "./css/styles.css", "./js/data.js", "./js/i18n.js", "./js/app.js", "./js/firebase-config.js", "./js/orders-store.js", "./assets/icon.svg", "./manifest.webmanifest"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -20,7 +20,7 @@ self.addEventListener("fetch", e => {
     return;
   }
   // product photos & fonts: cache first
-  if (/images\.unsplash\.com|fonts\.(googleapis|gstatic)\.com|cdnjs\.cloudflare\.com/.test(url.host)) {
+  if (/images\.unsplash\.com|fonts\.(googleapis|gstatic)\.com|cdnjs\.cloudflare\.com|www\.gstatic\.com/.test(url.host)) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res;
     })));
