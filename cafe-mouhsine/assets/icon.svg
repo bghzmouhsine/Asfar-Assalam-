@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="30" fill="#2B1A12"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#C8894B" stroke-width="2" opacity=".45"/>
+  <path d="M38 56h46v14a23 23 0 0 1-46 0z" fill="#E9D6B9"/>
+  <path d="M84 60h5a9 9 0 0 1 0 18h-6" fill="none" stroke="#E9D6B9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M52 30c-4 5 4 8 0 14M64 26c-4 6 4 10 0 18M76 30c-4 5 4 8 0 14" fill="none" stroke="#C8894B" stroke-width="3.5" stroke-linecap="round"/>
+  <text x="61" y="76" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="20" fill="#2B1A12">MB</text>
+</svg>

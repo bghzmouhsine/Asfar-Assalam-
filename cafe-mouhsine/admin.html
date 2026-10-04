@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café Mouhsine — Admin</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body { background: var(--bg); }
+  .admin { padding: 32px 0 80px; }
+  .a-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 26px; }
+  .a-head h1 { font-size: 1.8rem; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .kpi small { color: var(--text-soft); font-size: .82rem; }
+  .kpi b { display: block; font-size: 1.8rem; font-family: var(--font-latin); color: var(--accent-strong); }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 26px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; overflow: auto; }
+  .panel h2 { font-size: 1.15rem; margin-bottom: 12px; font-family: var(--font-ar); }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: start; white-space: nowrap; }
+  th { color: var(--text-soft); font-weight: 600; font-size: .78rem; }
+  td input[type=number] { width: 90px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  td img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+  .bar { height: 8px; background: var(--accent); border-radius: 4px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .lock-screen { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  .lock-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 32px; width: min(360px, 100%); text-align: center; display: grid; gap: 14px; }
+  .lock-card input { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-size: 1.3rem; letter-spacing: .4em; }
+  .note { font-size: .8rem; color: var(--text-soft); }
+  @media (max-width: 860px) { .panels { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock">
+  <form class="lock-card" id="lockForm">
+    <img src="assets/icon.svg" alt="" width="60" height="60" style="margin:0 auto;border-radius:14px">
+    <h1 style="font-size:1.4rem">لوحة الإدارة</h1>
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autofocus>
+    <button class="btn btn-primary btn-block">دخول</button>
+    <p class="note">الرمز الافتراضي: 1234 — غيّره من الإعدادات أسفل اللوحة.</p>
+  </form>
+</div>
+
+<main class="admin wrap" id="app" hidden>
+  <div class="a-head">
+    <div>
+      <span class="eyebrow">Café Mouhsine BOUAGHAZ</span>
+      <h1>لوحة التحكم</h1>
+    </div>
+    <div class="toolbar">
+      <a class="btn btn-ghost btn-sm" href="index.html">↩ الموقع</a>
+      <button class="btn btn-ghost btn-sm" id="exportBtn">تصدير JSON</button>
+      <label class="btn btn-ghost btn-sm">استيراد JSON<input type="file" id="importInput" accept="application/json" hidden></label>
+      <button class="btn btn-primary btn-sm" id="saveBtn">حفظ التغييرات</button>
+    </div>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="panels">
+    <div class="panel"><h2>🏆 الأكثر مبيعاً</h2><table id="topTable"></table></div>
+    <div class="panel"><h2>📅 آخر الحجوزات</h2><table id="bookTable"></table></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <h2>💰 أسعار المنتوجات والتوفر</h2>
+    <table id="priceTable"></table>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <h2>🧾 أسعار الخدمات</h2>
+    <table id="srvTable"></table>
+  </section>
+
+  <section class="panel">
+    <h2>⚙️ الإعدادات</h2>
+    <div class="toolbar" style="align-items:center">
+      <input type="password" id="newPin" placeholder="رمز جديد" inputmode="numeric" class="input" style="max-width:180px">
+      <button class="btn btn-ghost btn-sm" id="pinBtn">تغيير الرمز</button>
+      <button class="btn btn-ghost btn-sm" id="clearStats">مسح الإحصائيات</button>
+      <button class="btn btn-ghost btn-sm" id="resetPrices">استرجاع الأسعار الأصلية</button>
+    </div>
+    <p class="note" style="margin-top:12px">
+      التعديلات تُحفظ في هذا المتصفح. لنشرها لجميع الزبناء: صدّر ملف JSON ثم حدّث الأسعار في <code>js/data.js</code>.
+      الرمز هنا حماية بسيطة للواجهة وليس نظام أمان حقيقي.
+    </p>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/data.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("cm_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("cm_" + k, JSON.stringify(v)); } catch {} }
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = n => `${Number(n).toLocaleString("fr-MA", { maximumFractionDigits: 2 })} درهم`;
+  const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); };
+
+  const pinOk = p => p === store.get("pin", "1234");
+  $("#lockForm").addEventListener("submit", e => {
+    e.preventDefault();
+    if (pinOk($("#pin").value)) { sessionStorage.setItem("cm_admin", "1"); unlock(); } else { toast("رمز خاطئ"); $("#pin").value = ""; }
+  });
+  function unlock() { $("#lock").hidden = true; $("#app").hidden = false; render(); }
+  try { if (sessionStorage.getItem("cm_admin") === "1") unlock(); } catch {}
+
+  let overrides = store.get("overrides", {});
+  const P = window.CAFE_PRODUCTS, S = window.CAFE_SERVICES;
+  const catName = Object.fromEntries(window.CAFE_CATEGORIES.map(c => [c.id, c.icon + " " + c.ar]));
+
+  function render() {
+    const orders = store.get("orders", []), bookings = store.get("bookings", []);
+    const revenue = orders.reduce((s, o) => s + o.total, 0);
+    const today = new Date().toDateString();
+    const todayOrders = orders.filter(o => new Date(o.at).toDateString() === today);
+    $("#kpis").innerHTML = [
+      ["الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
+      ["متوسط السلة", money(orders.length ? revenue / orders.length : 0)],
+      ["طلبات اليوم", todayOrders.length], ["الحجوزات", bookings.length],
+      ["منتوجات متوفرة", P.filter(p => (overrides[p.id]?.available ?? true)).length + " / " + P.length]
+    ].map(([k, v]) => `<div class="kpi"><small>${k}</small><b>${v}</b></div>`).join("");
+
+    const qty = {};
+    orders.forEach(o => o.items.forEach(i => { qty[i.id] = (qty[i.id] || 0) + i.qty; }));
+    const top = Object.entries(qty).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = top[0]?.[1] || 1;
+    $("#topTable").innerHTML = top.length
+      ? `<tr><th>المنتوج</th><th>الكمية</th><th style="width:40%"></th></tr>` + top.map(([id, n]) => {
+          const p = P.find(x => x.id === id); return `<tr><td>${esc(p ? p.ar[0] : id)}</td><td>${n}</td><td><div class="bar" style="width:${n / max * 100}%"></div></td></tr>`;
+        }).join("")
+      : `<tr><td class="note">لا توجد طلبات بعد. الطلبات المرسلة من هذا المتصفح تظهر هنا.</td></tr>`;
+
+    $("#bookTable").innerHTML = bookings.length
+      ? `<tr><th>الرقم</th><th>الاسم</th><th>التاريخ</th><th>الأشخاص</th><th>النوع</th></tr>` +
+        bookings.slice(-10).reverse().map(b => `<tr><td>${esc(b.code)}</td><td>${esc(b.name)}</td><td>${esc(b.date)} ${esc(b.time)}</td><td>${esc(b.guests)}</td><td>${esc(S.find(s => s.id === b.type)?.ar[0] || "طاولة")}</td></tr>`).join("")
+      : `<tr><td class="note">لا توجد حجوزات بعد.</td></tr>`;
+
+    $("#priceTable").innerHTML = `<tr><th></th><th>المنتوج</th><th>الفئة</th><th>السعر الأصلي</th><th>السعر الحالي</th><th>متوفر</th></tr>` +
+      P.map(p => {
+        const o = overrides[p.id] || {};
+        return `<tr><td><img src="${p.img.replace("w=640", "w=80")}" alt=""></td><td>${esc(p.ar[0])}<br><small class="note">${esc(p.fr[0])}</small></td>
+          <td>${catName[p.cat]}</td><td>${money(p.price)}</td>
+          <td><input type="number" min="0" step="0.5" data-price="${p.id}" value="${o.price ?? p.price}"></td>
+          <td><input type="checkbox" data-avail="${p.id}" ${(o.available ?? true) ? "checked" : ""}></td></tr>`;
+      }).join("");
+
+    $("#srvTable").innerHTML = `<tr><th>الخدمة</th><th>الوحدة</th><th>السعر الأصلي</th><th>السعر الحالي</th></tr>` +
+      S.map(s => `<tr><td>${s.icon} ${esc(s.ar[0])}</td><td>${esc(s.unit.ar)}</td><td>${money(s.price)}</td>
+        <td><input type="number" min="0" step="1" data-sprice="${s.id}" value="${overrides["srv:" + s.id]?.price ?? s.price}"></td></tr>`).join("");
+  }
+
+  $("#saveBtn").addEventListener("click", () => {
+    const next = {};
+    P.forEach(p => {
+      const price = +document.querySelector(`[data-price="${p.id}"]`).value;
+      const available = document.querySelector(`[data-avail="${p.id}"]`).checked;
+      const o = {};
+      if (price !== p.price) o.price = price;
+      if (!available) o.available = false;
+      if (Object.keys(o).length) next[p.id] = o;
+    });
+    S.forEach(s => {
+      const price = +document.querySelector(`[data-sprice="${s.id}"]`).value;
+      if (price !== s.price) next["srv:" + s.id] = { price };
+    });
+    overrides = next; store.set("overrides", overrides); render(); toast("تم الحفظ ✓");
+  });
+
+  $("#exportBtn").addEventListener("click", () => {
+    const data = { exportedAt: new Date().toISOString(), overrides, orders: store.get("orders", []), bookings: store.get("bookings", []) };
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    a.download = `cafe-mouhsine-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+  });
+  $("#importInput").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const d = JSON.parse(await f.text());
+      if (d.overrides) { overrides = d.overrides; store.set("overrides", overrides); }
+      if (Array.isArray(d.orders)) store.set("orders", d.orders);
+      if (Array.isArray(d.bookings)) store.set("bookings", d.bookings);
+      render(); toast("تم الاستيراد ✓");
+    } catch { toast("ملف غير صالح"); }
+  });
+  $("#pinBtn").addEventListener("click", () => {
+    const v = $("#newPin").value.trim(); if (v.length < 4) { toast("4 أرقام على الأقل"); return; }
+    store.set("pin", v); $("#newPin").value = ""; toast("تم تغيير الرمز");
+  });
+  $("#clearStats").addEventListener("click", () => { if (confirm("مسح جميع الطلبات والحجوزات المسجلة؟")) { store.set("orders", []); store.set("bookings", []); render(); } });
+  $("#resetPrices").addEventListener("click", () => { if (confirm("استرجاع الأسعار الأصلية؟")) { overrides = {}; store.set("overrides", {}); render(); } });
+})();
+</script>
+</body>
+</html>
