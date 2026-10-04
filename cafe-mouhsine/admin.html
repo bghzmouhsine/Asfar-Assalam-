@@ -30,6 +30,67 @@
   .acts { display: flex; gap: 6px; }
   .acts button { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; background: var(--surface); }
   .acts button:hover { border-color: var(--accent); }
+  /* ---- sales dashboard: chart tokens (palette validated light #FFFCF7 / dark #221812) ---- */
+  .viz-root { --viz-1: #B0601C; --viz-2: #2A78D6; --viz-3: #8B3A7A; --viz-grid: #E4D5C1; --viz-axis: #C9B79F;
+    --viz-up: #2C7A3F; --viz-down: #A13A26; --viz-ink: var(--text); --viz-muted: #6B5446; }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .viz-root {
+    --viz-1: #C9762F; --viz-2: #3987E5; --viz-3: #A85090; --viz-grid: #3A2B21; --viz-axis: #5A4636;
+    --viz-up: #7FD18F; --viz-down: #F08A74; --viz-muted: #BFA894; } }
+  :root[data-theme="dark"] .viz-root { --viz-1: #C9762F; --viz-2: #3987E5; --viz-3: #A85090; --viz-grid: #3A2B21; --viz-axis: #5A4636;
+    --viz-up: #7FD18F; --viz-down: #F08A74; --viz-muted: #BFA894; }
+  .viz-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .viz-seg { display: flex; flex-wrap: wrap; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 2px; }
+  .viz-seg button { padding: 7px 12px; border-radius: 9px; font-size: .85rem; font-weight: 600; color: var(--text-soft); }
+  .viz-seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .viz-export { margin-inline-start: auto; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); font-weight: 600; font-size: .85rem; }
+  .viz-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .viz-tile { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; }
+  .viz-tile.hero { background: var(--surface-2); }
+  .viz-tile-label { font-size: .82rem; color: var(--viz-muted); }
+  .viz-tile-value { font-family: var(--font-latin); font-size: 1.6rem; font-weight: 700; color: var(--viz-ink); }
+  .viz-tile.hero .viz-tile-value { font-size: 2.2rem; }
+  .viz-delta { font-size: .78rem; font-weight: 600; }
+  .viz-delta.up { color: var(--viz-up); } .viz-delta.down { color: var(--viz-down); } .viz-delta.flat { color: var(--viz-muted); }
+  .viz-grid-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 960px) { .viz-grid-cards { grid-template-columns: 1fr; } }
+  .viz-card { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .viz-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .viz-card h3 { font-size: 1rem; font-family: var(--font-ar); }
+  .viz-card small { color: var(--viz-muted); font-size: .76rem; }
+  .viz-toggle { flex-shrink: 0; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; }
+  .viz-svg { width: 100%; height: auto; display: block; direction: ltr; overflow: visible; }
+  .viz-grid { stroke: var(--viz-grid); stroke-width: 1; } .viz-axis { stroke: var(--viz-axis); stroke-width: 1; }
+  .viz-tick { fill: var(--viz-muted); font-size: 11px; font-family: var(--font-latin); font-variant-numeric: tabular-nums; }
+  .viz-peak { fill: var(--viz-ink); font-size: 11px; font-weight: 700; font-family: var(--font-latin); }
+  .viz-fill { fill: var(--viz-1); }
+  .viz-hit { fill: transparent; }
+  .viz-bar { cursor: default; outline: none; }
+  .viz-bar:hover .viz-fill, .viz-bar:focus .viz-fill { filter: brightness(1.15); }
+  .viz-bar:focus-visible .viz-hit { stroke: var(--accent); stroke-width: 1.5; }
+  .slot-1 { background: var(--viz-1); } .slot-2 { background: var(--viz-2); } .slot-3 { background: var(--viz-3); }
+  .viz-stack { display: flex; height: 34px; gap: 2px; border-radius: 6px; overflow: hidden; margin: 10px 0 14px; }
+  .viz-seg-fill { display: flex; align-items: center; justify-content: center; min-width: 4px; outline: none; }
+  .viz-seg-fill:hover, .viz-seg-fill:focus { filter: brightness(1.12); }
+  .viz-in { color: #fff; font-size: .78rem; font-weight: 700; font-family: var(--font-latin); }
+  .viz-legend { list-style: none; display: grid; gap: 8px; }
+  .viz-legend li { display: grid; grid-template-columns: 12px auto auto 1fr; align-items: center; gap: 8px; font-size: .86rem; }
+  .viz-legend small { text-align: end; }
+  .viz-key { width: 12px; height: 12px; border-radius: 3px; display: block; }
+  .viz-hbars { list-style: none; display: grid; gap: 8px; }
+  .viz-hbars li { display: grid; grid-template-columns: minmax(90px, 34%) 1fr; gap: 10px; align-items: center; font-size: .85rem; outline: none; border-radius: 6px; }
+  .viz-hbars li:hover, .viz-hbars li:focus-visible { background: var(--surface-2); }
+  .viz-hname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .viz-hbar-track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .viz-hbar { height: 16px; border-radius: 0 4px 4px 0; flex-shrink: 0; max-width: calc(100% - 92px); }
+  [dir="rtl"] .viz-hbar { border-radius: 4px 0 0 4px; }
+  .viz-hval { font-family: var(--font-latin); font-size: .78rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .viz-empty { color: var(--viz-muted); font-size: .85rem; padding: 6px; display: block; }
+  .viz-table-wrap { max-height: 260px; overflow: auto; }
+  .viz-table td, .viz-table th { font-variant-numeric: tabular-nums; }
+  .viz-tip { position: fixed; z-index: 100; pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 12px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.35); font-size: .82rem; max-width: 260px; }
+  .viz-tip-head { color: var(--viz-muted); margin-bottom: 2px; }
+  .viz-tip b { font-family: var(--font-latin); }
   .rv-item { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: grid; gap: 8px; }
   .rv-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .85rem; color: var(--text-soft); }
   .rv-head .st { color: var(--caramel); font-size: 1.05rem; letter-spacing: 2px; }
@@ -77,9 +138,13 @@
 
   <section class="kpis" id="kpis"></section>
 
+  <section class="panel viz-root" style="margin-bottom:18px" aria-labelledby="salesTitle">
+    <h2 id="salesTitle">📈 لوحة المبيعات</h2>
+    <div id="salesDash"></div>
+  </section>
+
   <section class="panels">
-    <div class="panel"><h2>🏆 الأكثر مبيعاً</h2><table id="topTable"></table></div>
-    <div class="panel" id="loyaltyPanel"><h2>⭐ أفضل الزبناء (نقاط الولاء)</h2><table id="loyTable"></table></div>
+    <div class="panel" id="loyaltyPanel" style="grid-column:1/-1"><h2>⭐ أفضل الزبناء (نقاط الولاء)</h2><table id="loyTable"></table></div>
   </section>
 
   <section class="panel" style="margin-bottom:18px">
@@ -137,6 +202,7 @@
 <script src="js/data.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/cloud-store.js"></script>
+<script src="js/sales-dashboard.js"></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -164,7 +230,8 @@
   function unlock() {
     if (started) return; started = true;
     $("#lock").hidden = true; $("#app").hidden = false; renderPrices();
-    CafeOrders.watchAll(ONLINE ? Date.now() - 30 * 86400e3 : 0, list => { ORDERS = list; render(); },
+    SalesDashboard.mount($("#salesDash"));
+    CafeOrders.watchAll(ONLINE ? Date.now() - 180 * 86400e3 : 0, list => { ORDERS = list; SalesDashboard.update(list); render(); },
       () => toast("تعذر تحميل الطلبات"));
     CafeBookings.watchAll(list => { BOOKINGS = list; render(); }, () => toast("تعذر تحميل الحجوزات"));
     CafeLoyalty.watchTop(list => { TOP = list; render(); }, () => toast("تعذر تحميل نقاط الولاء"));
@@ -177,13 +244,10 @@
 
   function render() {
     const orders = ORDERS.filter(o => o.status !== "cancelled"), bookings = BOOKINGS;
-    const revenue = orders.reduce((s, o) => s + o.total, 0);
     const today = new Date().toDateString();
     const todayOrders = orders.filter(o => new Date(o.at).toDateString() === today);
     $("#kpis").innerHTML = [
-      [ONLINE ? "الطلبات (30 يوماً)" : "الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
-      ["متوسط السلة", money(orders.length ? revenue / orders.length : 0)],
-      ["طلبات اليوم", todayOrders.length], ["حجوزات في الانتظار", bookings.filter(b => (b.status || "pending") === "pending").length],
+      ["طلبات اليوم", todayOrders.length], ["مبيعات اليوم", money(todayOrders.reduce((s, o) => s + o.total, 0))], ["حجوزات في الانتظار", bookings.filter(b => (b.status || "pending") === "pending").length],
       ["آراء تنتظر المراجعة", REVIEWS.filter(r => r.status === "pending").length],
       ["متوسط التقييم", (() => { const ok = REVIEWS.filter(r => r.status === "approved");
         return ok.length ? (ok.reduce((s, r) => s + r.rating, 0) / ok.length).toFixed(1) + " ★ (" + ok.length + ")" : "—"; })()],
@@ -191,16 +255,6 @@
         return w.length ? Math.round(w.reduce((x, y) => x + y, 0) / w.length / 60e3) + " د" : "—"; })()],
       ["منتوجات متوفرة", P.filter(p => (overrides[p.id]?.available ?? true)).length + " / " + P.length]
     ].map(([k, v]) => `<div class="kpi"><small>${k}</small><b>${v}</b></div>`).join("");
-
-    const qty = {};
-    orders.forEach(o => o.items.forEach(i => { qty[i.id] = (qty[i.id] || 0) + i.qty; }));
-    const top = Object.entries(qty).sort((a, b) => b[1] - a[1]).slice(0, 8);
-    const max = top[0]?.[1] || 1;
-    $("#topTable").innerHTML = top.length
-      ? `<tr><th>المنتوج</th><th>الكمية</th><th style="width:40%"></th></tr>` + top.map(([id, n]) => {
-          const p = P.find(x => x.id === id); return `<tr><td>${esc(p ? p.ar[0] : id)}</td><td>${n}</td><td><div class="bar" style="width:${n / max * 100}%"></div></td></tr>`;
-        }).join("")
-      : `<tr><td class="note">لا توجد طلبات بعد. الطلبات المرسلة من هذا المتصفح تظهر هنا.</td></tr>`;
 
     renderBookings();
     renderLoyalty();

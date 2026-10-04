@@ -391,7 +391,7 @@
     e.preventDefault();
     const ids = Object.keys(draft); if (!ids.length) { toast(T("needItems")); return; }
     const ref = CafeOrders.newRef("CPT");
-    const items = ids.map(id => ({ id, size: byId[id].sizes ? byId[id].sizes[0][0] : null, qty: draft[id], opts: {} }));
+    const items = ids.map(id => ({ id, size: byId[id].sizes ? byId[id].sizes[0][0] : null, qty: draft[id], opts: {}, price: byId[id].price }));
     const order = { ref, at: Date.now(), mode: $("#newMode").value, detail: $("#newDetail").value.trim(), name: $("#newName").value.trim(),
       note: $("#newNote").value.trim(), total: items.reduce((s, i) => s + byId[i.id].price * i.qty, 0),
       status: "new", times: {}, done: [], source: "counter", lang, items };

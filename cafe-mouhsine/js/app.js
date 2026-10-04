@@ -456,7 +456,8 @@
     const order = {
       ref, at: Date.now(), mode: tt.mode, total: tt.total, detail, status: "new", times: {}, done: [],
       name: $("#orderName").value.trim(), note: $("#orderNote").value.trim(), source: "web", lang: state.lang,
-      items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts || {} }))
+      // unit price as charged (size, options, happy hour) for the sales dashboard
+      items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts || {}, price: priceOf(byId[i.id], i.size, i.opts) }))
     };
     const btn = $("#checkoutBtn");
     let online = false;
