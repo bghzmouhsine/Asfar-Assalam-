@@ -1,12 +1,14 @@
 # Connecter Café Mouhsine à Firebase
 
-Une fois connectée, la plateforme envoie les commandes des clients directement à l'écran cuisine, sur n'importe quel appareil, en temps réel.
+Une fois connectée, la plateforme enregistre en ligne les **commandes**, les **réservations** et les **points fidélité**. Tout est partagé en temps réel entre les téléphones des clients, l'écran cuisine et l'administration.
 
 | | Sans Firebase (par défaut) | Avec Firebase |
 |---|---|---|
 | Commande client | envoyée par WhatsApp | enregistrée en ligne et visible en cuisine en direct (WhatsApp en secours si le réseau coupe) |
 | Écran cuisine | voit les commandes du même appareil | voit toutes les commandes, sur tous les appareils |
 | Suivi client | sur le même appareil | « Reçue → En préparation → Prête » en direct sur le téléphone du client |
+| Réservations | envoyées par WhatsApp | enregistrées en ligne ; le client voit « En attente → Confirmée » et peut annuler ; le gérant confirme en un clic dans l'admin (avec message WhatsApp prêt pour le client) |
+| Points fidélité | comptés sur le téléphone du client (modifiables par lui) | crédités par le personnel au moment où la commande est servie, impossibles à falsifier, visibles dans l'admin (meilleurs clients, ajustement manuel) |
 | Accès cuisine / admin | code PIN | compte e-mail + mot de passe du personnel |
 
 Le plan gratuit de Firebase (« Spark ») suffit largement pour un café.
@@ -48,11 +50,12 @@ Sans cette étape, la base refuse tout en mode production. Deux façons de faire
   firebase deploy --only firestore:rules
   ```
 
-Ce que les règles garantissent (25 cas testés, voir `tests/`) :
-- un client ne peut créer que des commandes « nouvelles », à son nom, et ne peut lire que les siennes ;
-- un client ne peut ni changer un statut, ni modifier un prix, ni se déclarer membre du personnel ;
-- le personnel ne peut changer que le statut d'une commande (pas son contenu ni son prix) ;
-- personne ne peut supprimer une commande : l'historique est conservé.
+Ce que les règles garantissent (57 cas testés, voir `tests/`) :
+- un client ne peut créer que des commandes « nouvelles » et des réservations « en attente », à son nom, et ne lit que les siennes ;
+- un client ne peut ni changer un statut, ni modifier un prix, ni confirmer ou modifier une réservation (il peut seulement l'annuler), ni se déclarer membre du personnel ;
+- **les points fidélité ne sont écrits que par le personnel** : un client ne peut ni s'en ajouter ni lire ceux des autres ; une commande ne rapporte des points qu'une seule fois ;
+- le personnel ne peut changer que le statut d'une commande ou d'une réservation (pas son contenu ni son prix) ;
+- personne ne peut supprimer une commande, une réservation ou une carte fidélité : l'historique est conservé.
 
 ## 4. Créer les comptes du personnel
 
@@ -75,7 +78,9 @@ L'adresse sera `https://<projet>.web.app`. Pensez à réimprimer les chevalets Q
 ## Bon à savoir
 
 - **Prix :** le total est calculé sur le téléphone du client. Un client malveillant pourrait envoyer un faux total. Le personnel le voit au service, et les règles empêchent de le modifier ensuite. Pour une garantie totale, il faudrait recalculer le prix côté serveur avec une Cloud Function (plan payant « Blaze »).
-- **Réservations, prix modifiés dans l'admin et points fidélité** restent pour l'instant enregistrés dans le navigateur. Ils peuvent passer sur Firebase de la même façon.
+- **Carte fidélité :** elle est liée au navigateur du client (compte anonyme Firebase). Si le client efface les données de son navigateur ou change de téléphone, il repart d'une nouvelle carte. Le gérant peut alors transférer ses points avec l'ajustement manuel de l'admin, en notant l'ancien numéro de carte. Pour une carte qui suit le client partout, il faudrait une connexion par numéro de téléphone (SMS Firebase, payant au-delà d'un quota).
+- **Points :** 10 DH = 1 point, crédités quand la cuisine clique sur « Servie ». Les commandes saisies au comptoir et celles parties par WhatsApp (secours) ne rapportent pas de points automatiquement : utilisez l'ajustement manuel.
+- **Prix modifiés dans l'admin** : ils restent enregistrés dans le navigateur de l'admin. Pour les publier à tous, mettez à jour `js/data.js`.
 - **Coupure réseau :** si l'envoi en ligne échoue ou prend plus de 10 secondes, la commande part par WhatsApp. Elle n'est alors pas envoyée une seconde fois en ligne.
 
 ## Tester en local sans compte Google
@@ -83,5 +88,5 @@ L'adresse sera `https://<projet>.web.app`. Pensez à réimprimer les chevalets Q
 ```bash
 cd cafe-mouhsine/tests
 npm install
-npm run test:rules        # lance l'émulateur Firestore et les 25 tests de sécurité
+npm run test:rules        # lance l'émulateur Firestore et les 57 tests de sécurité
 ```

@@ -31,11 +31,11 @@
     cart: store.get("cart", []).filter(i => byId[i.id]),
     drawerTab: "cart",
     promo: null,
-    points: store.get("points", 0),
-    loyaltyId: store.get("loyaltyId", null)
+    points: 0,
+    loyaltyId: null,          // both filled by CafeLoyalty.watch()
+    myBookings: []
   };
   if (!I18N[state.lang]) state.lang = "ar";
-  if (!state.loyaltyId) { state.loyaltyId = "CM-" + Math.random().toString(36).slice(2, 8).toUpperCase(); store.set("loyaltyId", state.loyaltyId); }
 
   const t = (k, vars) => {
     let s = (I18N[state.lang] && I18N[state.lang][k]) ?? I18N.ar[k] ?? k;
@@ -438,7 +438,7 @@
       `${W.mode}: ${t("cart." + tt.mode)}${detail ? " — " + detail : ""}`,
       $("#orderName").value.trim() ? `${W.name}: ${$("#orderName").value.trim()}` : "",
       $("#orderNote").value.trim() ? `📝 ${$("#orderNote").value.trim()}` : "",
-      `Loyalty: ${state.loyaltyId}`
+      state.loyaltyId ? `Loyalty: ${state.loyaltyId}` : ""
     ].filter((l, idx, a) => l !== "" || a[idx - 1] !== "").join("\n");
 
     const order = {
@@ -461,8 +461,9 @@
       if (w === null && CafeOrders.mode === "firebase") location.href = waLink(msg);   // popup blocked after await
     }
 
-    state.points += tt.pts; store.set("points", state.points);
-    toast(t(online ? "cart.sentKitchen" : "cart.sent", { n: tt.pts }));
+    // local mode credits now; online, staff credit the points when the order is served
+    if (CafeLoyalty.creditsAtCheckout) CafeLoyalty.add(tt.pts);
+    toast(online ? t("cart.sentKitchen", { n: tt.pts }) : CafeLoyalty.creditsAtCheckout ? t("cart.sent", { n: tt.pts }) : t("cart.sentNoPts"));
     state.cart = []; state.promo = null; $("#promoInput").value = ""; $("#modeDetail").value = ""; $("#orderNote").value = "";
     renderLoyalty();
     if (online) { watchMyOrders(); state.drawerTab = "history"; saveCart(); }
@@ -497,7 +498,8 @@
     $("#lcPoints").textContent = pts;
     $("#lcTier").textContent = tier.name;
     $("#loyaltyCard").dataset.tier = tier.name.toLowerCase();
-    $("#lcId").textContent = state.loyaltyId;
+    $("#lcId").textContent = state.loyaltyId || "—";
+    $("#lcInactive").hidden = !!state.loyaltyId;
     const next = pts < 100 ? [100, "Silver"] : pts < 300 ? [300, "Gold"] : null;
     const floor = pts < 100 ? 0 : pts < 300 ? 100 : 300;
     $("#lcBar").style.width = next ? ((pts - floor) / (next[0] - floor) * 100) + "%" : "100%";
@@ -546,24 +548,74 @@
   const dateInput = $("#bookingForm [name=date]");
   dateInput.min = new Date().toISOString().slice(0, 10);
 
-  $("#bookingForm").addEventListener("submit", e => {
+  $("#bookingForm").addEventListener("submit", async e => {
     e.preventDefault();
     const f = e.target, msgEl = $("#bookingMsg");
     msgEl.className = "form-msg";
     if (!f.checkValidity()) { msgEl.textContent = t("bk.err"); msgEl.classList.add("err"); f.reportValidity(); return; }
     const d = Object.fromEntries(new FormData(f));
     if (!isOpenAt(d.date, d.time)) { msgEl.textContent = t("bk.closed"); msgEl.classList.add("err"); return; }
-    const code = "RSV-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    const code = CafeOrders.newRef("RSV");
     const typeLabel = f.type.options[f.type.selectedIndex].text;
     const W = I18N[state.lang].wa;
     const text = [`📅 *${CFG.name}* — ${W.booking}`, `${W.code}: ${code}`, "",
       `${t("bk.name")}: ${d.name}`, `${t("bk.phone")}: ${d.phone}`, `${t("bk.date")}: ${d.date} · ${d.time}`,
       `${t("bk.guests")}: ${d.guests}`, `${t("bk.type")}: ${typeLabel}`, d.notes ? `${t("bk.notes")}: ${d.notes}` : ""].filter(Boolean).join("\n");
-    const list = store.get("bookings", []); list.push({ code, at: Date.now(), ...d }); store.set("bookings", list.slice(-500));
-    window.open(waLink(text), "_blank", "noopener");
-    msgEl.textContent = t("bk.ok", { code }); msgEl.classList.add("ok");
+    const booking = { code, at: Date.now(), name: d.name.trim(), phone: d.phone.trim(), date: d.date, time: d.time,
+      guests: parseInt(d.guests, 10), type: d.type, notes: (d.notes || "").trim(), status: "pending", lang: state.lang };
+    const btn = $("[type=submit]", f);
+    let online = false;
+    if (CafeBookings.mode === "firebase") {
+      btn.disabled = true;
+      try { await CafeBookings.create(booking); online = true; }
+      catch (err) { console.warn("Booking not saved online, falling back to WhatsApp", err); }
+      btn.disabled = false;
+    }
+    if (!online) {
+      await LocalOnly.saveBooking(booking);
+      const w = window.open(waLink(text), "_blank", "noopener");
+      if (w === null && CafeBookings.mode === "firebase") location.href = waLink(text);
+    }
+    msgEl.textContent = t(online ? "bk.okOnline" : "bk.ok", { code }); msgEl.classList.add("ok");
     f.reset(); f.guests.value = 2;
   });
+
+  // a local copy keeps WhatsApp-only bookings visible in "My bookings"
+  const LocalOnly = {
+    async saveBooking(b) {
+      const list = store.get("bookings", []);
+      if (!list.some(x => x.code === b.code)) list.push(b);
+      store.set("bookings", list.slice(-500));
+      dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" }));
+    }
+  };
+
+  /* ---------- my bookings (live status, cancel) ---------- */
+  function renderMyBookings() {
+    const today = new Date().toISOString().slice(0, 10);
+    const list = state.myBookings.filter(b => b.date >= today).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const box = $("#myBookings");
+    box.hidden = !list.length;
+    if (!list.length) return;
+    const typeName = id => id === "table" ? t("bk.table") : (SERVICES.find(s => s.id === id) ? L(SERVICES.find(s => s.id === id))[0] : id);
+    const dateFmt = new Intl.DateTimeFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-GB", { weekday: "short", day: "numeric", month: "short" });
+    box.innerHTML = `<h3>${t("bk.mine")}</h3>` + list.map(b => {
+      const st = b.status || "pending";
+      return `<div class="my-bk">
+        <div><b>${dateFmt.format(new Date(b.date + "T12:00"))} · ${esc(b.time)}</b>
+          <small>${esc(typeName(b.type))} · ${esc(b.guests)} ${t("bk.people")} · #${esc(b.code)}</small></div>
+        <span class="st st-${st === "pending" ? "new" : st === "confirmed" ? "ready" : st}">${t("bk.st." + st)}</span>
+        ${["pending", "confirmed"].includes(st) && CafeBookings.mode === "firebase" ? `<button type="button" class="btn btn-link btn-sm" data-cancel-bk="${esc(b.code)}">${t("bk.cancel")}</button>` : ""}
+      </div>`;
+    }).join("");
+  }
+  $("#myBookings").addEventListener("click", async e => {
+    const b = e.target.closest("[data-cancel-bk]"); if (!b) return;
+    if (!confirm(t("bk.cancelQ"))) return;
+    try { await CafeBookings.cancelMine(b.dataset.cancelBk); toast(t("bk.cancelled")); }
+    catch { toast(t("bk.cancelErr")); }
+  });
+  CafeBookings.watchMine(list => { state.myBookings = list; renderMyBookings(); }, err => console.warn(err));
 
   /* ================= GALLERY ================= */
   function renderGallery() {
@@ -628,7 +680,7 @@
   $$("[data-count], .section-head, .feature, .review, .loyalty-card").forEach(el => { if (!el.dataset.count) el.classList.add("reveal"); io.observe(el); });
 
   function renderAll() {
-    renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart();
+    renderTabs(); renderDiet(); renderHappyHour(); renderGrid(); renderServices(); renderLoyalty(); renderHours(); renderBookingTypes(); renderCart(); renderMyBookings();
   }
 
   // QR table cards link to ?table=N — preselect dine-in with that table
@@ -637,6 +689,11 @@
     $("input[name=mode][value=table]").checked = true;
     $("#modeDetail").value = tableNo;
   }
+
+  CafeLoyalty.watch(({ points, id }) => {
+    state.points = points; state.loyaltyId = id;
+    renderLoyalty(); renderCart();   // tier discount depends on points
+  }, err => console.warn("Loyalty unavailable", err));
 
   applyLang();
   renderGallery();

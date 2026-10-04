@@ -601,3 +601,12 @@ a.feature:hover, button.feature:hover { background: rgba(255,255,255,.06); }
 .st-ready { background: #DFF2E3; color: #2C7A3F; }
 .st-served { background: var(--surface-2); color: var(--text-soft); }
 .st-cancelled { background: #F8E1DC; color: #A13A26; }
+
+/* ---------- my bookings & inactive loyalty card ---------- */
+.my-bookings { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; }
+.my-bookings h3 { font-size: 1rem; }
+.my-bk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.my-bk > div { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
+.my-bk small { color: var(--text-soft); font-size: .78rem; }
+.my-bk .btn-link { width: auto; padding: 4px 6px; }
+.lc-inactive { font-size: .75rem; opacity: .85; }

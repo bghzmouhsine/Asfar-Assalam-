@@ -175,7 +175,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/orders-store.js"></script>
+<script src="js/cloud-store.js"></script>
 <script>
 (() => {
   "use strict";
@@ -241,7 +241,9 @@
     const o = ORDERS.find(x => x.ref === ref); if (!o) return;
     const next = { status: statusOf(o), times: { ...(o.times || {}) }, done: [...(o.done || [])] };
     fn(next);
-    CafeOrders.update(ref, next).catch(err => { console.warn(err); toast(T("syncErr")); });
+    // serving goes through a transaction that also credits the customer's loyalty points
+    const save = next.status === "served" && o.status !== "served" ? CafeOrders.serve : CafeOrders.update;
+    save(ref, next).catch(err => { console.warn(err); toast(T("syncErr")); });
   }
   const setStatus = (ref, s) => update(ref, o => { o.status = s; o.times[s] = Date.now(); });
 

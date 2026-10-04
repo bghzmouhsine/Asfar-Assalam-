@@ -24,6 +24,13 @@
   th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: start; white-space: nowrap; }
   th { color: var(--text-soft); font-weight: 600; font-size: .78rem; }
   td input[type=number] { width: 90px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .bk-st { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .75rem; font-weight: 700; }
+  .bk-pending { background: #FCEFD9; color: #9A5B12; } .bk-confirmed { background: #DFF2E3; color: #2C7A3F; }
+  .bk-cancelled { background: #F8E1DC; color: #A13A26; } .bk-done { background: var(--surface-2); color: var(--text-soft); }
+  .acts { display: flex; gap: 6px; }
+  .acts button { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; background: var(--surface); }
+  .acts button:hover { border-color: var(--accent); }
+  .adj { display: flex; gap: 4px; } .adj input { width: 64px !important; }
   td img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
   .bar { height: 8px; background: var(--accent); border-radius: 4px; }
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -66,7 +73,19 @@
 
   <section class="panels">
     <div class="panel"><h2>🏆 الأكثر مبيعاً</h2><table id="topTable"></table></div>
-    <div class="panel"><h2>📅 آخر الحجوزات</h2><table id="bookTable"></table></div>
+    <div class="panel" id="loyaltyPanel"><h2>⭐ أفضل الزبناء (نقاط الولاء)</h2><table id="loyTable"></table></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <div class="toolbar" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">📅 الحجوزات</h2>
+      <div class="toolbar">
+        <button class="btn btn-sm btn-primary" data-bkf="upcoming">القادمة</button>
+        <button class="btn btn-sm btn-ghost" data-bkf="pending">في الانتظار</button>
+        <button class="btn btn-sm btn-ghost" data-bkf="all">الكل</button>
+      </div>
+    </div>
+    <table id="bookTable"></table>
   </section>
 
   <section class="panel" style="margin-bottom:18px">
@@ -98,7 +117,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/orders-store.js"></script>
+<script src="js/cloud-store.js"></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -111,7 +130,7 @@
   const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); };
 
   const ONLINE = CafeOrders.mode === "firebase";
-  let ORDERS = [], started = false;
+  let ORDERS = [], BOOKINGS = [], TOP = [], started = false, bkFilter = "upcoming";
   const pinOk = p => p === store.get("pin", "1234");
   $("#lockForm").addEventListener("submit", async e => {
     e.preventDefault();
@@ -125,9 +144,11 @@
   // orders come from Firestore (last 30 days) online, from this browser otherwise
   function unlock() {
     if (started) return; started = true;
-    $("#lock").hidden = true; $("#app").hidden = false;
+    $("#lock").hidden = true; $("#app").hidden = false; renderPrices();
     CafeOrders.watchAll(ONLINE ? Date.now() - 30 * 86400e3 : 0, list => { ORDERS = list; render(); },
       () => toast("تعذر تحميل الطلبات"));
+    CafeBookings.watchAll(list => { BOOKINGS = list; render(); }, () => toast("تعذر تحميل الحجوزات"));
+    CafeLoyalty.watchTop(list => { TOP = list; render(); }, () => toast("تعذر تحميل نقاط الولاء"));
   }
 
   let overrides = store.get("overrides", {});
@@ -135,14 +156,14 @@
   const catName = Object.fromEntries(window.CAFE_CATEGORIES.map(c => [c.id, c.icon + " " + c.ar]));
 
   function render() {
-    const orders = ORDERS.filter(o => o.status !== "cancelled"), bookings = store.get("bookings", []);
+    const orders = ORDERS.filter(o => o.status !== "cancelled"), bookings = BOOKINGS;
     const revenue = orders.reduce((s, o) => s + o.total, 0);
     const today = new Date().toDateString();
     const todayOrders = orders.filter(o => new Date(o.at).toDateString() === today);
     $("#kpis").innerHTML = [
       [ONLINE ? "الطلبات (30 يوماً)" : "الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
       ["متوسط السلة", money(orders.length ? revenue / orders.length : 0)],
-      ["طلبات اليوم", todayOrders.length], ["الحجوزات", bookings.length],
+      ["طلبات اليوم", todayOrders.length], ["حجوزات في الانتظار", bookings.filter(b => (b.status || "pending") === "pending").length],
       ["متوسط وقت التحضير", (() => { const w = orders.filter(o => o.times && o.times.ready).map(o => o.times.ready - o.at);
         return w.length ? Math.round(w.reduce((x, y) => x + y, 0) / w.length / 60e3) + " د" : "—"; })()],
       ["منتوجات متوفرة", P.filter(p => (overrides[p.id]?.available ?? true)).length + " / " + P.length]
@@ -158,11 +179,12 @@
         }).join("")
       : `<tr><td class="note">لا توجد طلبات بعد. الطلبات المرسلة من هذا المتصفح تظهر هنا.</td></tr>`;
 
-    $("#bookTable").innerHTML = bookings.length
-      ? `<tr><th>الرقم</th><th>الاسم</th><th>التاريخ</th><th>الأشخاص</th><th>النوع</th></tr>` +
-        bookings.slice(-10).reverse().map(b => `<tr><td>${esc(b.code)}</td><td>${esc(b.name)}</td><td>${esc(b.date)} ${esc(b.time)}</td><td>${esc(b.guests)}</td><td>${esc(S.find(s => s.id === b.type)?.ar[0] || "طاولة")}</td></tr>`).join("")
-      : `<tr><td class="note">لا توجد حجوزات بعد.</td></tr>`;
+    renderBookings();
+    renderLoyalty();
+  }
 
+  // the price editor is drawn on demand only, so live data updates never wipe unsaved edits
+  function renderPrices() {
     $("#priceTable").innerHTML = `<tr><th></th><th>المنتوج</th><th>الفئة</th><th>السعر الأصلي</th><th>السعر الحالي</th><th>متوفر</th></tr>` +
       P.map(p => {
         const o = overrides[p.id] || {};
@@ -176,6 +198,83 @@
       S.map(s => `<tr><td>${s.icon} ${esc(s.ar[0])}</td><td>${esc(s.unit.ar)}</td><td>${money(s.price)}</td>
         <td><input type="number" min="0" step="1" data-sprice="${s.id}" value="${overrides["srv:" + s.id]?.price ?? s.price}"></td></tr>`).join("");
   }
+
+  /* ---------- bookings ---------- */
+  const BK_ST = { pending: "في الانتظار", confirmed: "مؤكد", cancelled: "ملغى", done: "منتهٍ" };
+  const typeName = id => id === "table" ? "طاولة" : (S.find(s => s.id === id)?.ar[0] || id);
+  function renderBookings() {
+    const today = new Date().toISOString().slice(0, 10);
+    let list = [...BOOKINGS];
+    if (bkFilter === "upcoming") list = list.filter(b => b.date >= today && b.status !== "cancelled");
+    if (bkFilter === "pending") list = list.filter(b => (b.status || "pending") === "pending");
+    list.sort((x, y) => bkFilter === "all" ? (y.at || 0) - (x.at || 0) : (x.date + x.time).localeCompare(y.date + y.time));
+    $("#bookTable").innerHTML = list.length
+      ? `<tr><th>الموعد</th><th>الاسم</th><th>الهاتف</th><th>الأشخاص</th><th>النوع</th><th>ملاحظات</th><th>الحالة</th><th></th></tr>` +
+        list.slice(0, 60).map(b => { const st = b.status || "pending"; return `<tr>
+          <td><b>${esc(b.date)}</b> ${esc(b.time)}<br><small class="note">${esc(b.code)}</small></td>
+          <td>${esc(b.name)}</td><td dir="ltr">${esc(b.phone)}</td><td>${esc(b.guests)}</td><td>${esc(typeName(b.type))}</td>
+          <td style="white-space:normal;max-width:220px">${esc(b.notes || "")}</td>
+          <td><span class="bk-st bk-${st}">${BK_ST[st] || st}</span></td>
+          <td><div class="acts">
+            ${st === "pending" ? `<button data-bk="${esc(b.code)}" data-to="confirmed">✓ تأكيد</button>` : ""}
+            ${st === "confirmed" ? `<button data-bk="${esc(b.code)}" data-to="done">منتهٍ</button>` : ""}
+            ${["pending", "confirmed"].includes(st) ? `<button data-bk="${esc(b.code)}" data-to="cancelled">✕ إلغاء</button>` : ""}
+            ${b.phone ? `<button data-wa="${esc(b.code)}" title="WhatsApp">💬</button>` : ""}
+          </div></td></tr>`; }).join("")
+      : `<tr><td class="note">لا توجد حجوزات.</td></tr>`;
+    document.querySelectorAll("[data-bkf]").forEach(x => x.className = "btn btn-sm " + (x.dataset.bkf === bkFilter ? "btn-primary" : "btn-ghost"));
+  }
+  // WhatsApp link to the customer, in the language they booked in
+  const custWa = b => {
+    let n = String(b.phone).replace(/\D/g, "");
+    if (n.startsWith("00")) n = n.slice(2); else if (n.startsWith("0")) n = "212" + n.slice(1);
+    const st = b.status || "pending";
+    const msg = {
+      fr: st === "cancelled" ? `Bonjour ${b.name}, nous sommes désolés : votre réservation ${b.code} du ${b.date} à ${b.time} ne peut pas être maintenue. — Café Mouhsine BOUAGHAZ`
+        : `Bonjour ${b.name}, votre réservation ${b.code} du ${b.date} à ${b.time} (${b.guests} pers.) est confirmée. À bientôt chez Café Mouhsine BOUAGHAZ ☕`,
+      en: st === "cancelled" ? `Hello ${b.name}, we're sorry: your booking ${b.code} on ${b.date} at ${b.time} cannot go ahead. — Café Mouhsine BOUAGHAZ`
+        : `Hello ${b.name}, your booking ${b.code} on ${b.date} at ${b.time} (${b.guests} guests) is confirmed. See you soon at Café Mouhsine BOUAGHAZ ☕`,
+      ar: st === "cancelled" ? `مرحباً ${b.name}، نعتذر: لا يمكن الإبقاء على حجزك ${b.code} بتاريخ ${b.date} على الساعة ${b.time}. — Café Mouhsine BOUAGHAZ`
+        : `مرحباً ${b.name}، تم تأكيد حجزك ${b.code} بتاريخ ${b.date} على الساعة ${b.time} (${b.guests} أشخاص). نراك قريباً في Café Mouhsine BOUAGHAZ ☕`
+    }[b.lang] || "";
+    return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+  };
+  $("#bookTable").addEventListener("click", async e => {
+    const w = e.target.closest("[data-wa]");
+    if (w) { const b = BOOKINGS.find(x => x.code === w.dataset.wa); if (b) window.open(custWa(b), "_blank", "noopener"); return; }
+    const btn = e.target.closest("[data-bk]"); if (!btn) return;
+    const code = btn.dataset.bk, to = btn.dataset.to;
+    if (to === "cancelled" && !confirm("إلغاء هذا الحجز؟")) return;
+    const b = BOOKINGS.find(x => x.code === code);
+    // open the window during the click so popup blockers allow it
+    const win = to === "confirmed" && b && b.phone ? window.open("about:blank", "_blank") : null;
+    try {
+      await CafeBookings.setStatus(code, to);
+      if (win) win.location = custWa({ ...b, status: to });
+      toast("تم التحديث ✓");
+    } catch { if (win) win.close(); toast("تعذر التحديث"); }
+  });
+  document.querySelectorAll("[data-bkf]").forEach(x => x.addEventListener("click", () => { bkFilter = x.dataset.bkf; renderBookings(); }));
+
+  /* ---------- loyalty ---------- */
+  function renderLoyalty() {
+    if (!ONLINE) {
+      $("#loyTable").innerHTML = `<tr><td class="note">في الوضع المحلي تُحفظ النقاط على هاتف كل زبون. اربط Firebase لعرض جميع الزبناء.</td></tr>`;
+      return;
+    }
+    const tier = p => p >= 300 ? "🥇 Gold" : p >= 100 ? "🥈 Silver" : "☕ Bronze";
+    $("#loyTable").innerHTML = TOP.length
+      ? `<tr><th>البطاقة</th><th>النقاط</th><th>المستوى</th><th>الطلبات</th><th>تعديل</th></tr>` + TOP.map(c => `<tr>
+          <td><b>${esc(c.id)}</b></td><td>${c.points}</td><td>${tier(c.points)}</td><td>${c.orders || 0}</td>
+          <td><div class="adj"><input type="number" step="1" value="0" data-adj="${esc(c.uid)}" aria-label="delta"><div class="acts"><button data-adjgo="${esc(c.uid)}">تطبيق</button></div></div></td></tr>`).join("")
+      : `<tr><td class="note">لم تُمنح أي نقاط بعد. تُضاف النقاط تلقائياً عند تقديم الطلب من شاشة المطبخ.</td></tr>`;
+  }
+  $("#loyTable").addEventListener("click", async e => {
+    const b = e.target.closest("[data-adjgo]"); if (!b) return;
+    const uid = b.dataset.adjgo, delta = parseInt(document.querySelector(`[data-adj="${uid}"]`).value, 10);
+    if (!delta) return;
+    try { await CafeLoyalty.adjust(uid, delta); toast("تم تعديل النقاط ✓"); } catch { toast("تعذر التعديل"); }
+  });
 
   $("#saveBtn").addEventListener("click", () => {
     const next = {};
@@ -191,11 +290,11 @@
       const price = +document.querySelector(`[data-sprice="${s.id}"]`).value;
       if (price !== s.price) next["srv:" + s.id] = { price };
     });
-    overrides = next; store.set("overrides", overrides); render(); toast("تم الحفظ ✓");
+    overrides = next; store.set("overrides", overrides); render(); renderPrices(); toast("تم الحفظ ✓");
   });
 
   $("#exportBtn").addEventListener("click", () => {
-    const data = { exportedAt: new Date().toISOString(), overrides, orders: ORDERS, bookings: store.get("bookings", []) };
+    const data = { exportedAt: new Date().toISOString(), overrides, orders: ORDERS, bookings: BOOKINGS, loyalty: TOP };
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
     a.download = `cafe-mouhsine-${new Date().toISOString().slice(0, 10)}.json`; a.click();
@@ -205,9 +304,9 @@
     try {
       const d = JSON.parse(await f.text());
       if (d.overrides) { overrides = d.overrides; store.set("overrides", overrides); }
-      if (Array.isArray(d.orders)) store.set("orders", d.orders);
-      if (Array.isArray(d.bookings)) store.set("bookings", d.bookings);
-      render(); toast("تم الاستيراد ✓");
+      if (Array.isArray(d.orders) && !ONLINE) { store.set("orders", d.orders); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" })); }
+      if (Array.isArray(d.bookings) && !ONLINE) { store.set("bookings", d.bookings); dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" })); }
+      render(); renderPrices(); toast("تم الاستيراد ✓");
     } catch { toast("ملف غير صالح"); }
   });
   $("#pinBtn").addEventListener("click", () => {
@@ -216,9 +315,10 @@
   });
   $("#clearStats").addEventListener("click", () => {
     // online orders are an audit trail: the rules forbid deleting them
-    if (!confirm(ONLINE ? "مسح الحجوزات المسجلة في هذا المتصفح؟ (طلبات Firebase تبقى محفوظة)" : "مسح جميع الطلبات والحجوزات المسجلة؟")) return;
-    if (!ONLINE) { store.set("orders", []); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" })); }
-    store.set("bookings", []); render();
+    if (ONLINE) { alert("البيانات على Firebase (الطلبات والحجوزات والنقاط) سجل دائم ولا يمكن مسحها من هنا."); return; }
+    if (!confirm("مسح جميع الطلبات والحجوزات المسجلة؟")) return;
+    store.set("orders", []); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" }));
+    store.set("bookings", []); dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" }));
   });
   if (ONLINE) {
     $("#email").hidden = false; $("#pin").removeAttribute("maxlength"); $("#pin").removeAttribute("inputmode");
@@ -227,7 +327,7 @@
   } else {
     try { if (sessionStorage.getItem("cm_admin") === "1") setTimeout(unlock); } catch {}
   }
-  $("#resetPrices").addEventListener("click", () => { if (confirm("استرجاع الأسعار الأصلية؟")) { overrides = {}; store.set("overrides", {}); render(); } });
+  $("#resetPrices").addEventListener("click", () => { if (confirm("استرجاع الأسعار الأصلية؟")) { overrides = {}; store.set("overrides", {}); render(); renderPrices(); } });
 })();
 </script>
 </body>

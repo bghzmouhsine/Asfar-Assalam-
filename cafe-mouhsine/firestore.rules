@@ -1,7 +1,8 @@
 rules_version = '2';
 
-// Café Mouhsine BOUAGHAZ — who may read and write orders.
-// Customers (anonymous sign-in) can create orders and read only their own.
+// Café Mouhsine BOUAGHAZ — who may read and write what.
+// Customers (anonymous sign-in) create their own orders and bookings and
+// read only their own. Loyalty points are written by staff only.
 // Staff = users with a document at staff/{uid} (create it in the console).
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -32,8 +33,52 @@ service cloud.firestore {
       allow read: if isStaff() || (signedIn() && resource.data.uid == request.auth.uid);
       // staff only move an order along; contents and prices stay as ordered
       allow update: if isStaff()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'times', 'done'])
-        && request.resource.data.status in ['new', 'preparing', 'ready', 'served', 'cancelled'];
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'times', 'done', 'pointsAwarded'])
+        && request.resource.data.status in ['new', 'preparing', 'ready', 'served', 'cancelled']
+        // points are credited once: the flag can only be switched on
+        && (!('pointsAwarded' in request.resource.data) || request.resource.data.pointsAwarded == true);
+      allow delete: if false;
+    }
+
+    function validNewBooking(code) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['code', 'at', 'createdAt', 'uid', 'name', 'phone', 'date', 'time',
+                               'guests', 'type', 'notes', 'status', 'lang'])
+        && d.code == code
+        && d.uid == request.auth.uid
+        && d.createdAt == request.time
+        && d.status == 'pending'
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+        && d.phone is string && d.phone.matches('^[0-9+ ]{9,20}$')
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.time is string && d.time.matches('^[0-9]{2}:[0-9]{2}$')
+        && d.guests is int && d.guests >= 1 && d.guests <= 40
+        && d.type in ['table', 'events', 'catering', 'workshop', 'cowork']
+        && shortText(d, 'notes', 300);
+    }
+    function onlyStatusChange() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusAt']);
+    }
+
+    match /bookings/{code} {
+      allow create: if signedIn() && validNewBooking(code);
+      allow read: if isStaff() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update: if onlyStatusChange() && (
+        (isStaff() && request.resource.data.status in ['pending', 'confirmed', 'cancelled', 'done'])
+        // the customer may cancel their own upcoming booking, nothing else
+        || (signedIn() && resource.data.uid == request.auth.uid
+            && resource.data.status in ['pending', 'confirmed']
+            && request.resource.data.status == 'cancelled'));
+      allow delete: if false;
+    }
+
+    // one document per customer (id = their uid); never writable by customers
+    match /loyalty/{uid} {
+      allow read: if isStaff() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if isStaff()
+        && request.resource.data.keys().hasOnly(['points', 'orders', 'updatedAt'])
+        && request.resource.data.points is int && request.resource.data.points >= 0
+        && request.resource.data.orders is int && request.resource.data.orders >= 0;
       allow delete: if false;
     }
 

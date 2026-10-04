@@ -42,5 +42,46 @@ await check("staff creates counter order", assertSucceeds(setDoc(doc(staff, "ord
 await check("staff reads own staff doc", assertSucceeds(getDoc(doc(staff, "staff/barista1"))));
 await check("customer cannot make itself staff", assertFails(setDoc(doc(alice, "staff/alice"), { name: "x" })));
 await check("customer cannot read staff list", assertFails(getDoc(doc(alice, "staff/barista1"))));
+
+// ---------- points can only be credited once per order ----------
+await check("staff marks served + pointsAwarded", assertSucceeds(updateDoc(doc(staff, "orders/A1"), { status: "served", pointsAwarded: true })));
+await check("pointsAwarded cannot be switched off", assertFails(updateDoc(doc(staff, "orders/A1"), { pointsAwarded: false })));
+await check("customer cannot set pointsAwarded", assertFails(updateDoc(doc(alice, "orders/A1"), { pointsAwarded: true })));
+
+// ---------- bookings ----------
+const booking = (code, uid, extra = {}) => ({ code, at: Date.now(), createdAt: serverTimestamp(), uid, name: "Alice", phone: "0600000000",
+  date: "2026-10-10", time: "15:00", guests: 2, type: "table", notes: "", status: "pending", lang: "fr", ...extra });
+await check("customer creates booking", assertSucceeds(setDoc(doc(alice, "bookings/R1"), booking("R1", "alice"))));
+await check("booking for another uid refused", assertFails(setDoc(doc(alice, "bookings/R2"), booking("R2", "bob"))));
+await check("pre-confirmed booking refused", assertFails(setDoc(doc(alice, "bookings/R3"), booking("R3", "alice", { status: "confirmed" }))));
+await check("41 guests refused", assertFails(setDoc(doc(alice, "bookings/R4"), booking("R4", "alice", { guests: 41 }))));
+await check("guests as text refused", assertFails(setDoc(doc(alice, "bookings/R5"), booking("R5", "alice", { guests: "2" }))));
+await check("bad phone refused", assertFails(setDoc(doc(alice, "bookings/R6"), booking("R6", "alice", { phone: "<script>" }))));
+await check("bad date format refused", assertFails(setDoc(doc(alice, "bookings/R7"), booking("R7", "alice", { date: "demain" }))));
+await check("unknown booking type refused", assertFails(setDoc(doc(alice, "bookings/R8"), booking("R8", "alice", { type: "vip" }))));
+await check("customer reads own booking", assertSucceeds(getDoc(doc(alice, "bookings/R1"))));
+await check("other customer cannot read booking", assertFails(getDoc(doc(bob, "bookings/R1"))));
+await check("customer cannot confirm own booking", assertFails(updateDoc(doc(alice, "bookings/R1"), { status: "confirmed" })));
+await check("customer cannot change booking date", assertFails(updateDoc(doc(alice, "bookings/R1"), { date: "2026-12-31" })));
+await check("other customer cannot cancel it", assertFails(updateDoc(doc(bob, "bookings/R1"), { status: "cancelled" })));
+await check("staff confirms booking", assertSucceeds(updateDoc(doc(staff, "bookings/R1"), { status: "confirmed", statusAt: Date.now() })));
+await check("customer cancels own booking", assertSucceeds(updateDoc(doc(alice, "bookings/R1"), { status: "cancelled", statusAt: Date.now() })));
+await check("customer cannot un-cancel", assertFails(updateDoc(doc(alice, "bookings/R1"), { status: "pending" })));
+await check("staff lists all bookings", assertSucceeds(getDocs(collection(staff, "bookings"))));
+await check("customer cannot list all bookings", assertFails(getDocs(collection(alice, "bookings"))));
+await check("nobody deletes bookings", assertFails(deleteDoc(doc(staff, "bookings/R1"))));
+
+// ---------- loyalty ----------
+await check("customer cannot give themselves points", assertFails(setDoc(doc(alice, "loyalty/alice"), { points: 1000, orders: 1 })));
+await check("staff credits points", assertSucceeds(setDoc(doc(staff, "loyalty/alice"), { points: 3, orders: 1, updatedAt: serverTimestamp() })));
+await check("customer reads own points", assertSucceeds(getDoc(doc(alice, "loyalty/alice"))));
+await check("customer cannot edit own points", assertFails(updateDoc(doc(alice, "loyalty/alice"), { points: 999 })));
+await check("other customer cannot read points", assertFails(getDoc(doc(bob, "loyalty/alice"))));
+await check("negative points refused", assertFails(setDoc(doc(staff, "loyalty/bob"), { points: -5, orders: 0 })));
+await check("fractional points refused", assertFails(setDoc(doc(staff, "loyalty/bob"), { points: 2.5, orders: 0 })));
+await check("extra loyalty fields refused", assertFails(setDoc(doc(staff, "loyalty/bob"), { points: 1, orders: 0, tier: "Gold" })));
+await check("staff lists loyalty", assertSucceeds(getDocs(collection(staff, "loyalty"))));
+await check("customer cannot list loyalty", assertFails(getDocs(collection(alice, "loyalty"))));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

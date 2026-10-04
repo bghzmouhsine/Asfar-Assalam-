@@ -1,7 +1,12 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
-    "cart.checkoutOnline": "إرسال الطلب", "cart.sending": "جارٍ الإرسال…", "cart.sentKitchen": "وصل طلبك إلى المطبخ! ربحت {n} نقطة.",
+    "cart.sentNoPts": "تم إرسال طلبك عبر واتساب.",
+    "loy.inactive": "اطلب لأول مرة لتفعيل بطاقتك.",
+    "bk.okOnline": "تم تسجيل طلب الحجز رقم {code}. ستتابع حالته أسفله.", "bk.mine": "حجوزاتي", "bk.people": "أشخاص",
+    "bk.st.pending": "في الانتظار", "bk.st.confirmed": "مؤكد", "bk.st.cancelled": "ملغى", "bk.st.done": "منتهٍ",
+    "bk.cancel": "إلغاء", "bk.cancelQ": "إلغاء هذا الحجز؟", "bk.cancelled": "تم إلغاء الحجز", "bk.cancelErr": "تعذر الإلغاء، حاول مرة أخرى",
+    "cart.checkoutOnline": "إرسال الطلب", "cart.sending": "جارٍ الإرسال…", "cart.sentKitchen": "وصل طلبك إلى المطبخ! ستربح {n} نقطة عند التقديم.",
     "st.readyToast": "طلبك {r} جاهز ☕",
     "cart.note": "ملاحظة للمطبخ (اختياري)",
     "st.new": "مستلم", "st.preparing": "قيد التحضير", "st.ready": "جاهز", "st.served": "تم التقديم", "st.cancelled": "ملغى",
@@ -59,7 +64,12 @@ window.I18N = {
   },
 
   fr: {
-    "cart.checkoutOnline": "Envoyer la commande", "cart.sending": "Envoi…", "cart.sentKitchen": "Commande reçue en cuisine ! +{n} points.",
+    "cart.sentNoPts": "Commande envoyée par WhatsApp.",
+    "loy.inactive": "Passez votre première commande pour activer votre carte.",
+    "bk.okOnline": "Demande n° {code} enregistrée. Suivez son statut ci-dessous.", "bk.mine": "Mes réservations", "bk.people": "pers.",
+    "bk.st.pending": "En attente", "bk.st.confirmed": "Confirmée", "bk.st.cancelled": "Annulée", "bk.st.done": "Terminée",
+    "bk.cancel": "Annuler", "bk.cancelQ": "Annuler cette réservation ?", "bk.cancelled": "Réservation annulée", "bk.cancelErr": "Annulation impossible, réessayez",
+    "cart.checkoutOnline": "Envoyer la commande", "cart.sending": "Envoi…", "cart.sentKitchen": "Commande reçue en cuisine ! +{n} points au service.",
     "st.readyToast": "Votre commande {r} est prête ☕",
     "cart.note": "Note pour la cuisine (optionnel)",
     "st.new": "Reçue", "st.preparing": "En préparation", "st.ready": "Prête", "st.served": "Servie", "st.cancelled": "Annulée",
@@ -117,7 +127,12 @@ window.I18N = {
   },
 
   en: {
-    "cart.checkoutOnline": "Place order", "cart.sending": "Sending…", "cart.sentKitchen": "Order received by the kitchen! +{n} points.",
+    "cart.sentNoPts": "Order sent via WhatsApp.",
+    "loy.inactive": "Place your first order to activate your card.",
+    "bk.okOnline": "Request #{code} saved. Follow its status below.", "bk.mine": "My bookings", "bk.people": "guests",
+    "bk.st.pending": "Pending", "bk.st.confirmed": "Confirmed", "bk.st.cancelled": "Cancelled", "bk.st.done": "Done",
+    "bk.cancel": "Cancel", "bk.cancelQ": "Cancel this booking?", "bk.cancelled": "Booking cancelled", "bk.cancelErr": "Couldn't cancel, please try again",
+    "cart.checkoutOnline": "Place order", "cart.sending": "Sending…", "cart.sentKitchen": "Order received by the kitchen! +{n} points when served.",
     "st.readyToast": "Your order {r} is ready ☕",
     "cart.note": "Note for the kitchen (optional)",
     "st.new": "Received", "st.preparing": "Preparing", "st.ready": "Ready", "st.served": "Served", "st.cancelled": "Cancelled",
