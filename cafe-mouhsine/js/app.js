@@ -360,7 +360,7 @@
     const dateFmt = new Intl.DateTimeFormat(state.lang === "ar" ? "ar-MA" : state.lang === "fr" ? "fr-FR" : "en-GB", { dateStyle: "medium", timeStyle: "short" });
     $("#cartItems").innerHTML = orders.length ? orders.map(o => `
       <div class="hist">
-        <div class="hist-top"><b>${esc(o.ref)}</b><span>${money(o.total)}</span></div>
+        <div class="hist-top"><b>${esc(o.ref)} ${o.status ? `<span class="st st-${o.status}">${t("st." + o.status)}</span>` : ""}</b><span>${money(o.total)}</span></div>
         <small>${dateFmt.format(o.at)} · ${t("cart." + o.mode)}</small>
         <p>${o.items.map(i => {
           if (!byId[i.id]) return "";
@@ -370,6 +370,7 @@
         <button class="btn btn-ghost btn-sm" data-reorder="${esc(o.ref)}">↻ ${t("hist.reorder")}</button>
       </div>`).join("") : `<p class="cart-empty">${t("hist.empty")}</p>`;
   }
+  addEventListener("storage", e => { if (e.key === "cm_orders" && state.drawerTab === "history") renderCart(); });
   $(".drawer-tabs").addEventListener("click", e => {
     const b = e.target.closest("[data-tab]"); if (!b) return;
     state.drawerTab = b.dataset.tab; renderCart();
@@ -420,18 +421,23 @@
       `*${W.total}: ${money(tt.total)}*`, "",
       `${W.mode}: ${t("cart." + tt.mode)}${detail ? " — " + detail : ""}`,
       $("#orderName").value.trim() ? `${W.name}: ${$("#orderName").value.trim()}` : "",
+      $("#orderNote").value.trim() ? `📝 ${$("#orderNote").value.trim()}` : "",
       `Loyalty: ${state.loyaltyId}`
     ].filter((l, idx, a) => l !== "" || a[idx - 1] !== "").join("\n");
 
-    // record locally for the admin dashboard
+    // record locally for the admin dashboard and the kitchen screen
     const orders = store.get("orders", []);
-    orders.push({ ref, at: Date.now(), mode: tt.mode, total: tt.total, items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts })) });
+    orders.push({
+      ref, at: Date.now(), mode: tt.mode, total: tt.total, detail, status: "new", times: {}, done: [],
+      name: $("#orderName").value.trim(), note: $("#orderNote").value.trim(), source: "web",
+      items: state.cart.map(i => ({ id: i.id, size: i.size, qty: i.qty, opts: i.opts }))
+    });
     store.set("orders", orders.slice(-500));
 
     state.points += tt.pts; store.set("points", state.points);
     window.open(waLink(msg), "_blank", "noopener");
     toast(t("cart.sent", { n: tt.pts }));
-    state.cart = []; state.promo = null; $("#promoInput").value = ""; $("#modeDetail").value = "";
+    state.cart = []; state.promo = null; $("#promoInput").value = ""; $("#modeDetail").value = ""; $("#orderNote").value = "";
     saveCart(); renderLoyalty(); openDrawer(false);
   });
 

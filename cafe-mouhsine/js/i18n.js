@@ -1,6 +1,8 @@
 /* Café Mouhsine BOUAGHAZ — interface translations (ar / fr / en) */
 window.I18N = {
   ar: {
+    "cart.note": "ملاحظة للمطبخ (اختياري)",
+    "st.new": "مستلم", "st.preparing": "قيد التحضير", "st.ready": "جاهز", "st.served": "تم التقديم", "st.cancelled": "ملغى",
     "diet.label": "نظام غذائي:", "diet.veg": "نباتي", "diet.vegan": "نباتي صرف", "diet.gf": "بدون غلوتين",
     "al.milk": "حليب", "al.gluten": "غلوتين", "al.egg": "بيض", "al.nuts": "مكسرات", "p.allergens": "مسببات الحساسية",
     "offer.save": "وفّر {n}", "offer.instead": "بدلاً من",
@@ -55,6 +57,8 @@ window.I18N = {
   },
 
   fr: {
+    "cart.note": "Note pour la cuisine (optionnel)",
+    "st.new": "Reçue", "st.preparing": "En préparation", "st.ready": "Prête", "st.served": "Servie", "st.cancelled": "Annulée",
     "diet.label": "Régime :", "diet.veg": "Végétarien", "diet.vegan": "Vegan", "diet.gf": "Sans gluten",
     "al.milk": "Lait", "al.gluten": "Gluten", "al.egg": "Œufs", "al.nuts": "Fruits à coque", "p.allergens": "Allergènes",
     "offer.save": "−{n}", "offer.instead": "Au lieu de",
@@ -109,6 +113,8 @@ window.I18N = {
   },
 
   en: {
+    "cart.note": "Note for the kitchen (optional)",
+    "st.new": "Received", "st.preparing": "Preparing", "st.ready": "Ready", "st.served": "Served", "st.cancelled": "Cancelled",
     "diet.label": "Diet:", "diet.veg": "Vegetarian", "diet.vegan": "Vegan", "diet.gf": "Gluten-free",
     "al.milk": "Milk", "al.gluten": "Gluten", "al.egg": "Eggs", "al.nuts": "Nuts", "p.allergens": "Allergens",
     "offer.save": "Save {n}", "offer.instead": "Instead of",

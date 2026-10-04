@@ -54,6 +54,7 @@
     </div>
     <div class="toolbar">
       <a class="btn btn-ghost btn-sm" href="index.html">↩ الموقع</a>
+      <a class="btn btn-ghost btn-sm" href="kitchen.html">🍳 شاشة المطبخ</a>
       <button class="btn btn-ghost btn-sm" id="exportBtn">تصدير JSON</button>
       <label class="btn btn-ghost btn-sm">استيراد JSON<input type="file" id="importInput" accept="application/json" hidden></label>
       <button class="btn btn-primary btn-sm" id="saveBtn">حفظ التغييرات</button>
@@ -127,6 +128,8 @@
       ["الطلبات", orders.length], ["رقم المعاملات", money(revenue)],
       ["متوسط السلة", money(orders.length ? revenue / orders.length : 0)],
       ["طلبات اليوم", todayOrders.length], ["الحجوزات", bookings.length],
+      ["متوسط وقت التحضير", (() => { const w = orders.filter(o => o.times && o.times.ready).map(o => o.times.ready - o.at);
+        return w.length ? Math.round(w.reduce((x, y) => x + y, 0) / w.length / 60e3) + " د" : "—"; })()],
       ["منتوجات متوفرة", P.filter(p => (overrides[p.id]?.available ?? true)).length + " / " + P.length]
     ].map(([k, v]) => `<div class="kpi"><small>${k}</small><b>${v}</b></div>`).join("");
 

@@ -593,3 +593,11 @@ a.feature:hover, button.feature:hover { background: rgba(255,255,255,.06); }
 .hist small { color: var(--text-soft); font-size: .78rem; }
 .hist p { font-size: .88rem; }
 .hist .btn { justify-self: start; }
+
+/* ---------- order status badges (customer history) ---------- */
+.st { display: inline-block; margin-inline-start: 6px; padding: 2px 8px; border-radius: 999px; font-size: .68rem; font-weight: 700; vertical-align: middle; }
+.st-new { background: #E7EEF9; color: #2D5BA8; }
+.st-preparing { background: #FCEFD9; color: #9A5B12; }
+.st-ready { background: #DFF2E3; color: #2C7A3F; }
+.st-served { background: var(--surface-2); color: var(--text-soft); }
+.st-cancelled { background: #F8E1DC; color: #A13A26; }
