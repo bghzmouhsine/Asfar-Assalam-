@@ -797,7 +797,9 @@
       priceRange: `${Math.min(...PRODUCTS.map(p => p.price))}–${Math.max(...SERVICES.map(s => s.price))} MAD`,
       currenciesAccepted: "MAD", paymentAccepted: "Cash, Credit Card",
       acceptsReservations: true, hasMenu: new URL("menu-print.html", site).href,
-      address: { "@type": "PostalAddress", streetAddress: CFG.address.fr.split(",")[0], addressLocality: (CFG.legal && CFG.legal.city && CFG.legal.city.fr) || "Meknès", addressCountry: "MA" },
+      address: { "@type": "PostalAddress", streetAddress: CFG.address.fr.split(",")[0],
+        addressLocality: (CFG.legal && CFG.legal.city && CFG.legal.city.fr) || CFG.address.fr.split(",")[1].trim(),
+        addressRegion: CFG.legal && CFG.legal.court ? CFG.legal.court.fr : undefined, addressCountry: "MA" },
       openingHoursSpecification: Object.entries(CFG.hours).map(([d, [opens, closes]]) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: dayNames[d], opens, closes }))
     };
     if (!isPlaceholder(CFG.phone)) data.telephone = CFG.phone;

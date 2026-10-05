@@ -11,8 +11,8 @@ window.CAFE_CONFIG = {
   phone: "+212646103161",          // WhatsApp number used for orders & bookings
   phoneDisplay: "+212 6 46 10 31 61",
   email: "bghz.mouhsine@gmail.com",
-  address: { ar: "شارع محمد الخامس، مكناس، المغرب", fr: "Avenue Mohammed V, Meknès, Maroc", en: "Mohammed V Avenue, Meknes, Morocco" },
-  mapQuery: "Meknes, Morocco",
+  address: { ar: "قصر الدويرة، أوفوس، الرشيدية، المغرب", fr: "Ksar Douira, Aoufous, Errachidia, Maroc", en: "Ksar Douira, Aoufous, Errachidia, Morocco" },
+  mapQuery: "Ksar Douira, Aoufous, Errachidia, Morocco",
   currency: "DH",
   deliveryFee: 15,
   freeDeliveryFrom: 150,
@@ -28,14 +28,15 @@ window.CAFE_CONFIG = {
     company: "",            // raison sociale, e.g. "Café Mouhsine SARL AU"
     form: "",               // SARL, SARL AU, entreprise individuelle…
     capital: "",            // e.g. "100 000 DH"
-    rc: "",                 // registre du commerce, e.g. "RC 12345 – Meknès"
+    rc: "",                 // registre du commerce, e.g. "RC 12345 – Errachidia"
     ice: "",                // identifiant commun de l'entreprise (15 chiffres)
     if: "",                 // identifiant fiscal
     patente: "",            // taxe professionnelle
     director: "Mouhsine BOUAGHAZ",   // directeur de la publication
     host: "",               // hébergeur du site: name + address (e.g. Firebase Hosting / Netlify)
     cndp: "",               // n° de récépissé de déclaration CNDP (loi 09-08)
-    city: { ar: "مكناس", fr: "Meknès", en: "Meknes" },   // tribunal compétent, zone de livraison
+    city: { ar: "أوفوس", fr: "Aoufous", en: "Aoufous" },            // localité du café, zone de livraison
+    court: { ar: "الرشيدية", fr: "Errachidia", en: "Errachidia" },   // tribunaux compétents
     updated: "2026-10-04"
   },
   // automatic discount: days (0 = Sunday), time window, categories, percentage

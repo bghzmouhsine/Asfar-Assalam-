@@ -90,7 +90,7 @@
     const values = {
       name: CFG.name, address: L(CFG.address), email: CFG.email, phone: CFG.phoneDisplay,
       company: LG.company, form: LG.form, capital: LG.capital, rc: LG.rc, ice: LG.ice, if: LG.if, patente: LG.patente,
-      director: LG.director, host: LG.host, cndp: LG.cndp, city: L(LG.city),
+      director: LG.director, host: LG.host, cndp: LG.cndp, city: L(LG.city), court: L(LG.court),
       fee: CFG.deliveryFee, free: CFG.freeDeliveryFrom, hhpct: hh.pct, hhfrom: hh.from, hhto: hh.to
     };
     return html.replace(/\{\{(\w+)\}\}/g, (_, k) => {
