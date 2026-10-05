@@ -8,9 +8,9 @@ const IMG = (id, w = 640) => `https://images.unsplash.com/${id}?auto=format&fit=
 
 window.CAFE_CONFIG = {
   name: "Café Mouhsine BOUAGHAZ",
-  phone: "+212600000000",          // WhatsApp number used for orders & bookings
-  phoneDisplay: "+212 6 00 00 00 00",
-  email: "contact@cafe-mouhsine.ma",
+  phone: "+212646103161",          // WhatsApp number used for orders & bookings
+  phoneDisplay: "+212 6 46 10 31 61",
+  email: "bghz.mouhsine@gmail.com",
   address: { ar: "شارع محمد الخامس، مكناس، المغرب", fr: "Avenue Mohammed V, Meknès, Maroc", en: "Mohammed V Avenue, Meknes, Morocco" },
   mapQuery: "Meknes, Morocco",
   currency: "DH",
