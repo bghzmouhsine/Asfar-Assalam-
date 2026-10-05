@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café Mouhsine — Admin</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body { background: var(--bg); }
+  .admin { padding: 32px 0 80px; }
+  .a-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 26px; }
+  .a-head h1 { font-size: 1.8rem; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .kpi small { color: var(--text-soft); font-size: .82rem; }
+  .kpi b { display: block; font-size: 1.8rem; font-family: var(--font-latin); color: var(--accent-strong); }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 26px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; overflow: auto; }
+  .panel h2 { font-size: 1.15rem; margin-bottom: 12px; font-family: var(--font-ar); }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: start; white-space: nowrap; }
+  th { color: var(--text-soft); font-weight: 600; font-size: .78rem; }
+  td input[type=number] { width: 90px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .bk-st { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .75rem; font-weight: 700; }
+  .bk-pending { background: #FCEFD9; color: #9A5B12; } .bk-confirmed { background: #DFF2E3; color: #2C7A3F; }
+  .bk-cancelled { background: #F8E1DC; color: #A13A26; } .bk-done { background: var(--surface-2); color: var(--text-soft); }
+  .acts { display: flex; gap: 6px; }
+  .acts button { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; background: var(--surface); }
+  .acts button:hover { border-color: var(--accent); }
+  .acts .wa-link { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; background: var(--surface); text-decoration: none; }
+  /* ---- sales dashboard: chart tokens (palette validated light #FFFCF7 / dark #221812) ---- */
+  .viz-root { --viz-1: #B0601C; --viz-2: #2A78D6; --viz-3: #8B3A7A; --viz-grid: #E4D5C1; --viz-axis: #C9B79F;
+    --viz-up: #2C7A3F; --viz-down: #A13A26; --viz-ink: var(--text); --viz-muted: #6B5446; }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .viz-root {
+    --viz-1: #C9762F; --viz-2: #3987E5; --viz-3: #A85090; --viz-grid: #3A2B21; --viz-axis: #5A4636;
+    --viz-up: #7FD18F; --viz-down: #F08A74; --viz-muted: #BFA894; } }
+  :root[data-theme="dark"] .viz-root { --viz-1: #C9762F; --viz-2: #3987E5; --viz-3: #A85090; --viz-grid: #3A2B21; --viz-axis: #5A4636;
+    --viz-up: #7FD18F; --viz-down: #F08A74; --viz-muted: #BFA894; }
+  .viz-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .viz-seg { display: flex; flex-wrap: wrap; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 2px; }
+  .viz-seg button { padding: 7px 12px; border-radius: 9px; font-size: .85rem; font-weight: 600; color: var(--text-soft); }
+  .viz-seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .viz-export { margin-inline-start: auto; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); font-weight: 600; font-size: .85rem; }
+  .viz-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .viz-tile { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; }
+  .viz-tile.hero { background: var(--surface-2); }
+  .viz-tile-label { font-size: .82rem; color: var(--viz-muted); }
+  .viz-tile-value { font-family: var(--font-latin); font-size: 1.6rem; font-weight: 700; color: var(--viz-ink); }
+  .viz-tile.hero .viz-tile-value { font-size: 2.2rem; }
+  .viz-delta { font-size: .78rem; font-weight: 600; }
+  .viz-delta.up { color: var(--viz-up); } .viz-delta.down { color: var(--viz-down); } .viz-delta.flat { color: var(--viz-muted); }
+  .viz-grid-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 960px) { .viz-grid-cards { grid-template-columns: 1fr; } }
+  .viz-card { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .viz-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .viz-card h3 { font-size: 1rem; font-family: var(--font-ar); }
+  .viz-card small { color: var(--viz-muted); font-size: .76rem; }
+  .viz-toggle { flex-shrink: 0; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .78rem; font-weight: 600; }
+  .viz-svg { width: 100%; height: auto; display: block; direction: ltr; overflow: visible; }
+  .viz-grid { stroke: var(--viz-grid); stroke-width: 1; } .viz-axis { stroke: var(--viz-axis); stroke-width: 1; }
+  .viz-tick { fill: var(--viz-muted); font-size: 11px; font-family: var(--font-latin); font-variant-numeric: tabular-nums; }
+  .viz-peak { fill: var(--viz-ink); font-size: 11px; font-weight: 700; font-family: var(--font-latin); }
+  .viz-fill { fill: var(--viz-1); }
+  .viz-hit { fill: transparent; }
+  .viz-bar { cursor: default; outline: none; }
+  .viz-bar:hover .viz-fill, .viz-bar:focus .viz-fill { filter: brightness(1.15); }
+  .viz-bar:focus-visible .viz-hit { stroke: var(--accent); stroke-width: 1.5; }
+  .slot-1 { background: var(--viz-1); } .slot-2 { background: var(--viz-2); } .slot-3 { background: var(--viz-3); }
+  .viz-stack { display: flex; height: 34px; gap: 2px; border-radius: 6px; overflow: hidden; margin: 10px 0 14px; }
+  .viz-seg-fill { display: flex; align-items: center; justify-content: center; min-width: 4px; outline: none; }
+  .viz-seg-fill:hover, .viz-seg-fill:focus { filter: brightness(1.12); }
+  .viz-in { color: #fff; font-size: .78rem; font-weight: 700; font-family: var(--font-latin); }
+  .viz-legend { list-style: none; display: grid; gap: 8px; }
+  .viz-legend li { display: grid; grid-template-columns: 12px auto auto 1fr; align-items: center; gap: 8px; font-size: .86rem; }
+  .viz-legend small { text-align: end; }
+  .viz-key { width: 12px; height: 12px; border-radius: 3px; display: block; }
+  .viz-hbars { list-style: none; display: grid; gap: 8px; }
+  .viz-hbars li { display: grid; grid-template-columns: minmax(90px, 34%) 1fr; gap: 10px; align-items: center; font-size: .85rem; outline: none; border-radius: 6px; }
+  .viz-hbars li:hover, .viz-hbars li:focus-visible { background: var(--surface-2); }
+  .viz-hname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .viz-hbar-track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .viz-hbar { height: 16px; border-radius: 0 4px 4px 0; flex-shrink: 0; max-width: calc(100% - 92px); }
+  [dir="rtl"] .viz-hbar { border-radius: 4px 0 0 4px; }
+  .viz-hval { font-family: var(--font-latin); font-size: .78rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .viz-empty { color: var(--viz-muted); font-size: .85rem; padding: 6px; display: block; }
+  .viz-table-wrap { max-height: 260px; overflow: auto; }
+  .viz-table td, .viz-table th { font-variant-numeric: tabular-nums; }
+  .viz-tip { position: fixed; z-index: 100; pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 12px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.35); font-size: .82rem; max-width: 260px; }
+  .viz-tip-head { color: var(--viz-muted); margin-bottom: 2px; }
+  .viz-tip b { font-family: var(--font-latin); }
+  .rv-item { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: grid; gap: 8px; }
+  .rv-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .85rem; color: var(--text-soft); }
+  .rv-head .st { color: var(--caramel); font-size: 1.05rem; letter-spacing: 2px; }
+  .rv-item blockquote { white-space: pre-line; overflow-wrap: anywhere; }
+  .rv-item .ver { color: var(--pistachio); font-weight: 700; }
+  .rv-reply-box { display: flex; gap: 6px; } .rv-reply-box input { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+  .adj { display: flex; gap: 4px; } .adj input { width: 64px !important; }
+  td img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+  .bar { height: 8px; background: var(--accent); border-radius: 4px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .lock-screen { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  .lock-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 32px; width: min(360px, 100%); text-align: center; display: grid; gap: 14px; }
+  .lock-card input { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-size: 1.3rem; letter-spacing: .4em; }
+  .note { font-size: .8rem; color: var(--text-soft); }
+  @media (max-width: 860px) { .panels { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock">
+  <form class="lock-card" id="lockForm">
+    <img src="assets/icon.svg" alt="" width="60" height="60" style="margin:0 auto;border-radius:14px">
+    <h1 style="font-size:1.4rem">لوحة الإدارة</h1>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" autocomplete="username" hidden style="letter-spacing:0;font-size:1rem">
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="PIN" autocomplete="current-password" autofocus>
+    <button class="btn btn-primary btn-block">دخول</button>
+    <p class="note">الرمز الافتراضي: 1234 — غيّره من الإعدادات أسفل اللوحة.</p>
+  </form>
+</div>
+
+<main class="admin wrap" id="app" hidden>
+  <div class="a-head">
+    <div>
+      <span class="eyebrow">Café Mouhsine BOUAGHAZ</span>
+      <h1>لوحة التحكم</h1>
+    </div>
+    <div class="toolbar">
+      <a class="btn btn-ghost btn-sm" href="index.html">↩ الموقع</a>
+      <a class="btn btn-ghost btn-sm" href="kitchen.html">🍳 شاشة المطبخ</a>
+      <button class="btn btn-ghost btn-sm" id="exportBtn">تصدير JSON</button>
+      <label class="btn btn-ghost btn-sm">استيراد JSON<input type="file" id="importInput" accept="application/json" hidden></label>
+      <button class="btn btn-primary btn-sm" id="saveBtn">حفظ التغييرات</button>
+    </div>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="panel viz-root" style="margin-bottom:18px" aria-labelledby="salesTitle">
+    <h2 id="salesTitle">📈 لوحة المبيعات</h2>
+    <div id="salesDash"></div>
+  </section>
+
+  <section class="panels">
+    <div class="panel" id="loyaltyPanel" style="grid-column:1/-1"><h2>⭐ أفضل الزبناء (نقاط الولاء)</h2><table id="loyTable"></table></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <div class="toolbar" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">⭐ آراء الزبناء</h2>
+      <div class="toolbar">
+        <button class="btn btn-sm btn-primary" data-rvf="pending">في انتظار المراجعة</button>
+        <button class="btn btn-sm btn-ghost" data-rvf="approved">منشورة</button>
+        <button class="btn btn-sm btn-ghost" data-rvf="rejected">مرفوضة</button>
+      </div>
+    </div>
+    <p class="note" style="margin-bottom:10px">انشر جميع الآراء الصادقة، حتى السلبية منها؛ ارفض فقط المحتوى المسيء أو الخارج عن الموضوع أو الذي يتضمن معطيات شخصية. نشر آراء مختارة فقط قد يُعتبر إشهاراً مضللاً.</p>
+    <div id="rvAdmin"></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <div class="toolbar" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">📅 الحجوزات</h2>
+      <div class="toolbar">
+        <button class="btn btn-sm btn-primary" data-bkf="upcoming">القادمة</button>
+        <button class="btn btn-sm btn-ghost" data-bkf="pending">في الانتظار</button>
+        <button class="btn btn-sm btn-ghost" data-bkf="all">الكل</button>
+      </div>
+    </div>
+    <table id="bookTable"></table>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <h2>💰 أسعار المنتوجات والتوفر</h2>
+    <table id="priceTable"></table>
+  </section>
+
+  <section class="panel" style="margin-bottom:18px">
+    <h2>🧾 أسعار الخدمات</h2>
+    <table id="srvTable"></table>
+  </section>
+
+  <section class="panel">
+    <h2>⚙️ الإعدادات</h2>
+    <div class="toolbar" style="align-items:center">
+      <input type="password" id="newPin" placeholder="رمز جديد" inputmode="numeric" class="input" style="max-width:180px">
+      <button class="btn btn-ghost btn-sm" id="pinBtn">تغيير الرمز</button>
+      <button class="btn btn-ghost btn-sm" id="clearStats">مسح الإحصائيات</button>
+      <button class="btn btn-ghost btn-sm" id="resetPrices">استرجاع الأسعار الأصلية</button>
+    </div>
+    <p class="note" style="margin-top:12px">
+      التعديلات تُحفظ في هذا المتصفح. لنشرها لجميع الزبناء: صدّر ملف JSON ثم حدّث الأسعار في <code>js/data.js</code>.
+      الرمز هنا حماية بسيطة للواجهة وليس نظام أمان حقيقي.
+    </p>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/cloud-store.js"></script>
+<script src="js/sales-dashboard.js"></script>
+<script src="js/ui.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("cm_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("cm_" + k, JSON.stringify(v)); } catch {} }
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = n => `${Number(n).toLocaleString("fr-MA", { maximumFractionDigits: 2 })} درهم`;
+  const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); };
+
+  const ONLINE = CafeOrders.mode === "firebase";
+  let ORDERS = [], BOOKINGS = [], TOP = [], REVIEWS = [], started = false, bkFilter = "upcoming", rvFilter = "pending";
+  const pinOk = p => p === store.get("pin", "1234");
+  $("#lockForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (ONLINE) {
+      const res = await CafeOrders.signIn($("#email").value.trim(), $("#pin").value);
+      if (res.ok) unlock(); else { toast(res.error === "not-staff" ? "الحساب غير مسجل ضمن الموظفين" : "بيانات الدخول غير صحيحة"); $("#pin").value = ""; }
+      return;
+    }
+    if (pinOk($("#pin").value)) { sessionStorage.setItem("cm_admin", "1"); unlock(); } else { toast("رمز خاطئ"); $("#pin").value = ""; }
+  });
+  // orders come from Firestore (last 30 days) online, from this browser otherwise
+  function unlock() {
+    if (started) return; started = true;
+    $("#lock").hidden = true; $("#app").hidden = false; renderPrices();
+    SalesDashboard.mount($("#salesDash"));
+    CafeOrders.watchAll(ONLINE ? Date.now() - 180 * 86400e3 : 0, list => { ORDERS = list; SalesDashboard.update(list); render(); },
+      () => toast("تعذر تحميل الطلبات"));
+    CafeBookings.watchAll(list => { BOOKINGS = list; render(); }, () => toast("تعذر تحميل الحجوزات"));
+    CafeLoyalty.watchTop(list => { TOP = list; render(); }, () => toast("تعذر تحميل نقاط الولاء"));
+    CafeReviews.watchAll(list => { REVIEWS = list; render(); }, () => toast("تعذر تحميل الآراء"));
+  }
+
+  let overrides = store.get("overrides", {});
+  const P = window.CAFE_PRODUCTS, S = window.CAFE_SERVICES;
+  const catName = Object.fromEntries(window.CAFE_CATEGORIES.map(c => [c.id, c.icon + " " + c.ar]));
+
+  function render() {
+    const orders = ORDERS.filter(o => o.status !== "cancelled"), bookings = BOOKINGS;
+    const today = new Date().toDateString();
+    const todayOrders = orders.filter(o => new Date(o.at).toDateString() === today);
+    $("#kpis").innerHTML = [
+      ["طلبات اليوم", todayOrders.length], ["مبيعات اليوم", money(todayOrders.reduce((s, o) => s + o.total, 0))], ["حجوزات في الانتظار", bookings.filter(b => (b.status || "pending") === "pending").length],
+      ["آراء تنتظر المراجعة", REVIEWS.filter(r => r.status === "pending").length],
+      ["متوسط التقييم", (() => { const ok = REVIEWS.filter(r => r.status === "approved");
+        return ok.length ? (ok.reduce((s, r) => s + r.rating, 0) / ok.length).toFixed(1) + " ★ (" + ok.length + ")" : "—"; })()],
+      ["متوسط وقت التحضير", (() => { const w = orders.filter(o => o.times && o.times.ready).map(o => o.times.ready - o.at);
+        return w.length ? Math.round(w.reduce((x, y) => x + y, 0) / w.length / 60e3) + " د" : "—"; })()],
+      ["منتوجات متوفرة", P.filter(p => (overrides[p.id]?.available ?? true)).length + " / " + P.length]
+    ].map(([k, v]) => `<div class="kpi"><small>${k}</small><b>${v}</b></div>`).join("");
+
+    renderBookings();
+    renderLoyalty();
+    renderReviewsAdmin();
+  }
+
+  // the price editor is drawn on demand only, so live data updates never wipe unsaved edits
+  function renderPrices() {
+    $("#priceTable").innerHTML = `<tr><th></th><th>المنتوج</th><th>الفئة</th><th>السعر الأصلي</th><th>السعر الحالي</th><th>متوفر</th></tr>` +
+      P.map(p => {
+        const o = overrides[p.id] || {};
+        return `<tr><td><img src="${p.img.replace("w=640", "w=80")}" alt=""></td><td>${esc(p.ar[0])}<br><small class="note">${esc(p.fr[0])}</small></td>
+          <td>${catName[p.cat]}</td><td>${money(p.price)}</td>
+          <td><input type="number" min="0" step="0.5" data-price="${p.id}" value="${o.price ?? p.price}"></td>
+          <td><input type="checkbox" data-avail="${p.id}" ${(o.available ?? true) ? "checked" : ""}></td></tr>`;
+      }).join("");
+
+    $("#srvTable").innerHTML = `<tr><th>الخدمة</th><th>الوحدة</th><th>السعر الأصلي</th><th>السعر الحالي</th></tr>` +
+      S.map(s => `<tr><td>${s.icon} ${esc(s.ar[0])}</td><td>${esc(s.unit.ar)}</td><td>${money(s.price)}</td>
+        <td><input type="number" min="0" step="1" data-sprice="${s.id}" value="${overrides["srv:" + s.id]?.price ?? s.price}"></td></tr>`).join("");
+  }
+
+  /* ---------- bookings ---------- */
+  const BK_ST = { pending: "في الانتظار", confirmed: "مؤكد", cancelled: "ملغى", done: "منتهٍ" };
+  const typeName = id => id === "table" ? "طاولة" : (S.find(s => s.id === id)?.ar[0] || id);
+  function renderBookings() {
+    const today = new Date().toISOString().slice(0, 10);
+    let list = [...BOOKINGS];
+    if (bkFilter === "upcoming") list = list.filter(b => b.date >= today && b.status !== "cancelled");
+    if (bkFilter === "pending") list = list.filter(b => (b.status || "pending") === "pending");
+    list.sort((x, y) => bkFilter === "all" ? (y.at || 0) - (x.at || 0) : (x.date + x.time).localeCompare(y.date + y.time));
+    $("#bookTable").innerHTML = list.length
+      ? `<tr><th>الموعد</th><th>الاسم</th><th>الهاتف</th><th>الأشخاص</th><th>النوع</th><th>ملاحظات</th><th>الحالة</th><th></th></tr>` +
+        list.slice(0, 60).map(b => { const st = b.status || "pending"; return `<tr>
+          <td><b>${esc(b.date)}</b> ${esc(b.time)}<br><small class="note">${esc(b.code)}</small></td>
+          <td>${esc(b.name)}</td><td dir="ltr">${esc(b.phone)}</td><td>${esc(b.guests)}</td><td>${esc(typeName(b.type))}</td>
+          <td style="white-space:normal;max-width:220px">${esc(b.notes || "")}</td>
+          <td><span class="bk-st bk-${st}">${BK_ST[st] || st}</span></td>
+          <td><div class="acts">
+            ${st === "pending" ? `<button data-bk="${esc(b.code)}" data-to="confirmed">✓ تأكيد</button>` : ""}
+            ${st === "confirmed" ? `<button data-bk="${esc(b.code)}" data-to="done">منتهٍ</button>` : ""}
+            ${["pending", "confirmed"].includes(st) ? `<button data-bk="${esc(b.code)}" data-to="cancelled">✕ إلغاء</button>` : ""}
+            ${b.phone ? `<a class="wa-link" href="${esc(custWa(b))}" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp">💬</a>` : ""}
+          </div></td></tr>`; }).join("")
+      : `<tr><td class="note">لا توجد حجوزات.</td></tr>`;
+    document.querySelectorAll("[data-bkf]").forEach(x => x.className = "btn btn-sm " + (x.dataset.bkf === bkFilter ? "btn-primary" : "btn-ghost"));
+  }
+  // WhatsApp link to the customer, in the language they booked in
+  const custWa = b => {
+    let n = String(b.phone).replace(/\D/g, "");
+    if (n.startsWith("00")) n = n.slice(2); else if (n.startsWith("0")) n = "212" + n.slice(1);
+    const st = b.status || "pending";
+    const msg = {
+      fr: st === "cancelled" ? `Bonjour ${b.name}, nous sommes désolés : votre réservation ${b.code} du ${b.date} à ${b.time} ne peut pas être maintenue. — Café Mouhsine BOUAGHAZ`
+        : `Bonjour ${b.name}, votre réservation ${b.code} du ${b.date} à ${b.time} (${b.guests} pers.) est confirmée. À bientôt chez Café Mouhsine BOUAGHAZ ☕`,
+      en: st === "cancelled" ? `Hello ${b.name}, we're sorry: your booking ${b.code} on ${b.date} at ${b.time} cannot go ahead. — Café Mouhsine BOUAGHAZ`
+        : `Hello ${b.name}, your booking ${b.code} on ${b.date} at ${b.time} (${b.guests} guests) is confirmed. See you soon at Café Mouhsine BOUAGHAZ ☕`,
+      ar: st === "cancelled" ? `مرحباً ${b.name}، نعتذر: لا يمكن الإبقاء على حجزك ${b.code} بتاريخ ${b.date} على الساعة ${b.time}. — Café Mouhsine BOUAGHAZ`
+        : `مرحباً ${b.name}، تم تأكيد حجزك ${b.code} بتاريخ ${b.date} على الساعة ${b.time} (${b.guests} أشخاص). نراك قريباً في Café Mouhsine BOUAGHAZ ☕`
+    }[b.lang] || "";
+    return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+  };
+  $("#bookTable").addEventListener("click", async e => {
+    const btn = e.target.closest("[data-bk]"); if (!btn) return;
+    const code = btn.dataset.bk, to = btn.dataset.to;
+    if (to === "cancelled" && !await uiConfirm("إلغاء هذا الحجز؟", { ok: "إلغاء الحجز", cancel: "رجوع", danger: true })) return;
+    const b = BOOKINGS.find(x => x.code === code);
+    // open the window during the click so popup blockers allow it
+    // open the window during the click so popup blockers allow it; fall back to a link
+    const wantWa = to === "confirmed" && b && b.phone;
+    let win = null;
+    if (wantWa) { try { win = window.open("about:blank", "_blank"); } catch { /* blocked */ } }
+    try {
+      await CafeBookings.setStatus(code, to);
+      const url = wantWa ? custWa({ ...b, status: to }) : null;
+      if (win) { win.opener = null; win.location = url; }
+      else if (url) uiLinkNotice(`تم تأكيد الحجز. أرسل التأكيد إلى ${b.name}:`, url, "فتح واتساب");
+      toast("تم التحديث ✓");
+    } catch { if (win) win.close(); toast("تعذر التحديث"); }
+  });
+  document.querySelectorAll("[data-bkf]").forEach(x => x.addEventListener("click", () => { bkFilter = x.dataset.bkf; renderBookings(); }));
+
+  /* ---------- reviews moderation ---------- */
+  const RV_ST = { pending: "في الانتظار", approved: "منشور", rejected: "مرفوض" };
+  function renderReviewsAdmin() {
+    const box = $("#rvAdmin");
+    // keep a reply being typed when live data refreshes the list
+    if (box.contains(document.activeElement) && document.activeElement.matches("[data-reply-in]")) return;
+    const list = REVIEWS.filter(r => r.status === rvFilter);
+    const dateFmt = new Intl.DateTimeFormat("ar-MA", { dateStyle: "medium", timeStyle: "short" });
+    box.innerHTML = list.length ? list.map(r => `
+      <div class="rv-item">
+        <div class="rv-head"><span class="st">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</span>
+          <b>${esc(r.name)}</b><span>${dateFmt.format(r.at)}</span>${r.orderRef ? `<span class="ver">✓ طلب موثّق ${esc(r.orderRef)}</span>` : ""}<span>${esc(r.lang || "")}</span></div>
+        <blockquote dir="auto">${esc(r.text)}</blockquote>
+        ${r.reply ? `<p class="note">↳ رد المقهى: ${esc(r.reply)}</p>` : ""}
+        <div class="rv-reply-box"><input data-reply-in="${esc(r.id)}" maxlength="600" placeholder="اكتب رداً علنياً (اختياري)" value="${esc(r.reply || "")}"><div class="acts"><button data-reply="${esc(r.id)}">💬 حفظ الرد</button></div></div>
+        <div class="acts">
+          ${r.status !== "approved" ? `<button data-rv="${esc(r.id)}" data-to="approved">✓ نشر</button>` : `<button data-rv="${esc(r.id)}" data-to="pending">إلغاء النشر</button>`}
+          ${r.status !== "rejected" ? `<button data-rv="${esc(r.id)}" data-to="rejected">✕ رفض</button>` : ""}
+          <button data-rvdel="${esc(r.id)}">🗑 حذف</button>
+        </div>
+      </div>`).join("") : `<p class="note">لا توجد آراء ${RV_ST[rvFilter]}.</p>`;
+    document.querySelectorAll("[data-rvf]").forEach(x => x.className = "btn btn-sm " + (x.dataset.rvf === rvFilter ? "btn-primary" : "btn-ghost"));
+  }
+  $("#rvAdmin").addEventListener("click", async e => {
+    const s = e.target.closest("[data-rv]"), rp = e.target.closest("[data-reply]"), del = e.target.closest("[data-rvdel]");
+    try {
+      if (s) { await CafeReviews.moderate(s.dataset.rv, { status: s.dataset.to }); toast("تم التحديث ✓"); }
+      if (rp) {
+        const v = document.querySelector(`[data-reply-in="${rp.dataset.reply}"]`).value.trim().slice(0, 600);
+        await CafeReviews.moderate(rp.dataset.reply, { reply: v, replyAt: Date.now() }); document.activeElement.blur(); toast("تم حفظ الرد ✓");
+      }
+      if (del && await uiConfirm("حذف هذا الرأي نهائياً؟", { ok: "حذف", cancel: "رجوع", danger: true })) { await CafeReviews.remove(del.dataset.rvdel); toast("تم الحذف"); }
+    } catch { toast("تعذر التحديث"); }
+  });
+  document.querySelectorAll("[data-rvf]").forEach(x => x.addEventListener("click", () => { rvFilter = x.dataset.rvf; renderReviewsAdmin(); }));
+
+  /* ---------- loyalty ---------- */
+  function renderLoyalty() {
+    if (!ONLINE) {
+      $("#loyTable").innerHTML = `<tr><td class="note">في الوضع المحلي تُحفظ النقاط على هاتف كل زبون. اربط Firebase لعرض جميع الزبناء.</td></tr>`;
+      return;
+    }
+    const tier = p => p >= 300 ? "🥇 Gold" : p >= 100 ? "🥈 Silver" : "☕ Bronze";
+    $("#loyTable").innerHTML = TOP.length
+      ? `<tr><th>البطاقة</th><th>النقاط</th><th>المستوى</th><th>الطلبات</th><th>تعديل</th></tr>` + TOP.map(c => `<tr>
+          <td><b>${esc(c.id)}</b></td><td>${c.points}</td><td>${tier(c.points)}</td><td>${c.orders || 0}</td>
+          <td><div class="adj"><input type="number" step="1" value="0" data-adj="${esc(c.uid)}" aria-label="delta"><div class="acts"><button data-adjgo="${esc(c.uid)}">تطبيق</button></div></div></td></tr>`).join("")
+      : `<tr><td class="note">لم تُمنح أي نقاط بعد. تُضاف النقاط تلقائياً عند تقديم الطلب من شاشة المطبخ.</td></tr>`;
+  }
+  $("#loyTable").addEventListener("click", async e => {
+    const b = e.target.closest("[data-adjgo]"); if (!b) return;
+    const uid = b.dataset.adjgo, delta = parseInt(document.querySelector(`[data-adj="${uid}"]`).value, 10);
+    if (!delta) return;
+    try { await CafeLoyalty.adjust(uid, delta); toast("تم تعديل النقاط ✓"); } catch { toast("تعذر التعديل"); }
+  });
+
+  $("#saveBtn").addEventListener("click", () => {
+    const next = {};
+    P.forEach(p => {
+      const price = +document.querySelector(`[data-price="${p.id}"]`).value;
+      const available = document.querySelector(`[data-avail="${p.id}"]`).checked;
+      const o = {};
+      if (price !== p.price) o.price = price;
+      if (!available) o.available = false;
+      if (Object.keys(o).length) next[p.id] = o;
+    });
+    S.forEach(s => {
+      const price = +document.querySelector(`[data-sprice="${s.id}"]`).value;
+      if (price !== s.price) next["srv:" + s.id] = { price };
+    });
+    overrides = next; store.set("overrides", overrides); render(); renderPrices(); toast("تم الحفظ ✓");
+  });
+
+  $("#exportBtn").addEventListener("click", () => {
+    const data = { exportedAt: new Date().toISOString(), overrides, orders: ORDERS, bookings: BOOKINGS, loyalty: TOP };
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    a.download = `cafe-mouhsine-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+  });
+  $("#importInput").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const d = JSON.parse(await f.text());
+      if (d.overrides) { overrides = d.overrides; store.set("overrides", overrides); }
+      if (Array.isArray(d.orders) && !ONLINE) { store.set("orders", d.orders); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" })); }
+      if (Array.isArray(d.bookings) && !ONLINE) { store.set("bookings", d.bookings); dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" })); }
+      render(); renderPrices(); toast("تم الاستيراد ✓");
+    } catch { toast("ملف غير صالح"); }
+  });
+  $("#pinBtn").addEventListener("click", () => {
+    const v = $("#newPin").value.trim(); if (v.length < 4) { toast("4 أرقام على الأقل"); return; }
+    store.set("pin", v); $("#newPin").value = ""; toast("تم تغيير الرمز");
+  });
+  $("#clearStats").addEventListener("click", async () => {
+    // online orders are an audit trail: the rules forbid deleting them
+    if (ONLINE) { toast("بيانات Firebase سجل دائم ولا يمكن مسحها من هنا"); return; }
+    if (!await uiConfirm("مسح جميع الطلبات والحجوزات المسجلة على هذا الجهاز؟", { ok: "مسح", cancel: "رجوع", danger: true })) return;
+    store.set("orders", []); dispatchEvent(new StorageEvent("storage", { key: "cm_orders" }));
+    store.set("bookings", []); dispatchEvent(new StorageEvent("storage", { key: "cm_bookings" }));
+  });
+  if (ONLINE) {
+    $("#email").hidden = false; $("#pin").removeAttribute("maxlength"); $("#pin").removeAttribute("inputmode");
+    $("#pin").placeholder = "كلمة المرور"; $(".lock-card .note").textContent = "ادخل بحساب الموظفين على Firebase.";
+    CafeOrders.staffUser().then(u => { if (u) unlock(); });
+  } else {
+    try { if (sessionStorage.getItem("cm_admin") === "1") setTimeout(unlock); } catch {}
+  }
+  $("#resetPrices").addEventListener("click", async () => { if (await uiConfirm("استرجاع الأسعار الأصلية؟", { ok: "استرجاع", cancel: "رجوع" })) { overrides = {}; store.set("overrides", {}); render(); renderPrices(); } });
+})();
+</script>
+</body>
+</html>

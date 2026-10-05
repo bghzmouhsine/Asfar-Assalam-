@@ -1,0 +1,10 @@
+# Netlify headers (ignored by other hosts)
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+/sw.js
+  Cache-Control: no-cache
+/admin.html
+  X-Robots-Tag: noindex
+/kitchen.html
+  X-Robots-Tag: noindex
