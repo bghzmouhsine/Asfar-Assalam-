@@ -852,6 +852,11 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <div id="payAllBox" hidden></div>
         <ul class="batches" id="batchList"></ul>
       </div>
+      <div class="card pad16" id="finalCard">
+        <h2 style="font-size:14.5px" data-t="fr.title">التقرير الختامي للورش</h2>
+        <p class="hint" data-t="fr.hint"></p>
+        <div class="row"><button class="btn primary" id="finalPdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="fr.pdf">تحميل التقرير الختامي PDF</span></button><button class="btn" id="finalShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></div>
+      </div>
     </section>
 
     <!-- SETTINGS -->
@@ -1107,6 +1112,15 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "pay.dayTitle": "ورقة الحضور اليومية", "x.daySum": "الحاضرون: {0} · الغائبون: {1} · غير المسجّلين: {2} · مجموع الأجور: {3} درهم",
       "x.dayNote": "ملاحظة اليوم: {0}", "x.site": "الورش: {0}", "x.page": "صفحة {0} من {1}", "x.pdfFile": "كشف العمال {0} إلى {1}.pdf",
       "x.dayPdf": "حضور العمال {0}.pdf", "x.absLine": "غياب: {0}", "x.regTitle": "سجل الحضور من {0} إلى {1}",
+      "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
+      "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
+      "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
+      "fr.k.earned": "مجموع الأجور المستحقة", "fr.k.paid": "مجموع المؤدى", "fr.k.rest": "الباقي", "fr.k.unrec": "أيام غير مسجّلة",
+      "fr.s1": "1. وضعية كل عامل", "fr.s2": "2. الحصيلة الشهرية", "fr.s3": "3. سجل الأداءات والتسبيقات",
+      "fr.th.earned": "المستحق (درهم)", "fr.th.paid": "المؤدى (درهم)", "fr.th.rest": "الباقي (درهم)", "fr.th.month": "الشهر", "fr.th.workDays": "أيام الاشتغال",
+      "fr.th.man": "مجموع أيام العمل", "fr.th.wages": "الأجور (درهم)", "fr.th.kind": "النوع", "fr.th.who": "المستفيد", "fr.th.amount": "المبلغ (درهم)",
+      "fr.kBatch": "أداء جماعي", "fr.batchWho": "{0} عامل", "fr.unrec": "تنبيه: {0} يوم-عامل غير مسجّل لم يُحتسب في هذا التقرير.",
+      "fr.closing": "حُصر هذا التقرير في مبلغ إجمالي مستحق قدره {0} درهم ({1})، أُدّي منه {2} درهم، والباقي {3} درهم.",
       "py.title": "الأداءات والتسبيقات", "py.balTitle": "الباقي للعمال اليوم", "py.balHint": "المستحق عن كل الأيام المسجّلة ناقص ما دُفع لكل عامل (أداءات وتسبيقات).",
       "py.earned": "المستحق", "py.paid": "المدفوع", "py.rest": "الباقي", "py.pay": "أداء", "py.payBtn": "تسجيل أداء", "py.advBtn": "تسجيل تسبيق",
       "py.kindPay": "أداء الأجر", "py.kindAdv": "تسبيق", "py.amount": "المبلغ (درهم)", "py.date": "التاريخ", "py.note": "ملاحظة (اختياري)",
@@ -1236,6 +1250,15 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "pay.dayTitle": "Feuille de présence journalière", "x.daySum": "Présents : {0} · Absents : {1} · Non pointés : {2} · Total des salaires : {3} DH",
       "x.dayNote": "Note du jour : {0}", "x.site": "Chantier : {0}", "x.page": "Page {0} sur {1}", "x.pdfFile": "Paie ouvriers {0} au {1}.pdf",
       "x.dayPdf": "Presence ouvriers {0}.pdf", "x.absLine": "Absences : {0}", "x.regTitle": "Registre des présences du {0} au {1}",
+      "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
+      "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
+      "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
+      "fr.k.earned": "Total des salaires dus", "fr.k.paid": "Total versé", "fr.k.rest": "Reste dû", "fr.k.unrec": "Jours non pointés",
+      "fr.s1": "1. Situation de chaque ouvrier", "fr.s2": "2. Bilan mensuel", "fr.s3": "3. Historique des paiements et avances",
+      "fr.th.earned": "Dû (DH)", "fr.th.paid": "Versé (DH)", "fr.th.rest": "Reste (DH)", "fr.th.month": "Mois", "fr.th.workDays": "Jours d'activité",
+      "fr.th.man": "Jours travaillés", "fr.th.wages": "Salaires (DH)", "fr.th.kind": "Type", "fr.th.who": "Bénéficiaire", "fr.th.amount": "Montant (DH)",
+      "fr.kBatch": "Paiement groupé", "fr.batchWho": "{0} ouvriers", "fr.unrec": "Attention : {0} journée(s)-ouvrier non pointée(s), non comptées dans ce rapport.",
+      "fr.closing": "Arrêté le présent rapport au montant total dû de {0} DH ({1}), dont {2} DH versés ; reste dû : {3} DH.",
       "py.title": "Paiements et avances", "py.balTitle": "Reste dû aux ouvriers aujourd'hui", "py.balHint": "Dû pour tous les jours pointés moins ce qui a été versé à chaque ouvrier (paiements et avances).",
       "py.earned": "Dû", "py.paid": "Versé", "py.rest": "Reste", "py.pay": "Payer", "py.payBtn": "Enregistrer un paiement", "py.advBtn": "Enregistrer une avance",
       "py.kindPay": "Paiement du salaire", "py.kindAdv": "Avance", "py.amount": "Montant (DH)", "py.date": "Date", "py.note": "Note (facultatif)",
@@ -2272,6 +2295,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       D.y += rh;
     });
   }
+  function keepTogether(D, h) { if (D.y + h > D.p.h - D.bottom) D.add(D.p.w > D.p.h); }
   function signatures(D) {
     if (D.y + 86 > D.p.h - D.bottom) D.add(D.p.w > D.p.h);
     D.y += 16;
@@ -2351,6 +2375,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     table(D, cols, rows);
     D.y += 8;
     if (R.unrec.length) para(D, t("x.unrec", R.unrec.map(fmtDM).join("، ")), { color: "#A9640C" });
+    keepTogether(D, 110);
     para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
     signatures(D);
   }
@@ -2406,6 +2431,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     para(D, t("x.daySum", pc, ac, nc, money(R.tot.amount)), { wt: 600 });
     const note = S.days.get(d)?.note;
     if (note) para(D, t("x.dayNote", note));
+    keepTogether(D, 110);
     para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
     signatures(D);
   }
@@ -2591,6 +2617,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       table(D, cols, rows, { rowH: 26 });
       D.y += 8;
       para(D, t("pl.words", amountWords(tot)), { wt: 600 });
+      keepTogether(D, 110);
       para(D, t("pay.madeAt", fmtLong(b.date)), { align: "end", wt: 600 });
       signatures(D);
     });
@@ -2616,6 +2643,8 @@ label.btn.off { opacity: .5; pointer-events: none; }
       ${list.length ? `<ul class="plist">${rows}</ul>` : `<p class="hint">${esc(t("py.none"))}</p>`}</div>`;
   }
   function renderBalances() {
+    $("finalPdf").hidden = !S.downloads; $("finalShare").hidden = !S.downloads || !canShareFiles();
+    $("finalPdf").disabled = !allLoaded() || !S.workers.size;
     const box = $("balList");
     if (!allLoaded()) { box.innerHTML = `<div class="loading">${esc(t("common.loading"))}</div>`; return; }
     const today = todayISO();
@@ -2641,6 +2670,97 @@ label.btn.off { opacity: .5; pointer-events: none; }
       const sum = r2(bt.list.reduce((a, p) => a + Number(p.amount || 0), 0));
       return `<li><span>${esc(t("py.batch", fmtShort(bt.date), bt.list.length, money(sum)))}</span>${S.downloads ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="list">${esc(t("py.list"))}</button><button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="rc">${esc(t("py.receipts"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="share">${esc(t("py.share"))}</button>` : ""}</li>`;
     }).join("");
+  }
+  function pdfHeading(D, text) {
+    if (D.y + 46 > D.p.h - D.bottom) D.add(D.p.w > D.p.h);
+    const rtl = LANG === "ar";
+    txt(D.p.g, text, rtl ? D.p.w - D.m : D.m, D.y + 8, { wt: 700, size: 11, color: NAVY, align: rtl ? "right" : "left" });
+    D.y += 20;
+  }
+  function pdfKpis(D, cells) {
+    const per = 4, ch = 42, rows = Math.ceil(cells.length / per);
+    if (D.y + rows * (ch + 6) > D.p.h - D.bottom) D.add(false);
+    const g = D.p.g, W = D.p.w, m = D.m, rtl = LANG === "ar", cw = (W - 2 * m) / per;
+    cells.forEach(([lab, val, hi], i) => {
+      const r = Math.floor(i / per), c = i % per;
+      const x2 = rtl ? W - m - c * cw : m + (c + 1) * cw, x1 = x2 - cw, y = D.y + r * (ch + 6);
+      g.fillStyle = hi ? "#E3E9F6" : "#F4F6FA"; g.fillRect(x1 + 2, y, cw - 4, ch);
+      txt(g, lab, (x1 + x2) / 2, y + 12, { size: 7.5, color: GREY });
+      txt(g, val, (x1 + x2) / 2, y + 28, { size: 11.5, wt: 700, dir: "ltr", color: hi ? NAVY : INK });
+    });
+    D.y += rows * (ch + 6) + 6;
+  }
+  function finalData() {
+    const today = todayISO();
+    const recorded = [...S.days.values()].filter((d) => d.statuses && Object.keys(d.statuses).length && d.date >= start() && d.date <= today).map((d) => d.date).sort();
+    const from = start(), to = recorded.length ? recorded[recorded.length - 1] : today;
+    const rows = sortedWorkers().filter((w) => w.joinDate <= to && (!w.exitDate || w.exitDate >= from)).map((w) => {
+      const st = workerStats(w, from, to), paid = r2(payList(w.id).reduce((a, p) => a + Number(p.amount || 0), 0));
+      return { w, st, paid, rest: r2(st.amount - paid) };
+    });
+    const tot = { worked: 0, abs: 0, earned: 0, paid: 0, rest: 0, unrec: 0 };
+    for (const r of rows) { tot.worked += r.st.worked; tot.abs += r.st.absences.length; tot.earned += r.st.amount; tot.paid += r.paid; tot.rest += r.rest; tot.unrec += r.st.unrecorded.length; }
+    tot.earned = r2(tot.earned); tot.paid = r2(tot.paid); tot.rest = r2(tot.rest);
+    const months = new Map();
+    let workDays = 0;
+    for (const d of daysBetween(from, to)) {
+      const k = d.slice(0, 7), mo = months.get(k) || { k, days: 0, man: 0, abs: 0, wages: 0 };
+      let any = false;
+      for (const w of activeWorkers(d)) {
+        const sv = S.days.get(d)?.statuses?.[w.id];
+        if (isP(sv)) { const q = sv === "H" ? 0.5 : 1; mo.man += q; mo.wages += q * dayWage(d, w); any = true; } else if (sv === "A") mo.abs++;
+      }
+      if (any) { mo.days++; workDays++; }
+      months.set(k, mo);
+    }
+    const pays = [...S.payments.values()].sort((a, b) => (a.date + (a.createdAt || "")).localeCompare(b.date + (b.createdAt || "")));
+    const hist = [], seen = new Set();
+    for (const p of pays) {
+      if (p.batch) {
+        if (seen.has(p.batch)) continue;
+        seen.add(p.batch);
+        const list = pays.filter((x) => x.batch === p.batch);
+        hist.push({ date: p.date, kind: "batch", who: t("fr.batchWho", list.length), amount: r2(list.reduce((a, x) => a + Number(x.amount || 0), 0)) });
+      } else hist.push({ date: p.date, kind: p.kind, who: p.name || "", amount: Number(p.amount) });
+    }
+    return { from, to, rows, tot, months: [...months.values()], workDays, hist };
+  }
+  function finalReportBytes() {
+    const F = finalData();
+    return buildPdf(t("fr.title"), (D) => {
+      D.add(false);
+      letterhead(D, t("fr.title"), [...(S.settings.siteName ? [t("x.site", S.settings.siteName)] : []), t("x.period", fmtLong(F.from), fmtLong(F.to)), t("x.hours", hFrom(), hTo())]);
+      pdfKpis(D, [[t("fr.k.workers"), String(F.rows.length)], [t("fr.k.workDays"), String(F.workDays)], [t("fr.k.man"), num(F.tot.worked)], [t("fr.k.abs"), String(F.tot.abs)],
+        [t("fr.k.earned"), money(F.tot.earned), true], [t("fr.k.paid"), money(F.tot.paid)], [t("fr.k.rest"), money(F.tot.rest), true], [t("fr.k.unrec"), String(F.tot.unrec)]]);
+      pdfHeading(D, t("fr.s1"));
+      const cols = [
+        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.name"), w: 118 }, { h: t("th.cin"), w: 55, al: "c", ltr: true }, { h: t("th.join"), w: 50, al: "c", ltr: true },
+        { h: t("th.days"), w: 36, al: "c", ltr: true }, { h: t("th.abs"), w: 34, al: "c", ltr: true }, { h: t("fr.th.earned"), w: 58, al: "e", ltr: true },
+        { h: t("fr.th.paid"), w: 58, al: "e", ltr: true }, { h: t("fr.th.rest"), w: 52, al: "e", ltr: true }, { h: t("th.sign"), w: 50 },
+      ];
+      const rows = F.rows.map((r, i) => ({ cells: [i + 1, { t: r.w.name, sub: r.w.exitDate ? t("w.left", fmtDM(r.w.exitDate)) : "" }, r.w.cin || "—", fmtDM(r.w.joinDate),
+        num(r.st.worked), r.st.absences.length || "—", money(r.st.amount), money(r.paid), { t: money(r.rest), wt: 700, color: r.rest < 0 ? "#C0362C" : INK }, ""] }));
+      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("th.total"), "", "", num(F.tot.worked), F.tot.abs || "—", money(F.tot.earned), money(F.tot.paid), money(F.tot.rest), ""] });
+      table(D, cols, rows, { size: 8, rowH: 22 });
+      D.y += 12;
+      pdfHeading(D, t("fr.s2"));
+      table(D, [{ h: t("fr.th.month"), w: 140 }, { h: t("fr.th.workDays"), w: 90, al: "c", ltr: true }, { h: t("fr.th.man"), w: 100, al: "c", ltr: true },
+        { h: t("th.abs"), w: 80, al: "c", ltr: true }, { h: t("fr.th.wages"), w: 121, al: "e", ltr: true }],
+        F.months.map((mo) => { const [y, mm] = mo.k.split("-").map(Number); return { cells: [`${MONTHS[LANG][mm - 1]} ${y}`, String(mo.days), num(mo.man), String(mo.abs), money(r2(mo.wages))] }; }), { rowH: 20 });
+      D.y += 12;
+      if (F.hist.length) {
+        pdfHeading(D, t("fr.s3"));
+        table(D, [{ h: t("th.date"), w: 90, al: "c", ltr: true }, { h: t("fr.th.kind"), w: 110 }, { h: t("fr.th.who"), w: 210 }, { h: t("fr.th.amount"), w: 121, al: "e", ltr: true }],
+          F.hist.map((h) => ({ cells: [fmtDM(h.date), h.kind === "batch" ? t("fr.kBatch") : h.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"), h.who, money(h.amount)] })), { rowH: 20 });
+        D.y += 12;
+      }
+      if (F.tot.unrec) para(D, t("fr.unrec", F.tot.unrec), { color: "#A9640C" });
+      keepTogether(D, 150);
+      para(D, t("fr.closing", money(F.tot.earned), amountWords(F.tot.earned), money(F.tot.paid), money(F.tot.rest)), { wt: 600 });
+      keepTogether(D, 110);
+    para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
+      signatures(D);
+    });
   }
   async function payAll() {
     if (!S.db || S.payingAll) return;
@@ -3067,6 +3187,8 @@ label.btn.off { opacity: .5; pointer-events: none; }
       return pdfJob(bb, async () => deliver(await payListPdfBytes(bt), t("pl.file", bt.date), bb.dataset.k === "share"));
     }
   });
+  $("finalPdf").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await finalReportBytes(), t("fr.file", todayISO()), false)); });
+  $("finalShare").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await finalReportBytes(), t("fr.file", todayISO()), true)); });
   $("pyKind").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) setPayKind(b.dataset.k); });
   $("pySave").addEventListener("click", savePay);
   $("pyAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); savePay(); } });
