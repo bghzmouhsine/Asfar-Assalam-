@@ -92,9 +92,16 @@
 
   /* =================================================================== cloud store (Firebase) */
   var cloud = { cfg: null, app: null, auth: null, fs: null, m: null, user: null, base: "" };
+  /* view-only link: this device only looks at someone else's register and never writes */
+  var VIEW_KEY = "sijil.view", VIEW = null, badViewLink = false;
+  function b64e(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function b64d(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+  function validView(v) { return !!(v && v.c && v.c.apiKey && v.c.projectId && v.c.appId && typeof v.o === "string" && v.o && typeof v.e === "string" && v.e && typeof v.p === "string" && v.p); }
+  function readOnly() { return Promise.reject(err("invalid_argument", "view-only link: writing is not allowed")); }
   function syncError(e) {
     console.error(e);
     var code = (e && e.code) || "";
+    if (VIEW) { if (code.indexOf("permission-denied") >= 0) viewStopped(e); return; }
     var msg = code.indexOf("permission-denied") >= 0 ? T("السحابة ترفض الحفظ: انشر قواعد الأمان (الخطوة 4 في الإعدادات).", "Le nuage refuse l'enregistrement : publiez les règles de sécurité (étape 4).")
       : T("تعذّرت المزامنة مع السحابة: ", "Synchronisation impossible : ") + (e && e.message ? e.message : code);
     banner(msg, true);
@@ -107,9 +114,9 @@
       id: ref.id, path: p,
       get: function () { return m.getDoc(ref).then(snapOf); },
       /* writes are applied to the phone's copy at once and sent when there is a connection */
-      set: function (d) { m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve(); },
-      update: function (d) { m.setDoc(ref, clean(d), { merge: true }).catch(syncError); return Promise.resolve(); },
-      delete: function () { m.deleteDoc(ref).catch(syncError); return Promise.resolve(); },
+      set: function (d) { if (VIEW) return readOnly(); m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve(); },
+      update: function (d) { if (VIEW) return readOnly(); m.setDoc(ref, clean(d), { merge: true }).catch(syncError); return Promise.resolve(); },
+      delete: function () { if (VIEW) return readOnly(); m.deleteDoc(ref).catch(syncError); return Promise.resolve(); },
       onSnapshot: function (next, error) { return m.onSnapshot(ref, function (s) { next(snapOf(s)); }, function (e) { syncError(e); if (error) error(e); }); },
     };
   }
@@ -120,7 +127,7 @@
       path: c,
       doc: function (id) { return cloudDoc(c + "/" + (id || m.doc(cref).id)); },
       get: function () { return m.getDocs(cref).then(qs); },
-      add: function (d) { var ref = m.doc(cref); m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve({ id: ref.id, path: c + "/" + ref.id }); },
+      add: function (d) { if (VIEW) return readOnly(); var ref = m.doc(cref); m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve({ id: ref.id, path: c + "/" + ref.id }); },
       onSnapshot: function (next, error) { return m.onSnapshot(cref, function (q) { next(qs(q)); }, function (e) { syncError(e); if (error) error(e); }); },
       where: function () { return api; }, orderBy: function () { return api; }, limit: function () { return api; },
     };
@@ -135,17 +142,18 @@
     if (!out.authDomain) out.authDomain = out.projectId + ".firebaseapp.com";
     return out;
   }
-  function loadFirebase(cfg) {
-    if (cloud.m && cloud.cfg && cloud.cfg.projectId === cfg.projectId) return Promise.resolve(cloud);
+  function loadFirebase(cfg, name) {
+    name = name || "sijil";
+    if (cloud.m && cloud.cfg && cloud.cfg.projectId === cfg.projectId && cloud.app && cloud.app.name === name) return Promise.resolve(cloud);
     return Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]).then(function (mods) {
       var A = mods[0], Au = mods[1], F = mods[2];
-      var app = A.initializeApp(cfg, "sijil");
+      var app = A.initializeApp(cfg, name);
       var fs;
       try { fs = F.initializeFirestore(app, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); }
       catch (e) { fs = F.getFirestore(app); }
       cloud.cfg = cfg; cloud.app = app; cloud.auth = Au.getAuth(app); cloud.fs = fs;
       cloud.m = { doc: F.doc, collection: F.collection, getDoc: F.getDoc, getDocs: F.getDocs, setDoc: F.setDoc, deleteDoc: F.deleteDoc, onSnapshot: F.onSnapshot, writeBatch: F.writeBatch };
-      cloud.au = Au;
+      cloud.au = Au; cloud.A = A; cloud.F = F;
       return cloud;
     });
   }
@@ -202,11 +210,38 @@
       history.replaceState(null, "", location.pathname + location.search);
     }
   } catch (e) { hashCfg = null; }
+  try {
+    var vm = /[#&]view=([A-Za-z0-9_\-+/=]+)/.exec(location.hash);
+    if (vm) {
+      var vv = null;
+      try { vv = b64d(vm[1]); } catch (x) { vv = null; }
+      if (validView(vv)) { if (!vv.c.authDomain) vv.c.authDomain = vv.c.projectId + ".firebaseapp.com"; setJ(VIEW_KEY, vv); } else badViewLink = true;
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch (e) { badViewLink = true; }
+  VIEW = getJ(VIEW_KEY);
+  if (!validView(VIEW)) VIEW = null;
   var saved = getJ(CLOUD_KEY), skip = false;
   try { skip = sessionStorage.getItem("sijil.cloud.skip") === "1"; } catch (e) { skip = false; }
   if (hashCfg) { saved = { cfg: hashCfg, pending: true }; setJ(CLOUD_KEY, saved); }
   var dbReady;
-  if (saved && saved.cfg && !skip) {
+  if (VIEW) {
+    /* view-only: sign in with the link's own viewer account and read the owner's register */
+    window.SIJIL_CLOUD = true; window.SIJIL_VIEW = true;
+    document.documentElement.classList.add("cloud-on", "view-on");
+    dbReady = loadFirebase(VIEW.c, "sijilview").then(firstUser).then(function (u) {
+      if (u && String(u.email || "").toLowerCase() === VIEW.e.toLowerCase()) return u;
+      return cloud.au.signInWithEmailAndPassword(cloud.auth, VIEW.e, VIEW.p).then(function (c) { return c.user; });
+    }).then(function (u) {
+      cloud.user = u; cloud.base = "sijil/" + VIEW.o + "/";
+      return cloud.m.getDoc(cloud.m.doc(cloud.fs, cloud.base + "app/settings")).catch(function (e) {
+        if (String((e && e.code) || "").indexOf("permission-denied") >= 0) throw e;
+        /* offline: show what this device already has */
+      });
+    }).then(function () { return cloudDb; }, function (e) { console.error(e); return viewStopped(e); });
+  } else if (badViewLink) {
+    dbReady = viewStopped({ code: "bad-link" });
+  } else if (saved && saved.cfg && !skip) {
     window.SIJIL_CLOUD = true;
     document.documentElement.classList.add("cloud-on");
     dbReady = loadFirebase(saved.cfg).then(firstUser).then(function (u) {
@@ -254,7 +289,10 @@
     '.sjrow{display:flex;gap:8px;flex-wrap:wrap}.sjerr{color:var(--bad,#C0362C);font-weight:700;font-size:12.5px;min-height:1.2em;margin:0}' +
     '.sjsteps{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7;color:var(--ink,#131A2B)}.sjsteps b{font-weight:700}' +
     '.sjcode{direction:ltr;text-align:left;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--surface-2,#EDF0F6);border-radius:10px;padding:10px;margin:0;overflow-x:auto}' +
-    'html.cloud-on #protCard{display:none}';
+    'html.cloud-on #protCard{display:none}html.view-on #bkCard{display:none}' +
+    '.sjshare{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line,#DBE1EB);padding-top:12px}' +
+    '.sjshare .sjh{margin:0;font-size:14px;font-weight:700;color:var(--ink,#131A2B)}.sjsb{display:flex;flex-direction:column;gap:10px}.sjshare a.btn{text-decoration:none}' +
+    '.sjlink{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line,#DBE1EB);background:var(--surface-2,#EDF0F6);color:var(--ink,#131A2B);font:12px/1 ui-monospace,Menlo,Consolas,monospace;width:100%;box-sizing:border-box;direction:ltr;text-align:left}';
   whenBody(function () { var s = document.createElement("style"); s.textContent = CSS; document.head.appendChild(s); });
 
   /* login screen shown when cloud saving is on but nobody is signed in on this device */
@@ -290,8 +328,116 @@
     });
   }
 
+  /* full-screen message when a view-only link cannot be used (stopped by the owner, invalid, offline) */
+  function viewStopped(e) {
+    var c = String((e && e.code) || "");
+    var title = T("رابط المشاهدة غير متاح", "Lien de consultation indisponible"), msg;
+    if (c.indexOf("permission-denied") >= 0) msg = T("أوقف صاحب السجل هذا الرابط. اطلب منه رابطاً جديداً.", "Le propriétaire du registre a arrêté ce lien. Demandez-lui un nouveau lien.");
+    else if (c === "bad-link") msg = T("الرابط ناقص: افتحه كاملاً كما وصلك، أو اطلب من صاحب السجل رابطاً جديداً.", "Lien incomplet : ouvrez-le en entier tel que reçu, ou demandez un nouveau lien au propriétaire du registre.");
+    else if (/invalid-credential|user-not-found|wrong-password|user-disabled|invalid-email/.test(c)) msg = T("هذا الرابط لم يعد صالحاً. اطلب من صاحب السجل رابطاً جديداً.", "Ce lien n'est plus valide. Demandez un nouveau lien au propriétaire du registre.");
+    else { title = T("لا يوجد اتصال", "Pas de connexion"); msg = T("تعذّر الاتصال بالإنترنت. تحقّق من الاتصال ثم أعد المحاولة.", "Connexion impossible. Vérifiez Internet puis réessayez."); }
+    return new Promise(function () {
+      whenBody(function () {
+        if (document.getElementById("sjLogin")) return;
+        var box = el('<div id="sjLogin"><div class="bx"><h2></h2><p></p><div class="sjrow">' +
+          '<button class="sjb p" type="button" id="sjRetry">' + T("إعادة المحاولة", "Réessayer") + '</button>' +
+          '<button class="sjb g" type="button" id="sjExitView">' + T("الخروج من وضع المشاهدة", "Quitter la consultation") + '</button></div></div></div>');
+        box.querySelector("h2").textContent = title; box.querySelector("p").textContent = msg;
+        document.body.appendChild(box);
+        box.querySelector("#sjRetry").addEventListener("click", function () { location.reload(); });
+        box.querySelector("#sjExitView").addEventListener("click", exitView);
+      });
+    });
+  }
+  function exitView() {
+    try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ }
+    var done = function () { location.reload(); };
+    if (VIEW && cloud.au && cloud.auth) cloud.au.signOut(cloud.auth).then(done, done); else done();
+  }
+
   /* =================================================================== settings card "cloud saving" */
-  var RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /sijil/{uid}/{document=**} {\n      allow read, write: if request.auth != null && request.auth.uid == uid;\n    }\n  }\n}";
+  var RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /sijil/{uid}/{document=**} {\n      allow read: if request.auth != null && (request.auth.uid == uid ||\n        exists(/databases/$(database)/documents/sijilViewers/$(uid)/v/$(request.auth.uid)));\n      allow write: if request.auth != null && request.auth.uid == uid;\n    }\n    match /sijilViewers/{uid}/v/{viewer} {\n      allow read, write: if request.auth != null && request.auth.uid == uid;\n    }\n  }\n}";
+
+  /* ---------- view-only links (owner side): each link has its own viewer account; the rules let it read, never write */
+  function rnd(n) { var a = "abcdefghijkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = ""; crypto.getRandomValues(b); for (var i = 0; i < n; i++) s += a[b[i] % 32]; return s; }
+  function isDenied(e) { return String((e && e.code) || "").indexOf("permission-denied") >= 0; }
+  function vPath() { return "sijilViewers/" + cloud.user.uid + "/v"; }
+  function listViewers() {
+    var F = cloud.F;
+    return F.getDocs(F.collection(cloud.fs, vPath())).then(function (q) {
+      return q.docs.map(function (d) { var v = d.data() || {}; return { id: d.id, link: v.link || "", at: v.createdAt || "" }; })
+        .sort(function (a, b) { return a.at < b.at ? 1 : a.at > b.at ? -1 : 0; });
+    });
+  }
+  function createViewer() {
+    var A = cloud.A, Au = cloud.au, F = cloud.F, owner = cloud.user.uid, c = cloud.cfg;
+    var cfg = { apiKey: c.apiKey, authDomain: c.authDomain, projectId: c.projectId, appId: c.appId };
+    var email = "view." + rnd(12) + "@example.com", pass = rnd(24), link = "", app2 = null, auth2 = null;
+    function end() { if (!app2) return Promise.resolve(); return Au.signOut(auth2).catch(function () {}).then(function () { return A.deleteApp(app2); }).catch(function () {}); }
+    /* listing first: it is refused at once while the new security rules are not published */
+    return listViewers().then(function () {
+      app2 = A.initializeApp(c, "sijilmk" + Date.now());
+      auth2 = Au.initializeAuth(app2, { persistence: Au.inMemoryPersistence });
+      return Au.createUserWithEmailAndPassword(auth2, email, pass);
+    }).then(function (cred) {
+      link = location.origin + location.pathname + "#view=" + b64e({ c: cfg, o: owner, e: email, p: pass });
+      return F.setDoc(F.doc(cloud.fs, vPath() + "/" + cred.user.uid), { link: link, createdAt: new Date().toISOString() });
+    }).then(function () { return end().then(function () { return link; }); }, function (x) { return end().then(function () { throw x; }); });
+  }
+  function stopViewers() {
+    var F = cloud.F;
+    return listViewers().then(function (l) { return Promise.all(l.map(function (v) { return F.deleteDoc(F.doc(cloud.fs, vPath() + "/" + v.id)); })); });
+  }
+  function refreshShare(sb) {
+    sb.innerHTML = '<p class="hint" style="margin:0">…</p>';
+    listViewers().then(function (l) { drawShare(sb, l.length ? "on" : "none", l); }, function (e) { drawShare(sb, isDenied(e) ? "rules" : "error", null, e); });
+  }
+  function drawShare(sb, mode, list, e) {
+    if (!sb.isConnected) return;
+    if (mode === "on") {
+      var link = list[0].link;
+      sb.innerHTML = '<p class="notice" style="background:var(--ok-soft);margin:0">' + T("الرابط مفعّل ✓ — من يفتحه يرى السجل فقط ولا يستطيع تعديل أي شيء.", "Lien actif ✓ — la personne qui l'ouvre voit le registre sans pouvoir rien modifier.") +
+        (list.length > 1 ? " " + T("عدد الروابط المفعّلة: ", "Liens actifs : ") + list.length : "") + '</p>' +
+        '<input class="sjlink" type="text" readonly aria-label="' + T("رابط المشاهدة", "Lien de consultation") + '">' +
+        '<div class="row"><button class="btn primary" type="button" data-v="copy">' + T("نسخ الرابط", "Copier le lien") + '</button>' +
+        '<a class="btn" data-v="wa" target="_blank" rel="noopener">' + T("إرسال عبر واتساب", "Envoyer par WhatsApp") + '</a></div>' +
+        '<div class="row"><button class="btn ghost" type="button" data-v="stop">' + T("إيقاف رابط المشاهدة", "Arrêter le lien de consultation") + '</button></div>';
+      var inp = sb.querySelector(".sjlink");
+      inp.value = link;
+      inp.addEventListener("focus", function () { inp.select(); });
+      sb.querySelector('[data-v="wa"]').href = "https://wa.me/?text=" + encodeURIComponent(T("سجل الحضور والأجور — رابط للاطلاع فقط:", "Registre de présence et de paie — lien en lecture seule :") + "\n" + link);
+      sb.querySelector('[data-v="copy"]').addEventListener("click", function (ev) { copy(link, ev.currentTarget); });
+      sb.querySelector('[data-v="stop"]').addEventListener("click", function (ev) {
+        var b = ev.currentTarget;
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = T("تأكيد: إيقاف الرابط الآن", "Confirmer : arrêter le lien"); return; }
+        b.disabled = true;
+        stopViewers().then(function () { refreshShare(sb); }, function (x) { b.disabled = false; banner(authText(x), true); });
+      });
+      return;
+    }
+    var html = "";
+    if (mode === "rules") {
+      html = '<p class="notice warn" style="margin:0">' + T("قبل أول رابط (مرة واحدة فقط): حدّث قواعد الأمان في Firebase.", "Avant le premier lien (une seule fois) : mettez à jour les règles de sécurité Firebase.") + '</p>' +
+        '<ol class="sjsteps">' +
+        '<li>' + T("افتح <b dir=\"ltr\">console.firebase.google.com</b> ← مشروعك ← <b dir=\"ltr\">Firestore Database</b> ← تبويب <b dir=\"ltr\">Rules</b>.", "Ouvrez <b>console.firebase.google.com</b> → votre projet → <b>Firestore Database</b> → onglet <b>Règles</b>.") + '</li>' +
+        '<li>' + T("امسح ما فيه والصق هذه القواعد، ثم اضغط <b dir=\"ltr\">Publish</b>:", "Remplacez le contenu par ces règles, puis cliquez sur <b>Publier</b> :") +
+        '<pre class="sjcode"></pre><button class="btn sm" type="button" data-v="rules">' + T("نسخ القواعد", "Copier les règles") + '</button></li>' +
+        '<li>' + T("انتظر دقيقة، ثم ارجع هنا واضغط «إنشاء رابط المشاهدة».", "Attendez une minute, puis revenez ici et appuyez sur « Créer le lien de consultation ».") + '</li></ol>';
+    } else if (mode === "error") {
+      html = '<p class="sjerr"></p>';
+    }
+    html += '<div class="row"><button class="btn primary" type="button" data-v="create">' + T("إنشاء رابط المشاهدة", "Créer le lien de consultation") + '</button></div>';
+    sb.innerHTML = html;
+    var pre = sb.querySelector(".sjcode");
+    if (pre) { pre.textContent = RULES; sb.querySelector('[data-v="rules"]').addEventListener("click", function (ev) { copy(RULES, ev.currentTarget); }); }
+    var er = sb.querySelector(".sjerr");
+    if (er) er.textContent = authText(e);
+    var cb = sb.querySelector('[data-v="create"]');
+    cb.addEventListener("click", function () {
+      cb.disabled = true; cb.textContent = T("جارٍ إنشاء الرابط…", "Création du lien…");
+      createViewer().then(function () { refreshShare(sb); }, function (x) { console.error(x); drawShare(sb, isDenied(x) ? "rules" : "error", null, x); });
+    });
+  }
   function linkFor(cfg) {
     var s = btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     return location.origin + location.pathname + "#cloud=" + s;
@@ -305,11 +451,26 @@
     if (!card) return;
     var st = getJ(CLOUD_KEY);
     var body = card.querySelector(".cbody");
+    if (VIEW) {
+      var h = card.querySelector("h2");
+      if (h) { h.removeAttribute("data-t"); h.textContent = T("وضع المشاهدة فقط", "Consultation seule"); }
+      body.innerHTML = '<p class="notice" style="margin:0">' + T("تطّلع على السجل كما يحفظه صاحبه، ويتحدّث تلقائياً. لا يمكنك تعديل أي شيء.", "Vous consultez le registre tel que son propriétaire l'enregistre, avec mise à jour automatique. Aucune modification n'est possible.") + '</p>' +
+        '<div class="row"><button class="btn ghost" type="button" id="sjExit">' + T("الخروج من وضع المشاهدة", "Quitter la consultation") + '</button></div>';
+      body.querySelector("#sjExit").addEventListener("click", function (e) {
+        var b = e.currentTarget;
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = T("تأكيد الخروج", "Confirmer"); return; }
+        b.disabled = true; exitView();
+      });
+      return;
+    }
     if (window.SIJIL_CLOUD && cloud.user) {
       body.innerHTML = '<p class="notice" style="background:var(--ok-soft);margin:0">' + T("مفعّل ✓ — بياناتك تُحفظ في السحابة وتظهر في كل أجهزتك. الحساب: ", "Activé ✓ — vos données sont enregistrées dans le nuage et visibles sur tous vos appareils. Compte : ") + '<b dir="ltr">' + (cloud.user.email || "") + '</b></p>' +
-        '<p class="hint" style="margin:0">' + T("لفتح السجل في جهاز آخر (الحاسوب مثلاً): أرسل له هذا الرابط وافتحه فيه، ثم ادخل بنفس البريد وكلمة المرور.", "Pour ouvrir le registre sur un autre appareil (l'ordinateur par exemple) : ouvrez-y ce lien, puis connectez-vous avec le même e-mail et mot de passe.") + '</p>' +
-        '<div class="row"><button class="btn" type="button" id="sjLink">' + T("نسخ رابط جهاز آخر", "Copier le lien pour un autre appareil") + '</button>' +
+        '<p class="hint" style="margin:0">' + T("لفتح السجل في جهاز آخر لك (الحاسوب مثلاً): افتح فيه هذا الرابط، ثم ادخل بنفس البريد وكلمة المرور.", "Pour ouvrir le registre sur un autre de vos appareils (l'ordinateur par exemple) : ouvrez-y ce lien, puis connectez-vous avec le même e-mail et mot de passe.") + '</p>' +
+        '<div class="row"><button class="btn" type="button" id="sjLink">' + T("نسخ رابط جهاز آخر لك", "Copier le lien pour un autre de vos appareils") + '</button>' +
         (navigator.share ? '<button class="btn" type="button" id="sjLinkShare">' + T("إرسال الرابط", "Envoyer le lien") + '</button>' : "") + '</div>' +
+        '<div class="sjshare" id="sjShare"><p class="sjh">' + T("رابط المشاهدة فقط", "Lien en lecture seule") + '</p>' +
+        '<p class="hint" style="margin:0">' + T("أرسله لمن تريد أن يطّلع على السجل (العمال، الحضور، الأجور) دون أن يستطيع تعديل أي شيء. يمكنك إيقافه متى شئت.", "Envoyez-le à qui doit consulter le registre (ouvriers, présences, salaires) sans pouvoir rien modifier. Vous pouvez l'arrêter à tout moment.") + '</p>' +
+        '<div class="sjsb"></div></div>' +
         '<div class="row"><button class="btn ghost" type="button" id="sjOut">' + T("تسجيل الخروج", "Se déconnecter") + '</button><button class="btn ghost" type="button" id="sjOff">' + T("إيقاف الحفظ السحابي", "Désactiver le nuage") + '</button></div>';
       var lk = linkFor(cloud.cfg);
       body.querySelector("#sjLink").addEventListener("click", function (e) { copy(lk, e.currentTarget); });
@@ -322,6 +483,7 @@
         b.disabled = true;
         downloadCloud().then(function () { try { LS.removeItem(CLOUD_KEY); } catch (x) { /* ignore */ } location.reload(); }).catch(function (x) { b.disabled = false; banner(authText(x), true); });
       });
+      refreshShare(body.querySelector("#sjShare .sjsb"));
       return;
     }
     body.innerHTML = '<p class="hint" style="margin:0">' + T("الآن بياناتك على هذا الهاتف فقط. فعّل الحفظ السحابي المجاني (Google Firebase) لتُحفظ تلقائياً وتفتحها من الهاتف والحاسوب معاً. تحتاج حساب Google، ومرة واحدة فقط، والأسهل من الحاسوب:", "Vos données sont uniquement sur ce téléphone. Activez l'enregistrement gratuit dans le nuage (Google Firebase) pour les sauvegarder automatiquement et les ouvrir sur téléphone et ordinateur. Il faut un compte Google ; une seule fois, plus simple depuis un ordinateur :") + '</p>' +
@@ -390,7 +552,7 @@
       });
     },
   };
-  var user = { can: function () { return Promise.resolve(true); }, isOwner: function () { return true; }, canEdit: function () { return true; }, id: function () { return Promise.resolve(cloud.user ? cloud.user.uid : "local"); } };
+  var user = { can: function () { return Promise.resolve(!VIEW); }, isOwner: function () { return !VIEW; }, canEdit: function () { return !VIEW; }, id: function () { return Promise.resolve(cloud.user ? cloud.user.uid : "local"); } };
   window.claude = { use: function (name) { return name === "db" ? dbReady : Promise.resolve(name === "user" ? user : name === "downloads" ? downloads : null); } };
 
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* optional */ }
