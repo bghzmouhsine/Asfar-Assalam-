@@ -1590,6 +1590,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
   }
   function recFor(d, w) {
     const dr = S.drafts[d], sv = savedRec(d, w);
+    if (!S.canWrite && !sv) return { st: "N", in: "", out: "" }; /* view-only: a worker not recorded yet shows as such */
     const st = (dr && dr.st[w.id]) || (sv ? sv.st : "P");
     if (st !== "P") return { st, in: "", out: "" };
     const tm = dr && dr.tm[w.id];
@@ -1914,7 +1915,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     let p = 0, a = 0, cost = 0;
     const recs = new Map();
     let missingOut = false;
-    for (const w of act) { const r = recFor(d, w); recs.set(w.id, r); if (r.st === "A") a++; else { p++; cost += dayWage(d, w); if (!r.out) missingOut = true; } }
+    for (const w of act) { const r = recFor(d, w); recs.set(w.id, r); if (r.st === "A") a++; else if (r.st === "P") { p++; cost += dayWage(d, w); if (!r.out) missingOut = true; } }
     $("dTally").innerHTML = `<div class="p"><b>${p}</b><span>${esc(t("st.Pp"))}</span></div>
       <div class="a"><b>${a}</b><span>${esc(t("st.Ap"))}</span></div>
       <div><b>${moneyShort(cost)}</b><span>${esc(t("day.cost"))}</span></div>`;
