@@ -766,6 +766,32 @@ table.pay th, table.pay td { padding: 7px 8px; }
 @media (min-width: 1100px) { .hero-scene { height: 140px; } }
 @media (max-width: 360px) { .hero-scene { height: 96px; } .stats3 b { font-size: 19px; } .kpi b { font-size: 15px; } .kpi span { font-size: 10px; } }
 @media (pointer: coarse) { .input { font-size: 16px; } }
+/* ---------- v13: smaller still, display size control */
+:root { --nav-h: 56px; }
+.view { gap: 10px; padding-block: 10px 6px; }
+.topbar .wrap { padding-block: 7px; gap: 6px; }
+.tb-title b { font-size: 14.5px; }
+.tb-title span { font-size: 11px; }
+.iconbtn { width: 34px; height: 34px; }
+.iconbtn.txt { padding: 0 10px; }
+.zoomctl { display: inline-flex; flex: none; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.zoomctl button { width: 30px; height: 32px; border: 0; background: transparent; color: var(--ink); font-size: 18px; font-weight: 700; line-height: 1; padding: 0; }
+.zoomctl button + button { border-inline-start: 1px solid var(--line); }
+.zoomctl button:disabled { opacity: .35; cursor: default; }
+.hero-scene { height: 90px; }
+.hero .date { font-size: 16px; }
+.hero-body { padding: 10px 12px 12px; gap: 9px; }
+.stats3 b { font-size: 19px; }
+.hero .btn.cta { min-height: 40px; font-size: 13.5px; }
+.kpi b { font-size: 16px; }
+nav.tabs button { font-size: 10.5px; gap: 2px; }
+nav.tabs button svg { width: 20px; height: 20px; }
+main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0px)); }
+.toast { bottom: calc(var(--nav-h) + 70px + env(safe-area-inset-bottom, 0px)); }
+.gridwrap { max-height: calc(70vh / var(--z, 1)); }
+@media (min-width: 600px) { .hero-scene { height: 116px; } }
+@media (min-width: 1100px) { .hero-scene { height: 128px; } }
+@media (max-width: 360px) { .hero-scene { height: 84px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .sico.done circle, .sico.done path { stroke-dashoffset: 0; } }
 </style>
 
@@ -820,6 +846,7 @@ table.pay th, table.pay td { padding: 7px 8px; }
     <div class="ribbon"></div>
     <div class="wrap">
       <div class="tb-title"><b id="tbTitle">سجل حضور العمال</b><span id="tbSub"></span></div>
+      <div class="zoomctl" role="group" data-ta="zoom.label"><button type="button" id="zoomOut" data-ta="zoom.out">−</button><button type="button" id="zoomIn" data-ta="zoom.in">+</button></div>
       <button class="iconbtn txt" id="langBtn" type="button">FR</button>
       <button class="iconbtn" id="gearBtn" type="button" data-ta="nav.settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2.1-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2.1 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2.1 1.2L10 21h4l.5-2.6a7 7 0 0 0 2.1-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
@@ -1275,7 +1302,7 @@ table.pay th, table.pay td { padding: 7px 8px; }
       "pay.dayTitle": "ورقة الحضور اليومية", "x.daySum": "الحاضرون: {0} · الغائبون: {1} · غير المسجّلين: {2} · مجموع الأجور: {3} درهم",
       "x.dayNote": "ملاحظة اليوم: {0}", "x.site": "الورش: {0}", "x.page": "صفحة {0} من {1}", "x.pdfFile": "كشف العمال {0} إلى {1}.pdf",
       "x.dayPdf": "حضور العمال {0}.pdf", "x.absLine": "غياب: {0}", "x.regTitle": "سجل الحضور من {0} إلى {1}",
-      "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1414,7 +1441,7 @@ table.pay th, table.pay td { padding: 7px 8px; }
       "pay.dayTitle": "Feuille de présence journalière", "x.daySum": "Présents : {0} · Absents : {1} · Non pointés : {2} · Total des salaires : {3} DH",
       "x.dayNote": "Note du jour : {0}", "x.site": "Chantier : {0}", "x.page": "Page {0} sur {1}", "x.pdfFile": "Paie ouvriers {0} au {1}.pdf",
       "x.dayPdf": "Presence ouvriers {0}.pdf", "x.absLine": "Absences : {0}", "x.regTitle": "Registre des présences du {0} au {1}",
-      "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -3437,6 +3464,22 @@ table.pay th, table.pay td { padding: 7px 8px; }
   });
   setInterval(() => { if (S.authed && S.tab === "home") renderClock(); else if (!S.authed) updateScene($("bootScene"), "b", 0); }, 20000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.authed) renderAll(); });
+
+  /* =========================================================== display size (+ / −) */
+  const ZOOMS = [0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.1, 1.2, 1.3];
+  const ZOOM_DEFAULT = window.matchMedia && window.matchMedia("(min-width: 1000px)").matches ? 1 : 0.9;
+  let ZOOM = Number(ls.get("sijil.zoom")) || ZOOM_DEFAULT;
+  function applyZoom(z, announce) {
+    ZOOM = Math.min(1.3, Math.max(0.7, z));
+    document.documentElement.style.zoom = String(ZOOM);
+    document.documentElement.style.setProperty("--z", String(ZOOM));
+    ls.set("sijil.zoom", String(ZOOM));
+    $("zoomOut").disabled = ZOOM <= 0.7 + 1e-6; $("zoomIn").disabled = ZOOM >= 1.3 - 1e-6;
+    if (announce) toast(t("zoom.now", Math.round(ZOOM * 100)));
+  }
+  $("zoomOut").addEventListener("click", () => { const lower = ZOOMS.filter((z) => z < ZOOM - 1e-6); applyZoom(lower.length ? lower[lower.length - 1] : 0.7, true); });
+  $("zoomIn").addEventListener("click", () => { const higher = ZOOMS.filter((z) => z > ZOOM + 1e-6); applyZoom(higher.length ? higher[0] : 1.3, true); });
+  applyZoom(ZOOM, false);
 
   /* =========================================================== boot */
   applyStatic();
