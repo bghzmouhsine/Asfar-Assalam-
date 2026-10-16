@@ -413,7 +413,7 @@
     b.setAttribute("role", "dialog");
     b.style.cssText = "position:fixed;left:12px;right:12px;z-index:70;bottom:calc(var(--nav-h,62px) + 14px + env(safe-area-inset-bottom,0px));" +
       "background:var(--hero,#172E6E);color:#fff;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:560px;margin:0 auto";
-    b.innerHTML = '<img src="icons/icon-192.png" alt="" width="44" height="44" style="border-radius:11px;flex:none">' +
+    b.innerHTML = '<img src="icons/emb-192.png" alt="" width="44" height="44" style="border-radius:11px;flex:none">' +
       '<div style="flex:1;min-width:0;font-size:13px;line-height:1.5"><b style="display:block;font-size:14px">' + T("ثبّت التطبيق على هاتفك", "Installer l'application") + '</b>' +
       T("أيقونة في قائمة التطبيقات، يفتح بضغطة ويعمل بدون إنترنت.", "Une icône sur votre téléphone, ouverture immédiate, sans Internet.") + '</div>' +
       '<button type="button" id="pwaGo" style="flex:none;border:0;border-radius:11px;background:var(--gold,#D69A1F);color:#1B1405;font-weight:700;font-size:14px;padding:10px 16px;font-family:inherit">' + T("تثبيت", "Installer") + '</button>' +
