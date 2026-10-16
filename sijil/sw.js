@@ -1,5 +1,5 @@
 /* Sijil service worker: the app opens instantly and works without Internet. */
-var V = "sijil-v3";
+var V = "sijil-v4";
 var RT = "sijil-rt-v1";
 var SHELL = ["./", "index.html", "local-db.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 self.addEventListener("install", function (e) {

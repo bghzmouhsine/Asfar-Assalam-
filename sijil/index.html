@@ -1085,6 +1085,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "log.day": "حفظ حضور {0}: {1} حاضر، {2} غائب", "log.cell": "{0}: {1} — {2}", "log.clear": "مسح التسجيل", "log.add": "إضافة عامل: {0} (أول يوم {1})",
       "log.edit": "تعديل معلومات العامل: {0}", "log.del": "حذف العامل: {0}", "log.settings": "تعديل الإعدادات", "log.note": "ملاحظة {0}",
       "log.setup": "إنشاء حساب الدخول", "log.pw": "تغيير كلمة المرور",
+      "al.unsaved": "تعديلات غير محفوظة في تسجيل {0} — افتحه واضغط «حفظ اليوم».", "al.noOut": "ساعة خروج بعض العمال غير مسجّلة يوم {0}.", "day.allOutAt": "خروج الجميع على {0}",
       "day.in": "دخول", "day.out": "خروج", "day.now": "وضع الساعة الآن", "day.allOut": "انصراف الجميع الآن",
       "day.allOutDone": "الخروج {0} لـ{1} عامل — اضغط «حفظ اليوم»", "day.nothing": "لا يوجد عامل حاضر يمكن تسجيل خروجه الآن.",
       "day.noOut": "لم يخرج بعد", "err.time": "اكتب الساعة هكذا: 08:30", "err.timeOrder": "ساعة الخروج يجب أن تكون بعد ساعة الدخول.",
@@ -1213,6 +1214,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "log.day": "Pointage du {0} : {1} présents, {2} absents", "log.cell": "{0} : {1} — {2}", "log.clear": "saisie effacée", "log.add": "Ouvrier ajouté : {0} (1er jour {1})",
       "log.edit": "Ouvrier modifié : {0}", "log.del": "Ouvrier supprimé : {0}", "log.settings": "Paramètres modifiés", "log.note": "Note du {0}",
       "log.setup": "Création de l'accès", "log.pw": "Mot de passe modifié",
+      "al.unsaved": "Modifications non enregistrées pour le {0} — ouvrez-le et appuyez sur « Enregistrer ».", "al.noOut": "Heure de sortie manquante pour certains ouvriers le {0}.", "day.allOutAt": "Sortie de tous à {0}",
       "day.in": "Entrée", "day.out": "Sortie", "day.now": "Mettre l'heure actuelle", "day.allOut": "Sortie de tous maintenant",
       "day.allOutDone": "Sortie à {0} pour {1} ouvriers — appuyez sur « Enregistrer »", "day.nothing": "Aucun ouvrier présent à faire sortir maintenant.",
       "day.noOut": "pas encore sorti", "err.time": "Saisissez l'heure ainsi : 08:30", "err.timeOrder": "L'heure de sortie doit suivre l'heure d'entrée.",
@@ -1314,6 +1316,22 @@ label.btn.off { opacity: .5; pointer-events: none; }
     gFrom: null, gTo: null, restore: null, restoring: false, rp: [0, 0], safety: [], dListHTML: null, rebuilding: false,
   };
   { const tb = ls.get("sijil.tab"); if (["home", "day", "grid", "workers", "pay", "settings"].includes(tb)) S.tab = tb; }
+  try {
+    const raw = JSON.parse(ls.get("sijil.drafts") || "{}");
+    for (const [d, v] of Object.entries(raw || {})) {
+      if (isISO(d) && v && typeof v === "object") S.drafts[d] = { st: v.st && typeof v.st === "object" ? v.st : {}, tm: v.tm && typeof v.tm === "object" ? v.tm : {} };
+    }
+  } catch (e) { /* no unsaved work kept */ }
+  function persistDrafts() {
+    if (allLoaded()) {
+      for (const d of Object.keys(S.drafts)) {
+        const x = S.drafts[d];
+        if ((!Object.keys(x.st).length && !Object.keys(x.tm).length) || !isDirty(d)) delete S.drafts[d];
+      }
+    }
+    const j = JSON.stringify(S.drafts);
+    if (j !== S.draftsJSON) { S.draftsJSON = j; if (j === "{}") ls.del("sijil.drafts"); else ls.set("sijil.drafts", j); }
+  }
 
   const allLoaded = () => S.loaded.settings && S.loaded.workers && S.loaded.days && S.loaded.payments;
   const start = () => S.settings.startDate || DEFAULTS.startDate;
@@ -1592,6 +1610,14 @@ label.btn.off { opacity: .5; pointer-events: none; }
       }
       if (run >= 2) al.push({ k: "bad", t: run === 2 ? t("al.streak2", w.name) : t("al.streakN", w.name, run), go: "worker:" + w.id });
     }
+    for (const d of Object.keys(S.drafts).sort()) if (isDirty(d)) al.unshift({ k: "warn", t: t("al.unsaved", fmtShort(d)), go: "day:" + d });
+    const noOut = [];
+    for (const d of daysBetween(maxD(addDays(today, -6), start()), today)) {
+      const doc = S.days.get(d);
+      if (!doc || !doc.times || (d === today && nowMin() < toMin(hTo()) + 30)) continue;
+      if (activeWorkers(d).some((w) => isP(doc.statuses?.[w.id]) && doc.times[w.id] && !doc.times[w.id].out)) noOut.push(d);
+    }
+    for (const d of noOut.slice(-3).reverse()) al.push({ k: "warn", t: t("al.noOut", fmtShort(d)), go: "day:" + d });
     const nc = activeWorkers(today).filter((w) => w.joinDate === today);
     if (nc.length) al.push({ k: "info", t: t("al.first", nc.map((w) => w.name).join("، ")), go: "day:" + today });
     if (window.SIJIL_LOCAL && !window.SIJIL_CLOUD) {
@@ -1672,12 +1698,14 @@ label.btn.off { opacity: .5; pointer-events: none; }
 
     let p = 0, a = 0, cost = 0;
     const recs = new Map();
-    for (const w of act) { const r = recFor(d, w); recs.set(w.id, r); if (r.st === "A") a++; else { p++; cost += dayWage(d, w); } }
+    let missingOut = false;
+    for (const w of act) { const r = recFor(d, w); recs.set(w.id, r); if (r.st === "A") a++; else { p++; cost += dayWage(d, w); if (!r.out) missingOut = true; } }
     $("dTally").innerHTML = `<div class="p"><b>${p}</b><span>${esc(t("st.Pp"))}</span></div>
       <div class="a"><b>${a}</b><span>${esc(t("st.Ap"))}</span></div>
       <div><b>${moneyShort(cost)}</b><span>${esc(t("day.cost"))}</span></div>`;
     $("allP").disabled = !editable || !act.length;
-    $("allOut").disabled = !editable || d !== today || !p;
+    $("allOut").disabled = !editable || !missingOut;
+    $("allOut").querySelector("span").textContent = d === today ? t("day.allOut") : t("day.allOutAt", hTo());
     $("newW").disabled = !S.canWrite || future || before;
     $("dSearch").hidden = act.length < 12;
 
@@ -1718,6 +1746,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       $("saveDay").textContent = S.saving ? t("day.saving") : dirty ? t("day.save") : t("day.saved");
       $("saveHint").textContent = dirty ? t("day.dirty", p, a) : t("day.clean");
     }
+    persistDrafts();
   }
   function setListHTML(html, force) {
     const box = $("dList");
@@ -2253,16 +2282,26 @@ label.btn.off { opacity: .5; pointer-events: none; }
     D.y += 70;
   }
   function footers(D) {
-    const n = D.pages.length, rtl = LANG === "ar";
-    D.pages.forEach((p, i) => {
+    const n = D.pages.length;
+    D.pages.forEach((p, i) => footerOne(D, p, i, n));
+  }
+  function footerOne(D, p, i, n) {
+    const rtl = LANG === "ar";
+    {
       const y = p.h - 22, g = p.g;
       g.fillStyle = RULE; g.fillRect(D.m, y - 9, p.w - 2 * D.m, 0.6);
       const pg = t("x.page", i + 1, n), nm = `${t("org.caidat")} · ${t("app.name")} · ${fmtDM(todayISO())}`;
       txt(g, rtl ? pg : nm, D.m, y, { size: 7.5, color: GREY, align: "left" });
       txt(g, rtl ? nm : pg, p.w - D.m, y, { size: 7.5, color: GREY, align: "right" });
-    });
+    }
   }
-  async function pdfBytes(pages, title) {
+  async function encodePage(p) {
+    const blob = await new Promise((res, rej) => p.c.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/jpeg", 0.9));
+    const im = { bytes: new Uint8Array(await blob.arrayBuffer()), pw: p.c.width, ph: p.c.height, w: p.w.toFixed(2), h: p.h.toFixed(2) };
+    p.c.width = 1; p.c.height = 1;
+    return im;
+  }
+  async function pdfBytes(pages, title, ready) {
     const enc = new TextEncoder(), out = [], offs = [];
     let len = 0;
     const push = (x) => { const b = typeof x === "string" ? enc.encode(x) : x; out.push(b); len += b.length; };
@@ -2271,12 +2310,8 @@ label.btn.off { opacity: .5; pointer-events: none; }
       if (c > 0xFFFF) { const v = c - 0x10000; return ((0xD800 + (v >> 10)).toString(16) + (0xDC00 + (v & 0x3FF)).toString(16)).toUpperCase(); }
       return c.toString(16).padStart(4, "0").toUpperCase();
     }).join("") + ">";
-    const imgs = [];
-    for (const p of pages) {
-      const blob = await new Promise((res, rej) => p.c.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/jpeg", 0.9));
-      imgs.push({ bytes: new Uint8Array(await blob.arrayBuffer()), pw: p.c.width, ph: p.c.height, w: p.w.toFixed(2), h: p.h.toFixed(2) });
-      p.c.width = 1; p.c.height = 1;
-    }
+    const imgs = ready || [];
+    if (!ready) for (const p of pages) imgs.push(await encodePage(p));
     push("%PDF-1.4\n%âãÏÓ\n");
     const obj = (k, body) => { offs[k] = len; push(`${k} 0 obj\n${body}\nendobj\n`); };
     obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
@@ -2524,18 +2559,22 @@ label.btn.off { opacity: .5; pointer-events: none; }
     txt(g, t("rc.signWorker"), rtl ? W - m - 90 : m + 90, y, { wt: 700, size: 9.5 });
     txt(g, t("x.signMaker"), rtl ? m + 90 : W - m - 90, y, { wt: 700, size: 9.5 });
   }
-  function receiptPdfBytes(list) {
-    return buildPdf(list.length === 1 && list[0].kind === "adv" ? t("rc.titleAdv") : t("rc.titlePay"), (D) => {
-      D.noRun = true;
-      for (const p of list) {
-        D.add(false);
-        drawReceipt(D, p, 24, t("rc.copyWorker"));
-        const g = D.p.g, mid = D.p.h / 2;
-        g.save(); g.strokeStyle = "#9AA3B5"; g.lineWidth = 0.7; g.setLineDash([5, 4]);
-        g.beginPath(); g.moveTo(D.m, mid); g.lineTo(D.p.w - D.m, mid); g.stroke(); g.restore();
-        drawReceipt(D, p, mid + 10, t("rc.copyAdmin"));
-      }
-    });
+  async function receiptPdfBytes(list) {
+    await fontsReady();
+    const title = list.length === 1 && list[0].kind === "adv" ? t("rc.titleAdv") : t("rc.titlePay");
+    const imgs = [];
+    for (let i = 0; i < list.length; i++) {
+      const p = list[i], D = pdfDoc(title);
+      D.noRun = true; D.add(false);
+      drawReceipt(D, p, 24, t("rc.copyWorker"));
+      const g = D.p.g, mid = D.p.h / 2;
+      g.save(); g.strokeStyle = "#9AA3B5"; g.lineWidth = 0.7; g.setLineDash([5, 4]);
+      g.beginPath(); g.moveTo(D.m, mid); g.lineTo(D.p.w - D.m, mid); g.stroke(); g.restore();
+      drawReceipt(D, p, mid + 10, t("rc.copyAdmin"));
+      footerOne(D, D.p, i, list.length);
+      imgs.push(await encodePage(D.p));
+    }
+    return pdfBytes([], `${title} — ${t("org.caidat")}`, imgs);
   }
   function payListPdfBytes(b) {
     return buildPdf(t("pl.title"), (D) => {
@@ -2864,11 +2903,11 @@ label.btn.off { opacity: .5; pointer-events: none; }
   $("dList").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("tin")) { e.preventDefault(); e.target.blur(); } });
   $("allP").addEventListener("click", () => { const d = S.sel, dr = draftOf(d); for (const w of activeWorkers(d)) dr.st[w.id] = "P"; renderDay(); });
   $("allOut").addEventListener("click", () => {
-    const d = S.sel; if (d !== todayISO()) return;
-    const at = nowHM(); let n = 0;
+    const d = S.sel, at = d === todayISO() ? nowHM() : hTo();
+    let n = 0;
     for (const w of activeWorkers(d)) {
       const r = recFor(d, w);
-      if (r.st !== "P" || (r.in && toMin(at) < toMin(r.in))) continue;
+      if (r.st !== "P" || r.out || (r.in && toMin(at) < toMin(r.in))) continue;
       draftOf(d).tm[w.id] = { in: r.in, out: at }; n++;
     }
     if (!n) { toast(t("day.nothing")); return; }
