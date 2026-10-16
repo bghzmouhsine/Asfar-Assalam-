@@ -571,6 +571,33 @@ nav.tabs button[aria-current="page"]::before { content: ""; position: absolute; 
 .vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); }
 label.btn { cursor: pointer; }
 label.btn.off { opacity: .5; pointer-events: none; }
+.blist { display: flex; flex-direction: column; }
+.brow { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.brow:first-child { border-top: 0; }
+.brow .who { flex: 1; min-width: 0; }
+.brow .nm { display: block; font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.brow .sub { font-size: 11px; color: var(--muted); }
+.brow > b { font-family: var(--font-d); font-size: 14px; white-space: nowrap; }
+.brow > b.zero { color: var(--muted); }
+.brow > b.neg { color: var(--bad); font-size: 11.5px; white-space: normal; }
+.payblk { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.pstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pstats div { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+.pstats span { font-size: 11px; color: var(--muted); }
+.pstats b { font-family: var(--font-d); font-size: 14px; }
+.pstats .neg b { color: var(--bad); }
+.plist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.plist li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
+.plist li:first-child { border-top: 0; }
+.plist .pk { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+.plist .pk.adv { background: var(--gold-soft); color: var(--warn); }
+.plist .pa { margin-inline-start: auto; }
+.plist .pb { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; justify-content: flex-end; }
+#pyForm, #pyDone { display: flex; flex-direction: column; gap: 12px; }
+.batches { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.batches:empty { display: none; }
+.batches li { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); }
+.batches li span { flex: 1; min-width: 0; }
 @media (pointer: coarse) { .tf .tin { font-size: 16px; width: 58px; } }
 @media (max-width: 560px) { .gfilter { grid-template-columns: 1fr 1fr; } .gfilter .full { grid-column: 1 / -1; } }
 @media (max-width: 400px) { .wrow .times { padding-inline-start: 0; } }
@@ -811,10 +838,20 @@ label.btn.off { opacity: .5; pointer-events: none; }
       <div id="pBody"></div>
       <div class="xrow">
         <button class="btn primary" id="pdfBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="pay.pdf">تحميل PDF</span></button>
+        <button class="btn" id="pdfShareBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="sh.pdf">مشاركة PDF</span></button>
         <button class="btn" id="xlsxBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="pay.xlsx">تحميل Excel</span></button>
         <button class="btn" id="copyBtn" type="button" data-t="pay.copy">نسخ الملخص</button>
+        <button class="btn" id="shareTxtBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="sh.text">مشاركة الملخص</span></button>
       </div>
       <textarea class="input" id="copyFallback" style="min-height:150px" hidden readonly></textarea>
+      <div class="card pad16" id="balCard">
+        <div class="sec-h"><h2 style="font-size:14.5px" data-t="py.balTitle">الباقي للعمال اليوم</h2><b id="balTotal"></b></div>
+        <p class="hint" data-t="py.balHint"></p>
+        <div id="balList"></div>
+        <div class="row"><button class="btn primary" id="payAllBtn" type="button" data-t="py.all">أداء الجميع</button></div>
+        <div id="payAllBox" hidden></div>
+        <ul class="batches" id="batchList"></ul>
+      </div>
     </section>
 
     <!-- SETTINGS -->
@@ -846,7 +883,8 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <div class="row">
           <button class="btn primary" id="bkDown" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="bk.download">تحميل نسخة احتياطية</span></button>
           <label class="btn" id="bkPick" for="bkFile"><span data-t="bk.restore">استرجاع من ملف</span></label>
-          <input class="vh" type="file" id="bkFile" accept=".json,application/json">
+          <input class="vh" type="file" id="bkFile" accept=".json,.txt,application/json,text/plain">
+          <button class="btn" id="bkShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="sh.backup">إرسال النسخة</span></button>
         </div>
         <div id="bkPrev" hidden></div>
         <div><p class="sub-h" data-t="bk.safety">نسخ الأمان</p><p class="hint" data-t="bk.safetyHint"></p><ul class="safelist" id="safeList"></ul></div>
@@ -876,6 +914,25 @@ label.btn.off { opacity: .5; pointer-events: none; }
       <button type="button" data-tab="pay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v5M17.5 9.5v5"/></svg><span data-t="nav.pay">الأجور</span></button>
     </div>
   </nav>
+
+  <div class="sheet-back" id="paySheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pyTitle">
+      <div><h3 id="pyTitle">—</h3><p class="hint" id="pySub"></p></div>
+      <div id="pyForm">
+        <div class="seg" role="group" id="pyKind"><button type="button" data-k="pay" data-t="py.kindPay">أداء الأجر</button><button type="button" data-k="adv" data-t="py.kindAdv">تسبيق</button></div>
+        <div class="grid2">
+          <div class="field"><label for="pyAmt" data-t="py.amount">المبلغ</label><input class="input ltr" type="number" id="pyAmt" min="1" step="0.5" inputmode="decimal"></div>
+          <div class="field"><label for="pyDate" data-t="py.date">التاريخ</label><input class="input ltr" type="date" id="pyDate"></div>
+          <div class="field full"><label for="pyNote" data-t="py.note">ملاحظة</label><input class="input" id="pyNote" maxlength="120" autocomplete="off"></div>
+        </div>
+        <div class="row"><button class="btn primary" id="pySave" type="button" data-t="py.save">حفظ</button><button class="btn ghost" id="pyCancel" type="button" data-t="common.cancel">إلغاء</button></div>
+      </div>
+      <div id="pyDone" hidden>
+        <p class="notice" id="pyDoneMsg"></p>
+        <div class="row"><button class="btn primary" id="pyRc" type="button" data-t="py.receipt">الوصل PDF</button><button class="btn" id="pyRcShare" type="button" data-t="py.shareReceipt" hidden>مشاركة الوصل</button><button class="btn ghost" id="pyClose" type="button" data-t="common.close">إغلاق</button></div>
+      </div>
+    </div>
+  </div>
 
   <div class="sheet-back" id="cellSheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cTitle">
@@ -1045,6 +1102,25 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "pay.dayTitle": "ورقة الحضور اليومية", "x.daySum": "الحاضرون: {0} · الغائبون: {1} · غير المسجّلين: {2} · مجموع الأجور: {3} درهم",
       "x.dayNote": "ملاحظة اليوم: {0}", "x.site": "الورش: {0}", "x.page": "صفحة {0} من {1}", "x.pdfFile": "كشف العمال {0} إلى {1}.pdf",
       "x.dayPdf": "حضور العمال {0}.pdf", "x.absLine": "غياب: {0}", "x.regTitle": "سجل الحضور من {0} إلى {1}",
+      "py.title": "الأداءات والتسبيقات", "py.balTitle": "الباقي للعمال اليوم", "py.balHint": "المستحق عن كل الأيام المسجّلة ناقص ما دُفع لكل عامل (أداءات وتسبيقات).",
+      "py.earned": "المستحق", "py.paid": "المدفوع", "py.rest": "الباقي", "py.pay": "أداء", "py.payBtn": "تسجيل أداء", "py.advBtn": "تسجيل تسبيق",
+      "py.kindPay": "أداء الأجر", "py.kindAdv": "تسبيق", "py.amount": "المبلغ (درهم)", "py.date": "التاريخ", "py.note": "ملاحظة (اختياري)",
+      "py.sheetPay": "أداء لـ {0}", "py.sheetSub": "الباقي له اليوم: {0} درهم", "py.save": "حفظ", "py.saved": "تم تسجيل {0} درهم لـ {1}.",
+      "py.bad": "أدخل مبلغاً وتاريخاً صحيحين.", "py.none": "لا توجد أداءات مسجّلة بعد.", "py.receipt": "الوصل PDF", "py.shareReceipt": "مشاركة الوصل",
+      "py.del": "حذف", "py.delConfirm": "تأكيد الحذف", "py.deleted": "تم حذف الأداء", "py.all": "أداء الجميع", "py.confirm": "تأكيد الأداء",
+      "py.allConfirm": "تسجيل أداء الباقي لـ {0} عامل بمجموع {1} درهم بتاريخ اليوم؟", "py.allDone": "تم تسجيل أداء {0} عامل بمجموع {1} درهم",
+      "py.allNone": "لا يوجد باقٍ لأي عامل.", "py.list": "لائحة الأداء PDF", "py.receipts": "الوصولات PDF", "py.share": "مشاركة",
+      "py.totalRest": "المجموع: {0} درهم", "py.owes": "عليه {0} درهم (تسبيق زائد)", "py.batch": "أداء جماعي {0}: {1} عامل، {2} درهم",
+      "log.pay": "{0}: {1} {2} درهم", "log.payAll": "أداء جماعي: {0} عامل، {1} درهم", "log.payDel": "حذف أداء {0}: {1} درهم",
+      "rc.titlePay": "وصل استلام أجر", "rc.titleAdv": "وصل استلام تسبيق", "rc.no": "رقم الوصل: {0}",
+      "rc.bodyPay": "أشهد أنا الموقع(ة) أسفله {0}، الحامل(ة) للبطاقة الوطنية رقم {1}، أنني توصلت بمبلغ قدره {2} درهم ({3}) أجرةً عن عملي بورش «{4}».",
+      "rc.bodyAdv": "أشهد أنا الموقع(ة) أسفله {0}، الحامل(ة) للبطاقة الوطنية رقم {1}، أنني توصلت بمبلغ قدره {2} درهم ({3}) تسبيقاً على أجرتي عن العمل بورش «{4}».",
+      "rc.days": "أيام العمل إلى تاريخه", "rc.earned": "المستحق", "rc.before": "المدفوع سابقاً", "rc.this": "هذا الأداء", "rc.after": "الباقي بعده",
+      "rc.note": "ملاحظة: {0}", "rc.signWorker": "إمضاء العامل", "rc.copyWorker": "نسخة العامل", "rc.copyAdmin": "نسخة الإدارة",
+      "rc.file": "وصل {0} {1}.pdf", "rc.fileAll": "وصولات الأداء {0}.pdf", "pl.title": "لائحة أداء أجور العمال", "pl.date": "تاريخ الأداء: {0}",
+      "pl.file": "لائحة الأداء {0}.pdf", "pl.words": "حُصرت هذه اللائحة في مبلغ: {0}.",
+      "th.paidAmt": "المبلغ المؤدى (درهم)", "th.daysTo": "أيام العمل إلى تاريخه",
+      "sh.pdf": "مشاركة PDF", "sh.text": "مشاركة الملخص (واتساب)", "sh.backup": "إرسال النسخة (واتساب أو بريد)", "sh.fail": "تعذّرت المشاركة.",
       "bk.warn": "سيُستبدل محتوى السجل الحالي بمحتوى هذه النسخة. قبل ذلك نحتفظ تلقائياً بنسخة أمان من بياناتك الحالية داخل التطبيق.",
       "bk.confirm": "تأكيد الاسترجاع", "bk.progress": "جارٍ الاسترجاع… {0} من {1}", "bk.done": "تم الاسترجاع: {0} عامل و{1}",
       "bk.failed": "توقف الاسترجاع قبل نهايته. أعد المحاولة؛ نسخة الأمان محفوظة أدناه.", "bk.safety": "نسخ الأمان داخل التطبيق",
@@ -1154,6 +1230,25 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "pay.dayTitle": "Feuille de présence journalière", "x.daySum": "Présents : {0} · Absents : {1} · Non pointés : {2} · Total des salaires : {3} DH",
       "x.dayNote": "Note du jour : {0}", "x.site": "Chantier : {0}", "x.page": "Page {0} sur {1}", "x.pdfFile": "Paie ouvriers {0} au {1}.pdf",
       "x.dayPdf": "Presence ouvriers {0}.pdf", "x.absLine": "Absences : {0}", "x.regTitle": "Registre des présences du {0} au {1}",
+      "py.title": "Paiements et avances", "py.balTitle": "Reste dû aux ouvriers aujourd'hui", "py.balHint": "Dû pour tous les jours pointés moins ce qui a été versé à chaque ouvrier (paiements et avances).",
+      "py.earned": "Dû", "py.paid": "Versé", "py.rest": "Reste", "py.pay": "Payer", "py.payBtn": "Enregistrer un paiement", "py.advBtn": "Enregistrer une avance",
+      "py.kindPay": "Paiement du salaire", "py.kindAdv": "Avance", "py.amount": "Montant (DH)", "py.date": "Date", "py.note": "Note (facultatif)",
+      "py.sheetPay": "Paiement à {0}", "py.sheetSub": "Reste dû aujourd'hui : {0} DH", "py.save": "Enregistrer", "py.saved": "{0} DH enregistrés pour {1}.",
+      "py.bad": "Saisissez un montant et une date valides.", "py.none": "Aucun paiement enregistré.", "py.receipt": "Reçu PDF", "py.shareReceipt": "Partager le reçu",
+      "py.del": "Supprimer", "py.delConfirm": "Confirmer la suppression", "py.deleted": "Paiement supprimé", "py.all": "Payer tout le monde", "py.confirm": "Confirmer le paiement",
+      "py.allConfirm": "Enregistrer le paiement du reste dû à {0} ouvriers, total {1} DH, à la date d'aujourd'hui ?", "py.allDone": "Paiement enregistré pour {0} ouvriers, total {1} DH",
+      "py.allNone": "Aucun reste dû.", "py.list": "État de paiement PDF", "py.receipts": "Reçus PDF", "py.share": "Partager",
+      "py.totalRest": "Total : {0} DH", "py.owes": "doit {0} DH (avance en trop)", "py.batch": "Paiement groupé du {0} : {1} ouvriers, {2} DH",
+      "log.pay": "{0} : {1} {2} DH", "log.payAll": "Paiement groupé : {0} ouvriers, {1} DH", "log.payDel": "Paiement supprimé {0} : {1} DH",
+      "rc.titlePay": "Reçu de salaire", "rc.titleAdv": "Reçu d'avance", "rc.no": "Reçu n° {0}",
+      "rc.bodyPay": "Je soussigné(e) {0}, titulaire de la CIN n° {1}, reconnais avoir reçu la somme de {2} DH ({3}) au titre de mon salaire pour les travaux du chantier « {4} ».",
+      "rc.bodyAdv": "Je soussigné(e) {0}, titulaire de la CIN n° {1}, reconnais avoir reçu la somme de {2} DH ({3}) à titre d'avance sur mon salaire pour les travaux du chantier « {4} ».",
+      "rc.days": "Jours travaillés à ce jour", "rc.earned": "Dû", "rc.before": "Déjà versé", "rc.this": "Ce versement", "rc.after": "Reste après",
+      "rc.note": "Note : {0}", "rc.signWorker": "Signature de l'ouvrier", "rc.copyWorker": "Copie ouvrier", "rc.copyAdmin": "Copie administration",
+      "rc.file": "Recu {0} {1}.pdf", "rc.fileAll": "Recus paiement {0}.pdf", "pl.title": "État de paiement des salaires des ouvriers", "pl.date": "Date du paiement : {0}",
+      "pl.file": "Etat de paiement {0}.pdf", "pl.words": "Arrêté le présent état à la somme de : {0}.",
+      "th.paidAmt": "Montant versé (DH)", "th.daysTo": "Jours travaillés à ce jour",
+      "sh.pdf": "Partager le PDF", "sh.text": "Partager le résumé (WhatsApp)", "sh.backup": "Envoyer la sauvegarde (WhatsApp ou e-mail)", "sh.fail": "Partage impossible.",
       "bk.warn": "Le contenu actuel du registre sera remplacé par cette sauvegarde. Une copie de sécurité de vos données actuelles est d'abord conservée dans l'application.",
       "bk.confirm": "Confirmer la restauration", "bk.progress": "Restauration… {0} sur {1}", "bk.done": "Restauration terminée : {0} ouvriers et {1}",
       "bk.failed": "La restauration s'est interrompue. Réessayez ; la copie de sécurité est conservée ci-dessous.", "bk.safety": "Copies de sécurité dans l'application",
@@ -1207,7 +1302,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
   const S = {
     db: null, downloads: null, canWrite: true,
     settings: { ...DEFAULTS }, workers: new Map(), days: new Map(), audit: new Map(),
-    loaded: { settings: false, workers: false, days: false },
+    loaded: { settings: false, workers: false, days: false, payments: false }, payments: new Map(), pay: null, confirmPay: null, payAllConfirm: false, payingAll: false,
     authed: false, bootMode: "loading",
     tab: "home", sel: todayISO(), drafts: {}, open: null, editing: null, confirmDel: null, returnToDay: false,
     period: "week", repFrom: null, repTo: null, setDirty: false, saving: false, cell: null,
@@ -1216,7 +1311,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
   };
   { const tb = ls.get("sijil.tab"); if (["home", "day", "grid", "workers", "pay", "settings"].includes(tb)) S.tab = tb; }
 
-  const allLoaded = () => S.loaded.settings && S.loaded.workers && S.loaded.days;
+  const allLoaded = () => S.loaded.settings && S.loaded.workers && S.loaded.days && S.loaded.payments;
   const start = () => S.settings.startDate || DEFAULTS.startDate;
   const wage = () => Number(S.settings.wage) || DEFAULTS.wage;
   const hFrom = () => S.settings.hourFrom || DEFAULTS.hourFrom;
@@ -1827,6 +1922,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
           <dt>${esc(t("w.wageL"))}</dt><dd>${esc(t("w.wageShort", num(effWage(w))))}</dd>
           <dt>${esc(t("w.due"))}</dt><dd><b>${money(st.amount)} ${esc(t("cur"))}</b>${st.wages.size === 1 ? `<span class="hint">(${num(st.worked)} × ${num([...st.wages][0])})</span>` : ""}</dd>
         </dl>
+        ${payBlock(w)}
         ${S.canWrite ? `<div class="row">
           <button type="button" class="btn" data-act="edit" data-id="${esc(w.id)}">${esc(t("w.edit"))}</button>
           ${S.confirmDel === w.id
@@ -1901,12 +1997,13 @@ label.btn.off { opacity: .5; pointer-events: none; }
   function renderPay() {
     $("pFrom").value = S.repFrom || ""; $("pTo").value = S.repTo || "";
     for (const b of $("pChips").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.p === S.period));
-    const hideX = (h) => { $("xlsxBtn").hidden = h; $("pdfBtn").hidden = h; $("copyBtn").hidden = h; };
+    renderBalances();
+    const hideX = (h) => { $("xlsxBtn").hidden = h; $("pdfBtn").hidden = h; $("copyBtn").hidden = h; $("pdfShareBtn").hidden = h || !canShareFiles(); $("shareTxtBtn").hidden = h || !(window.SIJIL_LOCAL && navigator.share); };
     if (!allLoaded()) { $("pBody").innerHTML = `<div class="loading">${esc(t("common.loading"))}</div>`; return; }
     if (!S.repFrom || !S.repTo || S.repFrom > S.repTo) { $("pBody").innerHTML = `<p class="notice warn">${esc(t("pay.bad"))}</p>`; hideX(true); return; }
     const R = payData();
     hideX(!R.rows.length);
-    if (!S.downloads) { $("xlsxBtn").hidden = true; $("pdfBtn").hidden = true; }
+    if (!S.downloads) { $("xlsxBtn").hidden = true; $("pdfBtn").hidden = true; $("pdfShareBtn").hidden = true; }
     if (!R.rows.length) { $("pBody").innerHTML = `<div class="card empty"><p>${esc(t("pay.empty"))}</p></div>`; return; }
     const warn = R.unrec.length ? `<div class="notice warn"><b>${esc(t("pay.unrec", R.unrec.length))}</b><div class="row" style="margin-top:6px">${R.unrec.map((d) => `<button type="button" class="chip warn" style="border:0" data-goday="${d}">${esc(fmtShort(d))}</button>`).join("")}</div></div>` : "";
     let table;
@@ -2050,7 +2147,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     D.add = (land) => {
       const p = newPage(!!land);
       D.pages.push(p); D.p = p; D.y = D.top;
-      if (D.pages.length > 1) {
+      if (D.pages.length > 1 && !D.noRun) {
         const rtl = LANG === "ar";
         txt(p.g, `${t("org.caidat")} — ${D.title}`, rtl ? p.w - D.m : D.m, D.y, { size: 8, color: GREY, align: rtl ? "right" : "left" });
         p.g.fillStyle = RULE; p.g.fillRect(D.m, D.y + 8, p.w - 2 * D.m, 0.6);
@@ -2273,9 +2370,9 @@ label.btn.off { opacity: .5; pointer-events: none; }
     para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
     signatures(D);
   }
-  async function exportPdf() {
+  async function exportPdf(share) {
     if (!S.downloads || S.pdfBusy) return;
-    const btn = $("pdfBtn"), lbl = btn.querySelector("span");
+    const btn = share === true ? $("pdfShareBtn") : $("pdfBtn"), lbl = btn.querySelector("span"), lbl0 = lbl.textContent;
     S.pdfBusy = true; btn.disabled = true; lbl.textContent = t("pay.pdfMaking");
     try {
       await fontsReady();
@@ -2286,12 +2383,287 @@ label.btn.off { opacity: .5; pointer-events: none; }
       if (single) buildDayPdf(D, R, site); else { buildPayPdf(D, R, site); buildGridPdf(D, R); }
       footers(D);
       const bytes = await pdfBytes(D.pages, `${D.title} — ${t("org.caidat")}`);
-      S.lastPdf = bytes;
-      await S.downloads.save({ filename: single ? t("x.dayPdf", R.from) : t("x.pdfFile", R.from, R.to), data: new Blob([bytes], { type: "application/pdf" }) });
-      toast(t("pay.downloaded"));
+      await deliver(bytes, single ? t("x.dayPdf", R.from) : t("x.pdfFile", R.from, R.to), share === true);
     } catch (e) {
       if (!(e && e.code === "declined")) toast(e && e.code === "rate_limited" ? t("pay.rateLimited") : e && e.code ? t("pay.noDl") : t("pay.pdfFail"));
-    } finally { S.pdfBusy = false; btn.disabled = false; lbl.textContent = t("pay.pdf"); }
+    } finally { S.pdfBusy = false; btn.disabled = false; lbl.textContent = lbl0; }
+  }
+
+  /* ----- payments, advances, balances and receipts */
+  const payList = (wid) => [...S.payments.values()].filter((p) => p.workerId === wid)
+    .sort((a, b) => (a.date + (a.createdAt || "")).localeCompare(b.date + (b.createdAt || "")));
+  const r2 = (x) => Math.round(x * 100) / 100;
+  function balanceOf(w, asOf) {
+    const to = asOf || todayISO();
+    const st = workerStats(w, start(), to);
+    const paid = payList(w.id).filter((p) => p.date <= to).reduce((a, p) => a + Number(p.amount || 0), 0);
+    return { earned: r2(st.amount), worked: st.worked, paid: r2(paid), rest: r2(st.amount - paid) };
+  }
+  function receiptFigures(p) {
+    const w = S.workers.get(p.workerId) || { id: p.workerId, name: p.name || "—", cin: p.cin || "", joinDate: start() };
+    const st = workerStats(w, start(), p.date);
+    const list = payList(p.workerId), idx = list.findIndex((x) => x.id === p.id);
+    const before = (idx < 0 ? list : list.slice(0, idx)).reduce((a, x) => a + Number(x.amount || 0), 0);
+    return { w, worked: st.worked, earned: r2(st.amount), before: r2(before), amount: Number(p.amount), after: r2(st.amount - before - Number(p.amount)) };
+  }
+  function receiptNo(p) {
+    const same = [...S.payments.values()].filter((x) => x.date === p.date).sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+    const i = same.findIndex((x) => x.id === p.id);
+    return `${p.date.replace(/-/g, "")}-${pad2((i < 0 ? same.length : i) + 1)}`;
+  }
+  function arWords(n) {
+    const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+    const teens = ["عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+    const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+    const hund = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+    const lt1000 = (x) => {
+      const h = Math.floor(x / 100), r = x % 100, out = [];
+      if (h) out.push(hund[h]);
+      if (r) out.push(r < 10 ? ones[r] : r < 20 ? teens[r - 10] : (r % 10 ? ones[r % 10] + " و" : "") + tens[Math.floor(r / 10)]);
+      return out.join(" و");
+    };
+    if (!n) return "صفر";
+    const th = Math.floor(n / 1000), rest = n % 1000, out = [];
+    if (th === 1) out.push("ألف");
+    else if (th === 2) out.push("ألفان");
+    else if (th >= 3 && th <= 10) out.push(lt1000(th) + " آلاف");
+    else if (th > 10) out.push(lt1000(th) + (th % 100 >= 11 ? " ألفاً" : " ألف"));
+    if (rest) out.push(lt1000(rest));
+    return out.join(" و");
+  }
+  function frWords(n) {
+    const u = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize"];
+    const tn = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante", "quatre-vingt", "quatre-vingt"];
+    const lt100 = (x) => {
+      if (x <= 16) return u[x];
+      if (x < 20) return "dix-" + u[x - 10];
+      const d = Math.floor(x / 10), r = x % 10;
+      if (d === 7 || d === 9) { const rr = r + 10; return tn[d] + (d === 7 && rr === 11 ? " et onze" : "-" + lt100(rr)); }
+      if (!r) return d === 8 ? "quatre-vingts" : tn[d];
+      if (r === 1 && d !== 8) return tn[d] + " et un";
+      return tn[d] + "-" + u[r];
+    };
+    const lt1000 = (x) => { const h = Math.floor(x / 100), r = x % 100; let w = h ? (h > 1 ? u[h] + " cent" + (r ? "" : "s") : "cent") : ""; if (r) w += (w ? " " : "") + lt100(r); return w; };
+    if (!n) return "zéro";
+    const th = Math.floor(n / 1000), rest = n % 1000;
+    let w = th ? (th === 1 ? "mille" : lt1000(th).replace(/cents$/, "cent") + " mille") : "";
+    if (rest) w += (w ? " " : "") + lt1000(rest);
+    return w;
+  }
+  function amountWords(x) {
+    const n = Math.floor(x + 1e-9), c = Math.round((x - n) * 100);
+    if (LANG === "fr") return `${frWords(n)} dirham${n > 1 ? "s" : ""}${c ? ` et ${frWords(c)} centimes` : ""}`;
+    const r = n % 100;
+    let unit = "درهم";
+    if (n === 1) return "درهم واحد" + (c ? ` و${arWords(c)} سنتيماً` : "");
+    if (n === 2) return "درهمان" + (c ? ` و${arWords(c)} سنتيماً` : "");
+    if (r >= 3 && r <= 10) unit = "دراهم"; else if (r >= 11) unit = "درهماً";
+    return `${arWords(n)} ${unit}${c ? ` و${arWords(c)} سنتيماً` : ""}`;
+  }
+  const canShareFiles = () => { try { return !!(window.SIJIL_LOCAL && navigator.canShare && navigator.canShare({ files: [new File(["%PDF-1.4"], "t.pdf", { type: "application/pdf" })] })); } catch (e) { return false; } };
+  async function deliver(bytes, filename, share, mime) {
+    const type = mime || "application/pdf";
+    const blob = new Blob([bytes], { type });
+    if (share && canShareFiles()) {
+      try { await navigator.share({ files: [new File([blob], filename, { type })], title: filename }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; toast(t("sh.fail")); }
+    }
+    await S.downloads.save({ filename, data: blob });
+    toast(t("pay.downloaded"));
+  }
+  async function pdfJob(btn, fn) {
+    if (S.pdfBusy || !S.downloads) return;
+    S.pdfBusy = true; if (btn) btn.disabled = true;
+    try { await fn(); }
+    catch (e) { if (!(e && e.code === "declined")) toast(e && e.code === "rate_limited" ? t("pay.rateLimited") : e && e.code ? t("pay.noDl") : t("pay.pdfFail")); }
+    finally { S.pdfBusy = false; if (btn) btn.disabled = false; }
+  }
+  async function buildPdf(title, draw) {
+    await fontsReady();
+    const D = pdfDoc(title);
+    draw(D);
+    footers(D);
+    return pdfBytes(D.pages, `${title} — ${t("org.caidat")}`);
+  }
+  function drawReceipt(D, p, y0, copyLabel) {
+    const g = D.p.g, W = D.p.w, m = D.m, rtl = LANG === "ar";
+    const f = receiptFigures(p);
+    const AR = ["المملكة المغربية", "وزارة الداخلية", "عمالة إقليم الرشيدية", "قيادة أوفوس"];
+    const FR = ["Royaume du Maroc", "Ministère de l'Intérieur", "Province d'Errachidia", "Caïdat Aoufous"];
+    AR.forEach((x, i) => txt(g, x, W - m - 80, y0 + 8 + i * 11, { wt: i === 0 || i === 3 ? 700 : 500, size: i === 3 ? 9 : 8, color: i === 3 ? NAVY : INK, dir: "rtl" }));
+    FR.forEach((x, i) => txt(g, x, m + 80, y0 + 8 + i * 11, { wt: i === 0 || i === 3 ? 700 : 500, size: i === 3 ? 9 : 8, color: i === 3 ? NAVY : INK, dir: "ltr" }));
+    txt(g, copyLabel, W / 2, y0 + 8, { size: 7.5, color: GREY });
+    let y = y0 + 8 + 4 * 11 + 2;
+    g.fillStyle = "#C1272D"; g.fillRect(m, y, W - 2 * m, 1.2);
+    g.fillStyle = "#006233"; g.fillRect(m, y + 2.2, W - 2 * m, 0.9);
+    y += 22;
+    txt(g, p.kind === "adv" ? t("rc.titleAdv") : t("rc.titlePay"), W / 2, y, { wt: 700, size: 14, color: NAVY });
+    y += 17;
+    txt(g, `${t("rc.no", "\u200E" + receiptNo(p) + "\u200E")} · ${fmtLong(p.date)}`, W / 2, y, { size: 9, color: GREY });
+    y += 20;
+    const site = S.settings.siteName || t("org.caidat");
+    const body = t(p.kind === "adv" ? "rc.bodyAdv" : "rc.bodyPay", p.name || f.w.name, p.cin || f.w.cin || "—", money(f.amount), amountWords(f.amount), site);
+    for (const ln of wrapT(g, body, W - 2 * m, `400 10.5px ${PFONT}`)) { txt(g, ln, rtl ? W - m : m, y, { size: 10.5, align: rtl ? "right" : "left" }); y += 16; }
+    y += 6;
+    const cells = [[t("rc.days"), num(f.worked)], [t("rc.earned"), money(f.earned)], [t("rc.before"), money(f.before)], [t("rc.this"), money(f.amount)], [t("rc.after"), money(f.after)]];
+    const cw = (W - 2 * m) / cells.length;
+    cells.forEach(([lab, val], i) => {
+      const x2 = rtl ? W - m - i * cw : m + (i + 1) * cw, x1 = x2 - cw;
+      g.fillStyle = i === 3 ? "#E3E9F6" : "#F4F6FA"; g.fillRect(x1 + 1.5, y, cw - 3, 40);
+      txt(g, lab, (x1 + x2) / 2, y + 12, { size: 7.5, color: GREY });
+      txt(g, val, (x1 + x2) / 2, y + 28, { size: 11, wt: 700, dir: "ltr", color: i === 3 ? NAVY : INK });
+    });
+    y += 54;
+    if (p.note) { txt(g, t("rc.note", p.note), rtl ? W - m : m, y, { size: 9, color: GREY, align: rtl ? "right" : "left" }); y += 15; }
+    txt(g, t("pay.madeAt", fmtLong(p.date)), rtl ? m : W - m, y, { size: 9.5, wt: 600, align: rtl ? "left" : "right" });
+    y += 22;
+    txt(g, t("rc.signWorker"), rtl ? W - m - 90 : m + 90, y, { wt: 700, size: 9.5 });
+    txt(g, t("x.signMaker"), rtl ? m + 90 : W - m - 90, y, { wt: 700, size: 9.5 });
+  }
+  function receiptPdfBytes(list) {
+    return buildPdf(list.length === 1 && list[0].kind === "adv" ? t("rc.titleAdv") : t("rc.titlePay"), (D) => {
+      D.noRun = true;
+      for (const p of list) {
+        D.add(false);
+        drawReceipt(D, p, 24, t("rc.copyWorker"));
+        const g = D.p.g, mid = D.p.h / 2;
+        g.save(); g.strokeStyle = "#9AA3B5"; g.lineWidth = 0.7; g.setLineDash([5, 4]);
+        g.beginPath(); g.moveTo(D.m, mid); g.lineTo(D.p.w - D.m, mid); g.stroke(); g.restore();
+        drawReceipt(D, p, mid + 10, t("rc.copyAdmin"));
+      }
+    });
+  }
+  function payListPdfBytes(b) {
+    return buildPdf(t("pl.title"), (D) => {
+      D.add(false);
+      letterhead(D, t("pl.title"), [...(S.settings.siteName ? [t("x.site", S.settings.siteName)] : []), t("pl.date", fmtLong(b.date))]);
+      const cols = [
+        { h: t("th.n"), w: 22, al: "c", ltr: true }, { h: t("th.name"), w: 150 }, { h: t("th.cin"), w: 62, al: "c", ltr: true },
+        { h: t("th.daysTo"), w: 56, al: "c", ltr: true }, { h: t("th.paidAmt"), w: 80, al: "e", ltr: true }, { h: t("th.sign"), w: 161 },
+      ];
+      const list = b.list.slice().sort((x, y) => String(x.name || "").localeCompare(String(y.name || ""), "ar"));
+      const rows = list.map((p, i) => { const f = receiptFigures(p); return { cells: [i + 1, p.name || f.w.name, p.cin || "—", num(f.worked), money(p.amount), ""] }; });
+      const tot = r2(list.reduce((a, p) => a + Number(p.amount || 0), 0));
+      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("th.total"), "", "", money(tot), ""] });
+      table(D, cols, rows, { rowH: 26 });
+      D.y += 8;
+      para(D, t("pl.words", amountWords(tot)), { wt: 600 });
+      para(D, t("pay.madeAt", fmtLong(b.date)), { align: "end", wt: 600 });
+      signatures(D);
+    });
+  }
+  async function receiptFor(pid, share, btn) {
+    const p = S.payments.get(pid); if (!p) return;
+    await pdfJob(btn, async () => { await deliver(await receiptPdfBytes([p]), t("rc.file", p.name || "", p.date), share); });
+  }
+  function batches() {
+    const m = new Map();
+    for (const p of S.payments.values()) if (p.batch) { const b = m.get(p.batch) || { id: p.batch, date: p.date, list: [] }; b.list.push(p); m.set(p.batch, b); }
+    return [...m.values()].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
+  }
+  function payBlock(w) {
+    const b = balanceOf(w), list = payList(w.id).slice().reverse(), share = canShareFiles();
+    const rows = list.map((p) => `<li><span class="pk ${p.kind === "adv" ? "adv" : ""}">${esc(p.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"))}</span><span>${esc(fmtShort(p.date))}</span><b class="pa">${money(p.amount)} ${esc(t("cur"))}</b>
+      <span class="pb">${S.downloads ? `<button type="button" class="btn sm" data-act="rc" data-p="${esc(p.id)}">${esc(t("py.receipt"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-act="rcs" data-p="${esc(p.id)}">${esc(t("py.share"))}</button>` : ""}${S.canWrite ? (S.confirmPay === p.id
+        ? `<button type="button" class="btn sm danger solid" data-act="pdelYes" data-p="${esc(p.id)}">${esc(t("py.delConfirm"))}</button>`
+        : `<button type="button" class="btn sm ghost" data-act="pdel" data-p="${esc(p.id)}">${esc(t("py.del"))}</button>`) : ""}</span></li>`).join("");
+    return `<div class="payblk"><p class="sub-h" style="margin:0">${esc(t("py.title"))}</p>
+      <div class="pstats"><div><span>${esc(t("py.earned"))}</span><b>${money(b.earned)}</b></div><div><span>${esc(t("py.paid"))}</span><b>${money(b.paid)}</b></div><div class="${b.rest < 0 ? "neg" : ""}"><span>${esc(t("py.rest"))}</span><b>${money(b.rest)}</b></div></div>
+      ${S.canWrite ? `<div class="row"><button type="button" class="btn sm primary" data-act="pay" data-id="${esc(w.id)}">${esc(t("py.payBtn"))}</button><button type="button" class="btn sm" data-act="adv" data-id="${esc(w.id)}">${esc(t("py.advBtn"))}</button></div>` : ""}
+      ${list.length ? `<ul class="plist">${rows}</ul>` : `<p class="hint">${esc(t("py.none"))}</p>`}</div>`;
+  }
+  function renderBalances() {
+    const box = $("balList");
+    if (!allLoaded()) { box.innerHTML = `<div class="loading">${esc(t("common.loading"))}</div>`; return; }
+    const today = todayISO();
+    const rows = sortedWorkers().filter((w) => w.joinDate <= today).map((w) => ({ w, b: balanceOf(w) })).filter((x) => x.b.earned > 0 || x.b.paid > 0);
+    const total = r2(rows.reduce((a, x) => a + Math.max(0, x.b.rest), 0));
+    $("balTotal").textContent = t("py.totalRest", money(total));
+    $("payAllBtn").disabled = !S.canWrite || !(total > 0) || S.payingAll;
+    box.innerHTML = rows.length ? `<div class="blist">${rows.map(({ w, b }) => `<div class="brow">
+        <div class="who"><span class="nm">${esc(w.name)}</span><span class="sub">${esc(t("py.earned"))} ${moneyShort(b.earned)} · ${esc(t("py.paid"))} ${moneyShort(b.paid)}</span></div>
+        <b class="${b.rest < 0 ? "neg" : b.rest > 0 ? "" : "zero"}">${b.rest < 0 ? esc(t("py.owes", money(-b.rest))) : `${money(b.rest)}`}</b>
+        ${S.canWrite ? `<button type="button" class="btn sm" data-pay="${esc(w.id)}">${esc(t("py.pay"))}</button>` : ""}</div>`).join("")}</div>`
+      : `<p class="hint">${esc(t("py.none"))}</p>`;
+    const pa = $("payAllBox");
+    if (S.payAllConfirm) {
+      const due = sortedWorkers().map((w) => balanceOf(w)).filter((x) => x.rest > 0);
+      const sum = r2(due.reduce((a, x) => a + x.rest, 0));
+      pa.hidden = false;
+      pa.innerHTML = due.length ? `<div class="bkprev"><b>${esc(t("py.allConfirm", due.length, money(sum)))}</b><div class="row"><button class="btn primary" type="button" data-pa="go" ${S.payingAll ? "disabled" : ""}>${esc(t("py.confirm"))}</button><button class="btn ghost" type="button" data-pa="no">${esc(t("common.cancel"))}</button></div></div>`
+        : `<p class="hint">${esc(t("py.allNone"))}</p>`;
+    } else { pa.hidden = true; pa.innerHTML = ""; }
+    const share = canShareFiles();
+    $("batchList").innerHTML = batches().map((bt) => {
+      const sum = r2(bt.list.reduce((a, p) => a + Number(p.amount || 0), 0));
+      return `<li><span>${esc(t("py.batch", fmtShort(bt.date), bt.list.length, money(sum)))}</span>${S.downloads ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="list">${esc(t("py.list"))}</button><button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="rc">${esc(t("py.receipts"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="share">${esc(t("py.share"))}</button>` : ""}</li>`;
+    }).join("");
+  }
+  async function payAll() {
+    if (!S.db || S.payingAll) return;
+    const today = todayISO(), batch = "b" + Date.now();
+    const due = sortedWorkers().map((w) => ({ w, b: balanceOf(w) })).filter((x) => x.b.rest > 0);
+    S.payingAll = true; renderBalances();
+    let n = 0, sum = 0;
+    try {
+      for (const { w, b } of due) {
+        await S.db.collection("payments").add({ workerId: w.id, name: w.name, cin: w.cin || "", kind: "pay", amount: b.rest, date: today, note: "", batch, createdAt: new Date().toISOString() });
+        n++; sum += b.rest;
+      }
+      toast(t("py.allDone", n, money(r2(sum))));
+      logChange(t("log.payAll", n, money(r2(sum))));
+    } catch (e) { writeError(e); }
+    finally { S.payingAll = false; S.payAllConfirm = false; renderBalances(); }
+  }
+  function openPay(wid, kind) {
+    const w = S.workers.get(wid); if (!w || !S.canWrite) return;
+    const b = balanceOf(w);
+    S.pay = { wid, kind: kind === "adv" ? "adv" : "pay", saved: null };
+    $("pyTitle").textContent = t("py.sheetPay", w.name);
+    $("pySub").textContent = b.rest < 0 ? t("py.owes", money(-b.rest)) : t("py.sheetSub", money(b.rest));
+    $("pyAmt").value = S.pay.kind === "pay" && b.rest > 0 ? String(b.rest) : "";
+    $("pyDate").value = todayISO(); $("pyDate").max = todayISO();
+    $("pyNote").value = "";
+    $("pyForm").hidden = false; $("pyDone").hidden = true;
+    setPayKind(S.pay.kind);
+    $("paySheet").hidden = false;
+    $("pyAmt").focus();
+  }
+  function setPayKind(k) {
+    if (!S.pay) return;
+    S.pay.kind = k;
+    for (const x of $("pyKind").querySelectorAll("button")) x.setAttribute("aria-pressed", String(x.dataset.k === k));
+  }
+  function closePay() { $("paySheet").hidden = true; S.pay = null; }
+  async function savePay() {
+    if (!S.pay || !S.db || S.paySaving) return;
+    const w = S.workers.get(S.pay.wid); if (!w) return;
+    const amount = r2(Number($("pyAmt").value)), date = $("pyDate").value;
+    if (!(amount > 0) || !isISO(date)) { toast(t("py.bad")); return; }
+    S.paySaving = true; $("pySave").disabled = true;
+    try {
+      const doc = { workerId: w.id, name: w.name, cin: w.cin || "", kind: S.pay.kind, amount, date, note: $("pyNote").value.trim().slice(0, 120), createdAt: new Date().toISOString() };
+      const ref = await S.db.collection("payments").add(doc);
+      const id = ref && ref.id ? ref.id : "p" + Date.now();
+      S.pay.saved = { id, ...doc };
+      if (!S.payments.has(id)) S.payments.set(id, S.pay.saved);
+      logChange(t("log.pay", w.name, S.pay.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"), money(amount)));
+      $("pyDoneMsg").textContent = t("py.saved", money(amount), w.name);
+      $("pyForm").hidden = true; $("pyDone").hidden = false;
+      $("pyRc").hidden = !S.downloads; $("pyRcShare").hidden = !canShareFiles();
+      renderAll();
+    } catch (e) { writeError(e); }
+    finally { S.paySaving = false; $("pySave").disabled = false; }
+  }
+  async function shareBackup() {
+    const data = JSON.stringify(backupData(), null, 1), name = `sijil-sauvegarde-${todayISO()}.txt`;
+    try {
+      const file = new File([data], name, { type: "text/plain" });
+      if (!(navigator.canShare && navigator.canShare({ files: [file] }))) { await downloadBackup(); return; }
+      await navigator.share({ files: [file], title: name });
+      try { localStorage.setItem("sijil.lastBackup", new Date().toISOString()); } catch (e) { /* reminder only */ }
+      if (S.tab === "home") renderHome();
+    } catch (e) { if (!(e && e.name === "AbortError")) toast(t("sh.fail")); }
   }
 
   /* =========================================================== settings */
@@ -2319,6 +2691,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       settings: { ...DEFAULTS, ...S.settings },
       workers: sortedWorkers().map((w) => ({ ...w })),
       days: [...S.days.values()].sort((a, b) => a.date.localeCompare(b.date)).map((d) => ({ ...d })),
+      payments: [...S.payments.values()].sort((a, b) => (a.date + (a.createdAt || "")).localeCompare(b.date + (b.createdAt || ""))).map((p) => ({ ...p })),
     };
   }
   const SAFE_ID = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
@@ -2337,6 +2710,12 @@ label.btn.off { opacity: .5; pointer-events: none; }
     for (const [k, v] of Object.entries(d.wages || {})) if (SAFE_ID.test(k) && Number(v) > 0) o.wages[k] = Number(v);
     return o;
   }
+  function cleanPayment(p) {
+    const o = { workerId: String(p.workerId), name: String(p.name || "").slice(0, 80), cin: String(p.cin || "").slice(0, 20), kind: p.kind === "adv" ? "adv" : "pay",
+      amount: r2(Number(p.amount)), date: p.date, note: String(p.note || "").slice(0, 120), createdAt: String(p.createdAt || new Date().toISOString()) };
+    if (typeof p.batch === "string" && SAFE_ID.test(p.batch)) o.batch = p.batch;
+    return o;
+  }
   function parseBackup(text) {
     let o;
     try { o = JSON.parse(text); } catch (e) { return null; }
@@ -2344,7 +2723,9 @@ label.btn.off { opacity: .5; pointer-events: none; }
     const workers = o.workers.filter((w) => w && typeof w.id === "string" && SAFE_ID.test(w.id) && w.name && isISO(w.joinDate));
     const days = o.days.filter((d) => d && isISO(d.date) && d.statuses && typeof d.statuses === "object");
     if (!workers.length && !days.length) return null;
-    return { workers, days, settings: o.settings && typeof o.settings === "object" ? o.settings : null };
+    const hasPayments = Array.isArray(o.payments);
+    const payments = hasPayments ? o.payments.filter((p) => p && typeof p.id === "string" && SAFE_ID.test(p.id) && p.workerId && isISO(p.date) && Number(p.amount) > 0) : [];
+    return { workers, days, payments, hasPayments, settings: o.settings && typeof o.settings === "object" ? o.settings : null };
   }
   async function downloadBackup() {
     if (!S.downloads) { toast(t("bk.noDl")); return; }
@@ -2392,6 +2773,11 @@ label.btn.off { opacity: .5; pointer-events: none; }
       for (const d of src.days) ops.push(() => S.db.doc("days/" + d.date).set(cleanDay(d)));
       for (const id of [...S.workers.keys()]) if (!keepW.has(id)) ops.push(() => S.db.doc("workers/" + id).delete());
       for (const d of [...S.days.keys()]) if (!keepD.has(d)) ops.push(() => S.db.doc("days/" + d).delete());
+      if (src.hasPayments) {
+        const keepP = new Set(src.payments.map((p) => p.id));
+        for (const p of src.payments) ops.push(() => S.db.doc("payments/" + p.id).set(cleanPayment(p)));
+        for (const id of [...S.payments.keys()]) if (!keepP.has(id)) ops.push(() => S.db.doc("payments/" + id).delete());
+      }
       S.rp = [0, ops.length]; renderBackup();
       await runPool(ops, 5, () => { S.rp[0]++; renderBackup(); });
       S.drafts = {};
@@ -2406,6 +2792,9 @@ label.btn.off { opacity: .5; pointer-events: none; }
     $("bkDown").disabled = !allLoaded() || !S.downloads;
     $("bkPick").classList.toggle("off", !S.canWrite || S.restoring);
     $("bkFile").disabled = !S.canWrite || S.restoring;
+    let canTxt = false;
+    try { canTxt = !!(window.SIJIL_LOCAL && navigator.canShare && navigator.canShare({ files: [new File(["{}"], "s.txt", { type: "text/plain" })] })); } catch (e) { canTxt = false; }
+    $("bkShare").hidden = !canTxt;
     if (S.restoring) {
       const pc = S.rp[1] ? Math.round((S.rp[0] / S.rp[1]) * 100) : 0;
       box.hidden = false;
@@ -2512,7 +2901,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     S.gridScrolled = false; renderGrid();
   });
   $("cClose").addEventListener("click", closeCell);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); });
 
   $("openAdd").addEventListener("click", () => { S.returnToDay = false; openForm("add", S.sel); });
   $("openBulk").addEventListener("click", () => openForm("bulk", start()));
@@ -2562,6 +2951,14 @@ label.btn.off { opacity: .5; pointer-events: none; }
     }
     const b = e.target.closest("[data-act]"); if (!b) return;
     const id = b.dataset.id, act = b.dataset.act;
+    if (act === "pay" || act === "adv") return openPay(id, act);
+    if (act === "rc" || act === "rcs") return receiptFor(b.dataset.p, act === "rcs", b);
+    if (act === "pdel") { S.confirmPay = b.dataset.p; return renderWorkers(); }
+    if (act === "pdelYes") {
+      const p = S.payments.get(b.dataset.p); S.confirmPay = null;
+      if (p) { try { await S.db.doc("payments/" + p.id).delete(); toast(t("py.deleted")); logChange(t("log.payDel", p.name || "", money(p.amount))); } catch (err) { writeError(err); } }
+      return renderWorkers();
+    }
     if (act === "toggle") { S.open = S.open === id ? null : id; S.confirmDel = null; return renderWorkers(); }
     if (act === "del") { S.confirmDel = id; return renderWorkers(); }
     if (act === "delNo") { S.confirmDel = null; return renderWorkers(); }
@@ -2611,7 +3008,31 @@ label.btn.off { opacity: .5; pointer-events: none; }
   });
   $("pBody").addEventListener("click", (e) => { const b = e.target.closest("[data-goday]"); if (!b) return; S.sel = b.dataset.goday; setTab("day"); });
   $("xlsxBtn").addEventListener("click", exportXlsx);
-  $("pdfBtn").addEventListener("click", exportPdf);
+  $("pdfBtn").addEventListener("click", () => exportPdf(false));
+  $("pdfShareBtn").addEventListener("click", () => exportPdf(true));
+  $("shareTxtBtn").addEventListener("click", async () => { try { await navigator.share({ text: summaryText() }); } catch (e) { if (!(e && e.name === "AbortError")) toast(t("sh.fail")); } });
+  $("balCard").addEventListener("click", async (e) => {
+    const pb = e.target.closest("[data-pay]");
+    if (pb) return openPay(pb.dataset.pay, "pay");
+    if (e.target.closest("#payAllBtn")) { S.payAllConfirm = true; return renderBalances(); }
+    const pa = e.target.closest("[data-pa]");
+    if (pa) { if (pa.dataset.pa === "go") return payAll(); S.payAllConfirm = false; return renderBalances(); }
+    const bb = e.target.closest("[data-batch]");
+    if (bb) {
+      const bt = batches().find((x) => x.id === bb.dataset.batch); if (!bt) return;
+      if (bb.dataset.k === "rc") return pdfJob(bb, async () => deliver(await receiptPdfBytes(bt.list), t("rc.fileAll", bt.date), false));
+      return pdfJob(bb, async () => deliver(await payListPdfBytes(bt), t("pl.file", bt.date), bb.dataset.k === "share"));
+    }
+  });
+  $("pyKind").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) setPayKind(b.dataset.k); });
+  $("pySave").addEventListener("click", savePay);
+  $("pyAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); savePay(); } });
+  $("pyCancel").addEventListener("click", closePay);
+  $("pyClose").addEventListener("click", closePay);
+  $("pyRc").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, false, e.currentTarget); });
+  $("pyRcShare").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, true, e.currentTarget); });
+  $("paySheet").addEventListener("click", (e) => { if (e.target === $("paySheet")) closePay(); });
+  $("bkShare").addEventListener("click", shareBackup);
   $("copyBtn").addEventListener("click", () => {
     const text = summaryText();
     const fb = () => { const ta = $("copyFallback"); ta.value = text; ta.hidden = false; ta.focus(); ta.select(); toast(t("pay.copyManual")); };
@@ -2698,6 +3119,11 @@ label.btn.off { opacity: .5; pointer-events: none; }
       for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date)) m.set(v.date, v); }
       S.days = m; S.loaded.days = true; renderAll();
     }, keep);
+    db.collection("payments").onSnapshot((snap) => {
+      const m = new Map();
+      for (const d of snap.docs) { const v = d.data(); if (v && v.workerId && isISO(v.date) && Number(v.amount) > 0) m.set(d.id, { id: d.id, ...v }); }
+      S.payments = m; S.loaded.payments = true; renderAll();
+    }, () => { S.loaded.payments = true; renderAll(); });
     db.collection("audit").onSnapshot((snap) => {
       const m = new Map();
       for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date)) m.set(v.date, v); }

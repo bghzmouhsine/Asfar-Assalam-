@@ -1,9 +1,9 @@
 /* Sijil service worker: the app opens instantly and works without Internet. */
-var V = "sijil-v1";
+var V = "sijil-v2";
 var RT = "sijil-rt-v1";
 var SHELL = ["./", "index.html", "local-db.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(V).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(V).then(function (c) { return c.addAll(SHELL.map(function (u) { return new Request(u, { cache: "reload" }); })); }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener("activate", function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
