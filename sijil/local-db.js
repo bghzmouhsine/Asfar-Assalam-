@@ -1,11 +1,20 @@
-/* Sijil — stockage local (sur ce téléphone) + installation de l'application. */
+/* Sijil — stockage (téléphone, ou nuage Firebase si activé) + installation de l'application. */
 (function () {
   "use strict";
   window.SIJIL_LOCAL = true;
   var PFX = "sijil:doc:";
+  var CLOUD_KEY = "sijil.cloud";
+  var FB = "https://www.gstatic.com/firebasejs/10.12.2/";
   var LS = null;
   try { LS = window.localStorage; LS.setItem("sijil:probe", "1"); LS.removeItem("sijil:probe"); } catch (e) { LS = null; }
   var MEM = {};
+  function T(ar, fr) { return document.documentElement.getAttribute("lang") === "fr" ? fr : ar; }
+  function err(code, msg) { var e = new Error(msg || code); e.code = code; return e; }
+  function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
+  function getJ(k) { try { return JSON.parse(LS ? LS.getItem(k) : "null"); } catch (e) { return null; } }
+  function setJ(k, v) { try { if (LS) LS.setItem(k, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+
+  /* =================================================================== local store (this phone) */
   function read(p) { try { var v = LS ? LS.getItem(PFX + p) : MEM[p]; return v == null ? undefined : JSON.parse(v); } catch (e) { return undefined; } }
   function write(p, v) { var s = JSON.stringify(v); if (LS) LS.setItem(PFX + p, s); else MEM[p] = s; }
   function del(p) { if (LS) LS.removeItem(PFX + p); else delete MEM[p]; }
@@ -16,8 +25,6 @@
     return out;
   }
   function segs(p) { return p.split("/").length; }
-  function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
-  function err(code, msg) { var e = new Error(msg || code); e.code = code; return e; }
   function guard(fn) {
     try { return fn(); } catch (e) {
       if (e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014)) throw err("quota_exceeded", "storage full");
@@ -46,7 +53,7 @@
     return a;
   }
   function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
-  function doc(p) {
+  function localDoc(p) {
     return {
       id: p.split("/").pop(), path: p,
       get: function () { return Promise.resolve(docSnap(p)); },
@@ -62,10 +69,10 @@
       onSnapshot: function (next) { var last = null; return on(function () { var s = JSON.stringify(read(p)) || ""; if (s === last) return; last = s; next(docSnap(p)); }); },
     };
   }
-  function collection(c) {
+  function localCollection(c) {
     var api = {
       path: c,
-      doc: function (id) { return doc(c + "/" + (id || newId())); },
+      doc: function (id) { return localDoc(c + "/" + (id || newId())); },
       get: function () { return Promise.resolve(qSnap(c)); },
       add: function (d) { return new Promise(function (res) { var id = newId(); guard(function () { write(c + "/" + id, clone(d)); }); notify(); res({ id: id, path: c + "/" + id }); }); },
       onSnapshot: function (next) {
@@ -81,7 +88,292 @@
     return api;
   }
   window.addEventListener("storage", function (e) { if (!e.key || e.key.indexOf(PFX) === 0) notify(); });
-  var MIME = { pdf: "application/pdf", json: "application/json", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv: "text/csv" };
+  var localDb = { doc: localDoc, collection: localCollection };
+
+  /* =================================================================== cloud store (Firebase) */
+  var cloud = { cfg: null, app: null, auth: null, fs: null, m: null, user: null, base: "" };
+  function syncError(e) {
+    console.error(e);
+    var code = (e && e.code) || "";
+    var msg = code.indexOf("permission-denied") >= 0 ? T("السحابة ترفض الحفظ: انشر قواعد الأمان (الخطوة 4 في الإعدادات).", "Le nuage refuse l'enregistrement : publiez les règles de sécurité (étape 4).")
+      : T("تعذّرت المزامنة مع السحابة: ", "Synchronisation impossible : ") + (e && e.message ? e.message : code);
+    banner(msg, true);
+  }
+  function snapOf(s) { return { id: s.id, ref: { path: s.ref.path }, exists: s.exists(), data: function () { return s.data(); }, metadata: { hasPendingWrites: s.metadata.hasPendingWrites, fromCache: s.metadata.fromCache } }; }
+  function clean(d) { return JSON.parse(JSON.stringify(d)); }
+  function cloudDoc(p) {
+    var m = cloud.m, ref = m.doc(cloud.fs, cloud.base + p);
+    return {
+      id: ref.id, path: p,
+      get: function () { return m.getDoc(ref).then(snapOf); },
+      /* writes are applied to the phone's copy at once and sent when there is a connection */
+      set: function (d) { m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve(); },
+      update: function (d) { m.setDoc(ref, clean(d), { merge: true }).catch(syncError); return Promise.resolve(); },
+      delete: function () { m.deleteDoc(ref).catch(syncError); return Promise.resolve(); },
+      onSnapshot: function (next, error) { return m.onSnapshot(ref, function (s) { next(snapOf(s)); }, function (e) { syncError(e); if (error) error(e); }); },
+    };
+  }
+  function cloudCollection(c) {
+    var m = cloud.m, cref = m.collection(cloud.fs, cloud.base + c);
+    function qs(q) { var docs = q.docs.map(snapOf); return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function () { return []; }, metadata: { fromCache: q.metadata.fromCache } }; }
+    var api = {
+      path: c,
+      doc: function (id) { return cloudDoc(c + "/" + (id || m.doc(cref).id)); },
+      get: function () { return m.getDocs(cref).then(qs); },
+      add: function (d) { var ref = m.doc(cref); m.setDoc(ref, clean(d)).catch(syncError); return Promise.resolve({ id: ref.id, path: c + "/" + ref.id }); },
+      onSnapshot: function (next, error) { return m.onSnapshot(cref, function (q) { next(qs(q)); }, function (e) { syncError(e); if (error) error(e); }); },
+      where: function () { return api; }, orderBy: function () { return api; }, limit: function () { return api; },
+    };
+    return api;
+  }
+  var cloudDb = { doc: cloudDoc, collection: cloudCollection };
+
+  function parseConfig(text) {
+    var out = {}, re = /(apiKey|authDomain|projectId|storageBucket|messagingSenderId|appId)\s*["']?\s*:\s*["']([^"']+)["']/g, x;
+    while ((x = re.exec(String(text || "")))) out[x[1]] = x[2];
+    if (!out.apiKey || !out.projectId || !out.appId) return null;
+    if (!out.authDomain) out.authDomain = out.projectId + ".firebaseapp.com";
+    return out;
+  }
+  function loadFirebase(cfg) {
+    if (cloud.m && cloud.cfg && cloud.cfg.projectId === cfg.projectId) return Promise.resolve(cloud);
+    return Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]).then(function (mods) {
+      var A = mods[0], Au = mods[1], F = mods[2];
+      var app = A.initializeApp(cfg, "sijil");
+      var fs;
+      try { fs = F.initializeFirestore(app, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); }
+      catch (e) { fs = F.getFirestore(app); }
+      cloud.cfg = cfg; cloud.app = app; cloud.auth = Au.getAuth(app); cloud.fs = fs;
+      cloud.m = { doc: F.doc, collection: F.collection, getDoc: F.getDoc, getDocs: F.getDocs, setDoc: F.setDoc, deleteDoc: F.deleteDoc, onSnapshot: F.onSnapshot, writeBatch: F.writeBatch };
+      cloud.au = Au;
+      return cloud;
+    });
+  }
+  function firstUser() {
+    return new Promise(function (res) { var off = cloud.au.onAuthStateChanged(cloud.auth, function (u) { off(); res(u); }); });
+  }
+  function authText(e) {
+    var c = (e && e.code) || "";
+    if (c.indexOf("email-already-in-use") >= 0) return T("هذا البريد له حساب من قبل: استعمل «دخول».", "Cette adresse a déjà un compte : utilisez « Connexion ».");
+    if (c.indexOf("invalid-credential") >= 0 || c.indexOf("wrong-password") >= 0 || c.indexOf("user-not-found") >= 0) return T("البريد أو كلمة المرور غير صحيحة.", "E-mail ou mot de passe incorrect.");
+    if (c.indexOf("weak-password") >= 0) return T("كلمة المرور يجب أن تكون 6 أحرف على الأقل.", "Le mot de passe doit contenir au moins 6 caractères.");
+    if (c.indexOf("invalid-email") >= 0) return T("البريد الإلكتروني غير صحيح.", "Adresse e-mail invalide.");
+    if (c.indexOf("operation-not-allowed") >= 0 || c.indexOf("configuration-not-found") >= 0) return T("فعّل «Email/Password» في Authentication (الخطوة 3).", "Activez « E-mail/Mot de passe » dans Authentication (étape 3).");
+    if (c.indexOf("api-key") >= 0) return T("إعدادات Firebase غير صحيحة: انسخها من جديد (الخطوة 5).", "Configuration Firebase invalide : recopiez-la (étape 5).");
+    if (c.indexOf("network") >= 0) return T("لا يوجد اتصال بالإنترنت.", "Pas de connexion Internet.");
+    if (c.indexOf("too-many-requests") >= 0) return T("محاولات كثيرة، انتظر قليلاً.", "Trop de tentatives, patientez un peu.");
+    if (/does not exist|not-found|NOT_FOUND/.test((e && e.message) || "") || c.indexOf("not-found") >= 0) return T("أنشئ قاعدة Firestore Database (الخطوة 2).", "Créez la base Firestore Database (étape 2).");
+    if (c.indexOf("permission-denied") >= 0) return T("السحابة ترفض الوصول: انشر قواعد الأمان (الخطوة 4).", "Accès refusé : publiez les règles de sécurité (étape 4).");
+    return (e && e.message) || String(e);
+  }
+  /* copies everything on this phone to the cloud (first activation) */
+  function uploadLocal() {
+    var m = cloud.m, all = keys().filter(function (k) { return segs(k) % 2 === 0; }), chunks = [];
+    for (var i = 0; i < all.length; i += 400) chunks.push(all.slice(i, i + 400));
+    return chunks.reduce(function (pr, part) {
+      return pr.then(function () {
+        var b = m.writeBatch(cloud.fs);
+        part.forEach(function (k) { var v = read(k); if (v !== undefined) b.set(m.doc(cloud.fs, cloud.base + k), clean(v)); });
+        return b.commit();
+      });
+    }, Promise.resolve()).then(function () { return all.length; });
+  }
+  /* copies the cloud data back to the phone (when cloud saving is turned off) */
+  function downloadCloud() {
+    var m = cloud.m, cols = ["workers", "days", "payments", "audit", "safety"];
+    return Promise.all([m.getDoc(m.doc(cloud.fs, cloud.base + "app/settings"))].concat(cols.map(function (c) { return m.getDocs(m.collection(cloud.fs, cloud.base + c)); }))).then(function (res) {
+      if (res[0].exists()) write("app/settings", res[0].data());
+      cols.forEach(function (c, i) {
+        keys().filter(function (k) { return k.indexOf(c + "/") === 0 && segs(k) === 2; }).forEach(del);
+        res[i + 1].docs.forEach(function (d) { write(c + "/" + d.id, d.data()); });
+      });
+    });
+  }
+  function cloudHasData() {
+    return cloud.m.getDocs(cloud.m.collection(cloud.fs, cloud.base + "workers")).then(function (q) { return !q.empty; });
+  }
+
+  /* =================================================================== mode at startup */
+  var hashCfg = null;
+  try {
+    var hm = /[#&]cloud=([A-Za-z0-9_\-+/=]+)/.exec(location.hash);
+    if (hm) {
+      hashCfg = parseConfig(decodeURIComponent(escape(atob(hm[1].replace(/-/g, "+").replace(/_/g, "/")))));
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch (e) { hashCfg = null; }
+  var saved = getJ(CLOUD_KEY), skip = false;
+  try { skip = sessionStorage.getItem("sijil.cloud.skip") === "1"; } catch (e) { skip = false; }
+  if (hashCfg) { saved = { cfg: hashCfg, pending: true }; setJ(CLOUD_KEY, saved); }
+  var dbReady;
+  if (saved && saved.cfg && !skip) {
+    window.SIJIL_CLOUD = true;
+    document.documentElement.classList.add("cloud-on");
+    dbReady = loadFirebase(saved.cfg).then(firstUser).then(function (u) {
+      if (u) return u;
+      return loginScreen();
+    }).then(function (u) {
+      cloud.user = u; cloud.base = "sijil/" + u.uid + "/";
+      setJ(CLOUD_KEY, { cfg: saved.cfg, email: u.email || saved.email || "", since: saved.since || new Date().toISOString() });
+      return cloudDb;
+    }).catch(function (e) {
+      console.error(e);
+      window.SIJIL_CLOUD = false;
+      document.documentElement.classList.remove("cloud-on");
+      banner(T("تعذّر الاتصال بالسحابة، يعمل التطبيق الآن بنسخة الهاتف. ", "Nuage injoignable : l'application utilise la copie du téléphone. ") + authText(e), true);
+      return localDb;
+    });
+  } else {
+    dbReady = Promise.resolve(localDb);
+  }
+
+  /* =================================================================== small UI helpers */
+  function el(html) { var d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstChild; }
+  function whenBody(fn) { if (document.body) fn(); else document.addEventListener("DOMContentLoaded", fn); }
+  function banner(msg, bad) {
+    whenBody(function () {
+      var b = document.getElementById("sjBanner");
+      if (!b) {
+        b = el('<div id="sjBanner" role="status" style="position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:90;max-width:560px;margin:0 auto;border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.6;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;gap:10px;align-items:flex-start"><span style="flex:1"></span><button type="button" style="border:0;background:transparent;font-size:18px;line-height:1;color:inherit;padding:0 4px">×</button></div>');
+        document.body.appendChild(b);
+        b.querySelector("button").addEventListener("click", function () { b.remove(); });
+      }
+      b.style.background = bad ? "#FBE2DF" : "#DBF1E5"; b.style.color = bad ? "#8A1F17" : "#0F5536";
+      b.querySelector("span").textContent = msg;
+      clearTimeout(banner.t); banner.t = setTimeout(function () { if (b.parentNode) b.remove(); }, 9000);
+    });
+  }
+  var CSS = '#sjLogin{position:fixed;inset:0;z-index:95;background:var(--bg,#F2F4F8);display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-left,0px)) 24px max(16px,env(safe-area-inset-right,0px));overflow:auto}' +
+    '#sjLogin .bx{width:100%;max-width:420px;background:var(--surface,#fff);border:1px solid var(--line,#DBE1EB);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(19,26,43,.08)}' +
+    '#sjLogin h2{margin:0;font-size:18px;color:var(--ink,#131A2B)}#sjLogin p{margin:0;color:var(--muted,#5B6578);font-size:12.5px}' +
+    '.sjf{display:flex;flex-direction:column;gap:6px}.sjf label{font-size:12px;font-weight:600;color:var(--muted,#5B6578)}' +
+    '.sjf input,.sjf textarea{height:44px;padding:0 12px;border-radius:11px;border:1px solid var(--line,#DBE1EB);background:var(--surface-2,#EDF0F6);color:var(--ink,#131A2B);font:inherit;font-size:16px;width:100%;box-sizing:border-box}' +
+    '.sjf textarea{height:auto;min-height:110px;padding:10px 12px;font-size:13px;direction:ltr;text-align:left}' +
+    '.sjb{min-height:46px;border-radius:12px;border:1px solid var(--line,#DBE1EB);background:var(--surface,#fff);color:var(--ink,#131A2B);font:inherit;font-weight:700;font-size:14px;padding:0 16px;cursor:pointer}' +
+    '.sjb.p{background:var(--brand,#1E3A8A);border-color:var(--brand,#1E3A8A);color:var(--brand-ink,#fff)}.sjb.g{background:transparent;border-color:transparent;color:var(--link,#2448A8)}' +
+    '.sjrow{display:flex;gap:8px;flex-wrap:wrap}.sjerr{color:var(--bad,#C0362C);font-weight:700;font-size:12.5px;min-height:1.2em;margin:0}' +
+    '.sjsteps{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7;color:var(--ink,#131A2B)}.sjsteps b{font-weight:700}' +
+    '.sjcode{direction:ltr;text-align:left;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--surface-2,#EDF0F6);border-radius:10px;padding:10px;margin:0;overflow-x:auto}' +
+    'html.cloud-on #protCard{display:none}';
+  whenBody(function () { var s = document.createElement("style"); s.textContent = CSS; document.head.appendChild(s); });
+
+  /* login screen shown when cloud saving is on but nobody is signed in on this device */
+  function loginScreen() {
+    return new Promise(function (resolve) {
+      whenBody(function () {
+        var box = el('<div id="sjLogin"><div class="bx">' +
+          '<h2>' + T("الدخول إلى السجل", "Connexion au registre") + '</h2>' +
+          '<p>' + T("السجل محفوظ في السحابة. ادخل بالبريد وكلمة المرور اللذين اخترتهما عند التفعيل.", "Le registre est enregistré dans le nuage. Connectez-vous avec l'e-mail et le mot de passe choisis à l'activation.") + '</p>' +
+          '<div class="sjf"><label for="sjE">' + T("البريد الإلكتروني", "E-mail") + '</label><input id="sjE" type="email" autocomplete="username" dir="ltr"></div>' +
+          '<div class="sjf"><label for="sjP">' + T("كلمة المرور", "Mot de passe") + '</label><input id="sjP" type="password" autocomplete="current-password" dir="ltr"></div>' +
+          '<p class="sjerr" id="sjErr"></p>' +
+          '<div class="sjrow"><button class="sjb p" id="sjGo" type="button">' + T("دخول", "Connexion") + '</button><button class="sjb" id="sjNew" type="button">' + T("إنشاء حساب", "Créer un compte") + '</button></div>' +
+          '<div class="sjrow"><button class="sjb g" id="sjForgot" type="button">' + T("نسيت كلمة المرور", "Mot de passe oublié") + '</button><button class="sjb g" id="sjLocal" type="button">' + T("العمل بنسخة الهاتف بدون سحابة", "Utiliser la copie du téléphone, sans nuage") + '</button></div>' +
+          '</div></div>');
+        document.body.appendChild(box);
+        var E = box.querySelector("#sjE"), P = box.querySelector("#sjP"), ER = box.querySelector("#sjErr");
+        var st = getJ(CLOUD_KEY) || {}; if (st.email) E.value = st.email;
+        function go(create) {
+          ER.textContent = "";
+          var fn = create ? cloud.au.createUserWithEmailAndPassword : cloud.au.signInWithEmailAndPassword;
+          fn(cloud.auth, E.value.trim(), P.value).then(function (cred) { box.remove(); resolve(cred.user); }).catch(function (e) { ER.textContent = authText(e); });
+        }
+        box.querySelector("#sjGo").addEventListener("click", function () { go(false); });
+        box.querySelector("#sjNew").addEventListener("click", function () { go(true); });
+        P.addEventListener("keydown", function (e) { if (e.key === "Enter") go(false); });
+        box.querySelector("#sjForgot").addEventListener("click", function () {
+          if (!E.value.trim()) { ER.textContent = T("اكتب بريدك أولاً.", "Saisissez d'abord votre e-mail."); return; }
+          cloud.au.sendPasswordResetEmail(cloud.auth, E.value.trim()).then(function () { ER.textContent = T("أرسلنا رابط تغيير كلمة المرور إلى بريدك.", "Un lien de réinitialisation a été envoyé."); }).catch(function (e) { ER.textContent = authText(e); });
+        });
+        box.querySelector("#sjLocal").addEventListener("click", function () { try { sessionStorage.setItem("sijil.cloud.skip", "1"); } catch (e) { /* ignore */ } location.reload(); });
+      });
+    });
+  }
+
+  /* =================================================================== settings card "cloud saving" */
+  var RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /sijil/{uid}/{document=**} {\n      allow read, write: if request.auth != null && request.auth.uid == uid;\n    }\n  }\n}";
+  function linkFor(cfg) {
+    var s = btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return location.origin + location.pathname + "#cloud=" + s;
+  }
+  function copy(text, btn) {
+    function done() { var o = btn.textContent; btn.textContent = T("تم النسخ ✓", "Copié ✓"); setTimeout(function () { btn.textContent = o; }, 1800); }
+    try { navigator.clipboard.writeText(text).then(done, function () { window.prompt("", text); }); } catch (e) { window.prompt("", text); }
+  }
+  function renderCloudCard() {
+    var card = document.getElementById("cloudCard");
+    if (!card) return;
+    var st = getJ(CLOUD_KEY);
+    var body = card.querySelector(".cbody");
+    if (window.SIJIL_CLOUD && cloud.user) {
+      body.innerHTML = '<p class="notice" style="background:var(--ok-soft);margin:0">' + T("مفعّل ✓ — بياناتك تُحفظ في السحابة وتظهر في كل أجهزتك. الحساب: ", "Activé ✓ — vos données sont enregistrées dans le nuage et visibles sur tous vos appareils. Compte : ") + '<b dir="ltr">' + (cloud.user.email || "") + '</b></p>' +
+        '<p class="hint" style="margin:0">' + T("لفتح السجل في جهاز آخر (الحاسوب مثلاً): أرسل له هذا الرابط وافتحه فيه، ثم ادخل بنفس البريد وكلمة المرور.", "Pour ouvrir le registre sur un autre appareil (l'ordinateur par exemple) : ouvrez-y ce lien, puis connectez-vous avec le même e-mail et mot de passe.") + '</p>' +
+        '<div class="row"><button class="btn" type="button" id="sjLink">' + T("نسخ رابط جهاز آخر", "Copier le lien pour un autre appareil") + '</button>' +
+        (navigator.share ? '<button class="btn" type="button" id="sjLinkShare">' + T("إرسال الرابط", "Envoyer le lien") + '</button>' : "") + '</div>' +
+        '<div class="row"><button class="btn ghost" type="button" id="sjOut">' + T("تسجيل الخروج", "Se déconnecter") + '</button><button class="btn ghost" type="button" id="sjOff">' + T("إيقاف الحفظ السحابي", "Désactiver le nuage") + '</button></div>';
+      var lk = linkFor(cloud.cfg);
+      body.querySelector("#sjLink").addEventListener("click", function (e) { copy(lk, e.currentTarget); });
+      var sh = body.querySelector("#sjLinkShare");
+      if (sh) sh.addEventListener("click", function () { navigator.share({ text: lk }).catch(function () { /* cancelled */ }); });
+      body.querySelector("#sjOut").addEventListener("click", function () { cloud.au.signOut(cloud.auth).then(function () { location.reload(); }); });
+      body.querySelector("#sjOff").addEventListener("click", function (e) {
+        var b = e.currentTarget;
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = T("تأكيد: نسخ البيانات إلى الهاتف وإيقاف السحابة", "Confirmer : copier les données sur le téléphone et désactiver"); return; }
+        b.disabled = true;
+        downloadCloud().then(function () { try { LS.removeItem(CLOUD_KEY); } catch (x) { /* ignore */ } location.reload(); }).catch(function (x) { b.disabled = false; banner(authText(x), true); });
+      });
+      return;
+    }
+    body.innerHTML = '<p class="hint" style="margin:0">' + T("الآن بياناتك على هذا الهاتف فقط. فعّل الحفظ السحابي المجاني (Google Firebase) لتُحفظ تلقائياً وتفتحها من الهاتف والحاسوب معاً. تحتاج حساب Google، ومرة واحدة فقط، والأسهل من الحاسوب:", "Vos données sont uniquement sur ce téléphone. Activez l'enregistrement gratuit dans le nuage (Google Firebase) pour les sauvegarder automatiquement et les ouvrir sur téléphone et ordinateur. Il faut un compte Google ; une seule fois, plus simple depuis un ordinateur :") + '</p>' +
+      '<ol class="sjsteps">' +
+      '<li>' + T("افتح <b dir=\"ltr\">console.firebase.google.com</b> ← «إنشاء مشروع» (Create a project)، سمّه <b dir=\"ltr\">sijil</b>، ولا حاجة لـ Google Analytics.", "Ouvrez <b>console.firebase.google.com</b> → « Créer un projet », nommez-le <b>sijil</b> (Google Analytics inutile).") + '</li>' +
+      '<li>' + T("القائمة: Build ← <b>Firestore Database</b> ← Create database ← المنطقة <b dir=\"ltr\">europe-west1</b> ← production mode.", "Menu Build → <b>Firestore Database</b> → Créer → région <b>europe-west1</b> → mode production.") + '</li>' +
+      '<li>' + T("القائمة: Build ← <b>Authentication</b> ← Get started ← <b>Email/Password</b> ← Enable ← Save.", "Menu Build → <b>Authentication</b> → Commencer → <b>E-mail/Mot de passe</b> → Activer → Enregistrer.") + '</li>' +
+      '<li>' + T("Firestore ← تبويب <b>Rules</b> ← امسح ما فيه والصق هذه القواعد ← <b>Publish</b>:", "Firestore → onglet <b>Règles</b> → remplacez le contenu par ces règles → <b>Publier</b> :") +
+      '<pre class="sjcode" id="sjRules"></pre><button class="btn sm" type="button" id="sjCopyRules">' + T("نسخ القواعد", "Copier les règles") + '</button></li>' +
+      '<li>' + T("الترس ⚙ ← Project settings ← في الأسفل أيقونة الويب <b dir=\"ltr\">&lt;/&gt;</b> ← اكتب sijil ← Register app ← انسخ كل ما يظهر في <b dir=\"ltr\">firebaseConfig</b> والصقه هنا:", "⚙ → Paramètres du projet → en bas, icône Web <b>&lt;/&gt;</b> → nommez sijil → Enregistrer → copiez tout l'objet <b>firebaseConfig</b> et collez-le ici :") + '</li>' +
+      '</ol>' +
+      '<div class="sjf"><label for="sjCfg">firebaseConfig</label><textarea id="sjCfg" spellcheck="false" placeholder="apiKey: &quot;AIza…&quot;, authDomain: …, projectId: …, appId: …"></textarea></div>' +
+      '<div class="grid2"><div class="sjf"><label for="sjMail">' + T("بريدك الإلكتروني", "Votre e-mail") + '</label><input id="sjMail" type="email" dir="ltr" autocomplete="username"></div>' +
+      '<div class="sjf"><label for="sjPass">' + T("كلمة مرور للسجل (6 أحرف على الأقل)", "Mot de passe du registre (6 caractères min.)") + '</label><input id="sjPass" type="password" dir="ltr" autocomplete="new-password"></div></div>' +
+      '<p class="sjerr" id="sjCErr"></p>' +
+      '<div class="row"><button class="btn primary" type="button" id="sjOn">' + T("تفعيل الحفظ السحابي", "Activer le nuage") + '</button></div>';
+    body.querySelector("#sjRules").textContent = RULES;
+    body.querySelector("#sjCopyRules").addEventListener("click", function (e) { copy(RULES, e.currentTarget); });
+    if (st && st.cfg) body.querySelector("#sjCfg").value = JSON.stringify(st.cfg, null, 1);
+    body.querySelector("#sjOn").addEventListener("click", function (e) {
+      var btn = e.currentTarget, ER = body.querySelector("#sjCErr");
+      var cfg = parseConfig(body.querySelector("#sjCfg").value);
+      var mail = body.querySelector("#sjMail").value.trim(), pass = body.querySelector("#sjPass").value;
+      ER.textContent = "";
+      if (!cfg) { ER.textContent = T("الصق firebaseConfig كاملاً (فيه apiKey وprojectId وappId).", "Collez l'objet firebaseConfig complet (apiKey, projectId, appId)."); return; }
+      if (!mail || pass.length < 6) { ER.textContent = T("أدخل بريدك وكلمة مرور من 6 أحرف على الأقل.", "Saisissez votre e-mail et un mot de passe de 6 caractères minimum."); return; }
+      btn.disabled = true; btn.textContent = T("جارٍ التفعيل…", "Activation…");
+      loadFirebase(cfg).then(function () {
+        return cloud.au.createUserWithEmailAndPassword(cloud.auth, mail, pass).catch(function (x) {
+          if (String(x && x.code).indexOf("email-already-in-use") >= 0) return cloud.au.signInWithEmailAndPassword(cloud.auth, mail, pass);
+          throw x;
+        });
+      }).then(function (cred) {
+        cloud.user = cred.user; cloud.base = "sijil/" + cred.user.uid + "/";
+        return cloudHasData().then(function (has) { return has ? 0 : uploadLocal(); });
+      }).then(function () {
+        setJ(CLOUD_KEY, { cfg: cfg, email: mail, since: new Date().toISOString() });
+        location.reload();
+      }).catch(function (x) {
+        btn.disabled = false; btn.textContent = T("تفعيل الحفظ السحابي", "Activer le nuage");
+        ER.textContent = authText(x);
+      });
+    });
+  }
+  whenBody(function () {
+    renderCloudCard();
+    document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-lang], #langBtn")) setTimeout(renderCloudCard, 50); });
+  });
+  dbReady.then(function () { whenBody(renderCloudCard); });
+
+  /* =================================================================== API used by the page */
+  var MIME = { pdf: "application/pdf", json: "application/json", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv: "text/csv", txt: "text/plain" };
   var downloads = {
     save: function (r) {
       return new Promise(function (res, rej) {
@@ -98,24 +390,22 @@
       });
     },
   };
-  var user = { can: function () { return Promise.resolve(true); }, isOwner: function () { return true; }, canEdit: function () { return true; }, id: function () { return Promise.resolve("local"); } };
-  var db = { doc: doc, collection: collection };
-  window.claude = { use: function (name) { return Promise.resolve(name === "db" ? db : name === "user" ? user : name === "downloads" ? downloads : null); } };
+  var user = { can: function () { return Promise.resolve(true); }, isOwner: function () { return true; }, canEdit: function () { return true; }, id: function () { return Promise.resolve(cloud.user ? cloud.user.uid : "local"); } };
+  window.claude = { use: function (name) { return name === "db" ? dbReady : Promise.resolve(name === "user" ? user : name === "downloads" ? downloads : null); } };
 
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* optional */ }
   if ("serviceWorker" in navigator) {
     var hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       /* a new version was just installed: reload once, but only right after opening so nothing typed is lost */
-      if (hadController && !window.__sijilReloaded && performance.now() < 20000) { window.__sijilReloaded = true; location.reload(); }
+      if (hadController && !window.__sijilReloaded && performance.now() < 20000 && !document.getElementById("sjLogin")) { window.__sijilReloaded = true; location.reload(); }
     });
     window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
   }
 
-  /* ---------- "install the app" banner (Android Chrome) */
+  /* =================================================================== "install the app" banner (Android Chrome) */
   var deferred = null;
   function isStandalone() { try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) { return false; } }
-  function T(ar, fr) { return (document.documentElement.getAttribute("lang") === "fr") ? fr : ar; }
   function showInstall() {
     if (isStandalone() || document.getElementById("pwaInstall")) return;
     var b = document.createElement("div");
@@ -137,6 +427,6 @@
     document.getElementById("pwaX").addEventListener("click", hideInstall);
   }
   function hideInstall() { var b = document.getElementById("pwaInstall"); if (b) b.remove(); }
-  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; if (document.body) showInstall(); else window.addEventListener("DOMContentLoaded", showInstall); });
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; whenBody(showInstall); });
   window.addEventListener("appinstalled", hideInstall);
 })();

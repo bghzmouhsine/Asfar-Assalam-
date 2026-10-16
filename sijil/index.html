@@ -869,13 +869,17 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <p class="hint" data-t="set.note"></p>
         <div class="row"><button class="btn primary" type="submit" id="sSubmit" data-t="set.save">حفظ الإعدادات</button></div>
       </form>
-      <div class="card pad16">
+      <div class="card pad16" id="protCard">
         <h2 style="font-size:14.5px" data-t="prot.title">الحماية</h2>
         <p class="hint" data-t="prot.body"></p>
       </div>
       <div class="card pad16">
         <h2 style="font-size:14.5px" data-t="lang.title">اللغة</h2>
         <div class="seg" role="group" id="langSeg"><button type="button" data-lang="ar">العربية</button><button type="button" data-lang="fr">Français</button></div>
+      </div>
+      <div class="card pad16" id="cloudCard">
+        <h2 style="font-size:14.5px" data-t="cl.title">الحفظ السحابي</h2>
+        <div class="cbody" style="display:flex;flex-direction:column;gap:12px"></div>
       </div>
       <div class="card pad16" id="bkCard">
         <h2 style="font-size:14.5px" data-t="bk.title">النسخ الاحتياطي والاسترجاع</h2>
@@ -1098,7 +1102,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "set.note": "العمل كل أيام الأسبوع. الأجر الافتراضي يُقترح عند إضافة عامل جديد، ولكل عامل أجره الخاص في «العمال».",
       "bk.title": "النسخ الاحتياطي والاسترجاع", "bk.hint": "حمّل نسخة كاملة من السجل (العمال، الأيام، الساعات، الأجور، الإعدادات) واحتفظ بها في هاتفك أو بريدك. يمكنك استرجاعها في أي وقت.",
       "bk.download": "تحميل نسخة احتياطية", "bk.restore": "استرجاع من ملف", "bk.downloaded": "تم تحميل النسخة الاحتياطية",
-      "bk.bad": "هذا الملف ليس نسخة احتياطية صالحة لهذا السجل.", "bk.preview": "«{0}»: {1} عامل و{2} مسجّلة (آخر يوم: {3}).", "pay.dayTotal": "مجموع أجور يوم {0}", "al.backupNever": "لم تحمّل أي نسخة احتياطية بعد — بياناتك محفوظة على هذا الهاتف فقط.", "al.backupOld": "آخر نسخة احتياطية منذ {0} أيام — حمّل نسخة جديدة.", "al.importFirst": "أول استعمال؟ استرجع بياناتك من ملف النسخة الاحتياطية: الإعدادات ← استرجاع من ملف.",
+      "bk.bad": "هذا الملف ليس نسخة احتياطية صالحة لهذا السجل.", "bk.preview": "«{0}»: {1} عامل و{2} مسجّلة (آخر يوم: {3}).", "pay.dayTotal": "مجموع أجور يوم {0}", "al.backupNever": "لم تحمّل أي نسخة احتياطية بعد — بياناتك محفوظة على هذا الهاتف فقط.", "al.backupOld": "آخر نسخة احتياطية منذ {0} أيام — حمّل نسخة جديدة.", "al.importFirst": "أول استعمال؟ استرجع بياناتك من ملف النسخة الاحتياطية: الإعدادات ← استرجاع من ملف.", "cl.title": "الحفظ السحابي (الهاتف + الحاسوب)",
       "pay.dayTitle": "ورقة الحضور اليومية", "x.daySum": "الحاضرون: {0} · الغائبون: {1} · غير المسجّلين: {2} · مجموع الأجور: {3} درهم",
       "x.dayNote": "ملاحظة اليوم: {0}", "x.site": "الورش: {0}", "x.page": "صفحة {0} من {1}", "x.pdfFile": "كشف العمال {0} إلى {1}.pdf",
       "x.dayPdf": "حضور العمال {0}.pdf", "x.absLine": "غياب: {0}", "x.regTitle": "سجل الحضور من {0} إلى {1}",
@@ -1226,7 +1230,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "set.note": "Travail 7 jours sur 7. Le salaire par défaut est proposé pour chaque nouvel ouvrier ; chaque ouvrier a son propre salaire dans « Ouvriers ».",
       "bk.title": "Sauvegarde et restauration", "bk.hint": "Téléchargez une copie complète du registre (ouvriers, jours, horaires, salaires, paramètres) et gardez-la sur votre téléphone ou par e-mail. Vous pouvez la restaurer à tout moment.",
       "bk.download": "Télécharger une sauvegarde", "bk.restore": "Restaurer depuis un fichier", "bk.downloaded": "Sauvegarde téléchargée",
-      "bk.bad": "Ce fichier n'est pas une sauvegarde valide de ce registre.", "bk.preview": "« {0} » : {1} ouvriers et {2} pointés (dernier jour : {3}).", "pay.dayTotal": "Total des salaires du {0}", "al.backupNever": "Aucune sauvegarde téléchargée — vos données sont uniquement sur ce téléphone.", "al.backupOld": "Dernière sauvegarde il y a {0} jours — téléchargez-en une nouvelle.", "al.importFirst": "Première utilisation ? Restaurez vos données depuis le fichier de sauvegarde : Paramètres → Restaurer depuis un fichier.",
+      "bk.bad": "Ce fichier n'est pas une sauvegarde valide de ce registre.", "bk.preview": "« {0} » : {1} ouvriers et {2} pointés (dernier jour : {3}).", "pay.dayTotal": "Total des salaires du {0}", "al.backupNever": "Aucune sauvegarde téléchargée — vos données sont uniquement sur ce téléphone.", "al.backupOld": "Dernière sauvegarde il y a {0} jours — téléchargez-en une nouvelle.", "al.importFirst": "Première utilisation ? Restaurez vos données depuis le fichier de sauvegarde : Paramètres → Restaurer depuis un fichier.", "cl.title": "Enregistrement dans le nuage (téléphone + ordinateur)",
       "pay.dayTitle": "Feuille de présence journalière", "x.daySum": "Présents : {0} · Absents : {1} · Non pointés : {2} · Total des salaires : {3} DH",
       "x.dayNote": "Note du jour : {0}", "x.site": "Chantier : {0}", "x.page": "Page {0} sur {1}", "x.pdfFile": "Paie ouvriers {0} au {1}.pdf",
       "x.dayPdf": "Presence ouvriers {0}.pdf", "x.absLine": "Absences : {0}", "x.regTitle": "Registre des présences du {0} au {1}",
@@ -1590,7 +1594,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     }
     const nc = activeWorkers(today).filter((w) => w.joinDate === today);
     if (nc.length) al.push({ k: "info", t: t("al.first", nc.map((w) => w.name).join("، ")), go: "day:" + today });
-    if (window.SIJIL_LOCAL) {
+    if (window.SIJIL_LOCAL && !window.SIJIL_CLOUD) {
       if (!S.workers.size) al.unshift({ k: "info", t: t("al.importFirst"), go: "settings" });
       else {
         let lb = null;
