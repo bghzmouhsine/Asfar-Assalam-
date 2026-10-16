@@ -224,6 +224,15 @@
   var saved = getJ(CLOUD_KEY), skip = false;
   try { skip = sessionStorage.getItem("sijil.cloud.skip") === "1"; } catch (e) { skip = false; }
   if (hashCfg) { saved = { cfg: hashCfg, pending: true }; setJ(CLOUD_KEY, saved); }
+  /* the owner's own device (cloud saving set up for the same project) never turns into a view-only copy */
+  if (VIEW && saved && saved.cfg && saved.cfg.projectId === VIEW.c.projectId) {
+    try { if (LS) LS.removeItem(VIEW_KEY); } catch (e) { /* ignore */ }
+    VIEW = null;
+    whenBody(function () {
+      banner(T("هذا رابط المشاهدة الخاص بسجلك: على هاتفك يبقى السجل قابلاً للتعديل كما هو، وعند من ترسله إليه يُفتح للاطلاع فقط. لتجربته اضغط «تجربة الرابط» في الإعدادات.",
+        "C'est le lien de consultation de votre registre : sur votre téléphone le registre reste modifiable ; chez la personne qui le reçoit, il s'ouvre en lecture seule. Pour le vérifier, appuyez sur « Tester le lien » dans les paramètres."), false);
+    });
+  }
   var dbReady;
   if (VIEW) {
     /* view-only: sign in with the link's own viewer account and read the owner's register */
@@ -239,7 +248,7 @@
         /* offline: show what this device already has */
       });
     }).then(function () { return cloudDb; }, function (e) { console.error(e); return viewStopped(e); });
-  } else if (badViewLink) {
+  } else if (badViewLink && !(saved && saved.cfg)) {
     dbReady = viewStopped({ code: "bad-link" });
   } else if (saved && saved.cfg && !skip) {
     window.SIJIL_CLOUD = true;
@@ -292,7 +301,7 @@
     'html.cloud-on #protCard{display:none}html.view-on #bkCard{display:none}' +
     '.sjshare{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line,#DBE1EB);padding-top:12px}' +
     '.sjshare .sjh{margin:0;font-size:14px;font-weight:700;color:var(--ink,#131A2B)}.sjsb{display:flex;flex-direction:column;gap:10px}.sjshare a.btn{text-decoration:none}' +
-    '.sjlink{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line,#DBE1EB);background:var(--surface-2,#EDF0F6);color:var(--ink,#131A2B);font:12px/1 ui-monospace,Menlo,Consolas,monospace;width:100%;box-sizing:border-box;direction:ltr;text-align:left}';
+    '.sjres{display:flex;flex-direction:column;gap:8px}.sjlink{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line,#DBE1EB);background:var(--surface-2,#EDF0F6);color:var(--ink,#131A2B);font:12px/1 ui-monospace,Menlo,Consolas,monospace;width:100%;box-sizing:border-box;direction:ltr;text-align:left}';
   whenBody(function () { var s = document.createElement("style"); s.textContent = CSS; document.head.appendChild(s); });
 
   /* login screen shown when cloud saving is on but nobody is signed in on this device */
@@ -335,7 +344,8 @@
     if (c.indexOf("permission-denied") >= 0) msg = T("أوقف صاحب السجل هذا الرابط. اطلب منه رابطاً جديداً.", "Le propriétaire du registre a arrêté ce lien. Demandez-lui un nouveau lien.");
     else if (c === "bad-link") msg = T("الرابط ناقص: افتحه كاملاً كما وصلك، أو اطلب من صاحب السجل رابطاً جديداً.", "Lien incomplet : ouvrez-le en entier tel que reçu, ou demandez un nouveau lien au propriétaire du registre.");
     else if (/invalid-credential|user-not-found|wrong-password|user-disabled|invalid-email/.test(c)) msg = T("هذا الرابط لم يعد صالحاً. اطلب من صاحب السجل رابطاً جديداً.", "Ce lien n'est plus valide. Demandez un nouveau lien au propriétaire du registre.");
-    else { title = T("لا يوجد اتصال", "Pas de connexion"); msg = T("تعذّر الاتصال بالإنترنت. تحقّق من الاتصال ثم أعد المحاولة.", "Connexion impossible. Vérifiez Internet puis réessayez."); }
+    else if (/network|unavailable|offline|deadline/.test(c) || !c) { title = T("لا يوجد اتصال", "Pas de connexion"); msg = T("تعذّر الاتصال بالإنترنت. تحقّق من الاتصال ثم أعد المحاولة.", "Connexion impossible. Vérifiez Internet puis réessayez.") + (c ? " [" + c + "]" : ""); }
+    else msg = T("تعذّر فتح السجل: ", "Ouverture du registre impossible : ") + authText(e) + " [" + c + "]";
     return new Promise(function () {
       whenBody(function () {
         if (document.getElementById("sjLogin")) return;
@@ -361,6 +371,28 @@
   /* ---------- view-only links (owner side): each link has its own viewer account; the rules let it read, never write */
   function rnd(n) { var a = "abcdefghijkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = ""; crypto.getRandomValues(b); for (var i = 0; i < n; i++) s += a[b[i] % 32]; return s; }
   function isDenied(e) { return String((e && e.code) || "").indexOf("permission-denied") >= 0; }
+  function errLine(e) { var c = String((e && e.code) || ""); var t = authText(e); return c && t.indexOf(c) < 0 ? t + " [" + c + "]" : t; }
+  function within(p, ms) { return Promise.race([p, new Promise(function (res, rej) { setTimeout(function () { rej(err("deadline-exceeded", "timeout")); }, ms); })]); }
+  /* opens the link the way the other person's phone will (separate, temporary sign-in): can it read? is writing refused? */
+  function testViewer(link) {
+    var A = cloud.A, Au = cloud.au, F = cloud.F, v, app3 = null, auth3 = null, fs3 = null;
+    function end() { if (!app3) return Promise.resolve(); return Au.signOut(auth3).catch(function () {}).then(function () { return A.deleteApp(app3); }).catch(function () {}); }
+    return within(Promise.resolve().then(function () {
+      v = b64d(/#view=([A-Za-z0-9_\-+/=]+)/.exec(link)[1]);
+      if (!validView(v)) throw err("bad-link");
+      app3 = A.initializeApp(v.c, "sijiltest" + Date.now());
+      auth3 = Au.initializeAuth(app3, { persistence: Au.inMemoryPersistence });
+      return Au.signInWithEmailAndPassword(auth3, v.e, v.p);
+    }).then(function () {
+      fs3 = F.getFirestore(app3);
+      return F.getDoc(F.doc(fs3, "sijil/" + v.o + "/app/settings"));
+    }).then(function () {
+      return F.setDoc(F.doc(fs3, "sijil/" + v.o + "/app/viewcheck"), { at: new Date().toISOString() }).then(function () { return false; }, function (x) { if (isDenied(x)) return true; throw x; });
+    }), 25000).then(function (blocked) {
+      if (!blocked) F.deleteDoc(F.doc(cloud.fs, "sijil/" + v.o + "/app/viewcheck")).catch(function () {});
+      return end().then(function () { return blocked; });
+    }, function (x) { return end().then(function () { throw x; }); });
+  }
   function vPath() { return "sijilViewers/" + cloud.user.uid + "/v"; }
   function listViewers() {
     var F = cloud.F;
@@ -392,7 +424,7 @@
     sb.innerHTML = '<p class="hint" style="margin:0">…</p>';
     listViewers().then(function (l) { drawShare(sb, l.length ? "on" : "none", l); }, function (e) { drawShare(sb, isDenied(e) ? "rules" : "error", null, e); });
   }
-  function drawShare(sb, mode, list, e) {
+  function drawShare(sb, mode, list, e, again) {
     if (!sb.isConnected) return;
     if (mode === "on") {
       var link = list[0].link;
@@ -401,12 +433,33 @@
         '<input class="sjlink" type="text" readonly aria-label="' + T("رابط المشاهدة", "Lien de consultation") + '">' +
         '<div class="row"><button class="btn primary" type="button" data-v="copy">' + T("نسخ الرابط", "Copier le lien") + '</button>' +
         '<a class="btn" data-v="wa" target="_blank" rel="noopener">' + T("إرسال عبر واتساب", "Envoyer par WhatsApp") + '</a></div>' +
-        '<div class="row"><button class="btn ghost" type="button" data-v="stop">' + T("إيقاف رابط المشاهدة", "Arrêter le lien de consultation") + '</button></div>';
+        '<div class="row"><button class="btn" type="button" data-v="test">' + T("تجربة الرابط", "Tester le lien") + '</button>' +
+        '<button class="btn ghost" type="button" data-v="stop">' + T("إيقاف رابط المشاهدة", "Arrêter le lien de consultation") + '</button></div>' +
+        '<div class="sjres" hidden></div>';
       var inp = sb.querySelector(".sjlink");
       inp.value = link;
       inp.addEventListener("focus", function () { inp.select(); });
       sb.querySelector('[data-v="wa"]').href = "https://wa.me/?text=" + encodeURIComponent(T("سجل الحضور والأجور — رابط للاطلاع فقط:", "Registre de présence et de paie — lien en lecture seule :") + "\n" + link);
       sb.querySelector('[data-v="copy"]').addEventListener("click", function (ev) { copy(link, ev.currentTarget); });
+      sb.querySelector('[data-v="test"]').addEventListener("click", function (ev) {
+        var b = ev.currentTarget, res = sb.querySelector(".sjres"), label = b.textContent;
+        function show(ok, text, rules) {
+          res.hidden = false;
+          res.innerHTML = '<p class="notice' + (ok ? '" style="background:var(--ok-soft);margin:0"' : ' warn" style="margin:0"') + '></p>' +
+            (rules ? '<pre class="sjcode"></pre><button class="btn sm" type="button" data-v="rules">' + T("نسخ القواعد", "Copier les règles") + '</button>' : "");
+          res.querySelector("p").textContent = text;
+          if (rules) { res.querySelector(".sjcode").textContent = RULES; res.querySelector('[data-v="rules"]').addEventListener("click", function (e2) { copy(RULES, e2.currentTarget); }); }
+        }
+        b.disabled = true; b.textContent = T("جارٍ التجربة…", "Test en cours…"); res.hidden = true;
+        testViewer(link).then(function (blocked) {
+          if (blocked) show(true, T("تمت التجربة ✓ الرابط يفتح السجل للاطلاع، والتعديل ممنوع.", "Test réussi ✓ le lien ouvre le registre en consultation, toute modification est refusée."));
+          else show(false, T("تنبيه: القواعد الحالية تسمح لصاحب الرابط بالتعديل. في Firebase ← Firestore Database ← Rules: امسح ما فيه والصق هذه القواعد ثم Publish.", "Attention : les règles actuelles permettent au destinataire de modifier. Dans Firebase → Firestore Database → Règles : remplacez par ces règles puis Publier."), true);
+        }, function (x) {
+          console.error(x);
+          if (isDenied(x)) show(false, T("الرابط لا يستطيع قراءة السجل بعد: في Firebase ← Firestore Database ← Rules امسح ما فيه والصق هذه القواعد ثم اضغط Publish، وانتظر دقيقة وأعد التجربة.", "Le lien ne peut pas encore lire le registre : dans Firebase → Firestore Database → Règles, remplacez par ces règles, Publier, attendez une minute et refaites le test."), true);
+          else show(false, T("فشلت التجربة: ", "Échec du test : ") + errLine(x));
+        }).then(function () { b.disabled = false; b.textContent = label; });
+      });
       sb.querySelector('[data-v="stop"]').addEventListener("click", function (ev) {
         var b = ev.currentTarget;
         if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = T("تأكيد: إيقاف الرابط الآن", "Confirmer : arrêter le lien"); return; }
@@ -417,7 +470,8 @@
     }
     var html = "";
     if (mode === "rules") {
-      html = '<p class="notice warn" style="margin:0">' + T("قبل أول رابط (مرة واحدة فقط): حدّث قواعد الأمان في Firebase.", "Avant le premier lien (une seule fois) : mettez à jour les règles de sécurité Firebase.") + '</p>' +
+      html = (again ? '<p class="sjerr">' + T("ما زالت القواعد القديمة مفعّلة في Firebase: تأكّد أنك ضغطت Publish، ثم انتظر دقيقة وأعد المحاولة.", "Les anciennes règles sont toujours actives dans Firebase : vérifiez que vous avez cliqué sur Publier, attendez une minute et réessayez.") + '</p>' : "") +
+        '<p class="notice warn" style="margin:0">' + T("قبل أول رابط (مرة واحدة فقط): حدّث قواعد الأمان في Firebase.", "Avant le premier lien (une seule fois) : mettez à jour les règles de sécurité Firebase.") + '</p>' +
         '<ol class="sjsteps">' +
         '<li>' + T("افتح <b dir=\"ltr\">console.firebase.google.com</b> ← مشروعك ← <b dir=\"ltr\">Firestore Database</b> ← تبويب <b dir=\"ltr\">Rules</b>.", "Ouvrez <b>console.firebase.google.com</b> → votre projet → <b>Firestore Database</b> → onglet <b>Règles</b>.") + '</li>' +
         '<li>' + T("امسح ما فيه والصق هذه القواعد، ثم اضغط <b dir=\"ltr\">Publish</b>:", "Remplacez le contenu par ces règles, puis cliquez sur <b>Publier</b> :") +
@@ -431,11 +485,11 @@
     var pre = sb.querySelector(".sjcode");
     if (pre) { pre.textContent = RULES; sb.querySelector('[data-v="rules"]').addEventListener("click", function (ev) { copy(RULES, ev.currentTarget); }); }
     var er = sb.querySelector(".sjerr");
-    if (er) er.textContent = authText(e);
+    if (er && mode === "error") er.textContent = errLine(e);
     var cb = sb.querySelector('[data-v="create"]');
     cb.addEventListener("click", function () {
       cb.disabled = true; cb.textContent = T("جارٍ إنشاء الرابط…", "Création du lien…");
-      createViewer().then(function () { refreshShare(sb); }, function (x) { console.error(x); drawShare(sb, isDenied(x) ? "rules" : "error", null, x); });
+      createViewer().then(function () { refreshShare(sb); }, function (x) { console.error(x); drawShare(sb, isDenied(x) ? "rules" : "error", null, x, mode === "rules"); });
     });
   }
   function linkFor(cfg) {
