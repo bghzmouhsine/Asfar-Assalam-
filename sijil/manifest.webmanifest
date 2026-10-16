@@ -1,0 +1,20 @@
+{
+  "name": "سجل حضور العمال — قيادة أوفوس",
+  "short_name": "سجل الحضور",
+  "description": "Registre de présence et de paie des ouvriers — Caïdat Aoufous",
+  "lang": "ar",
+  "dir": "rtl",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#172E6E",
+  "theme_color": "#172E6E",
+  "categories": ["productivity", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
