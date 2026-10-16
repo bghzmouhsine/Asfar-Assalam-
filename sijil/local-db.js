@@ -103,7 +103,14 @@
   window.claude = { use: function (name) { return Promise.resolve(name === "db" ? db : name === "user" ? user : name === "downloads" ? downloads : null); } };
 
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* optional */ }
-  if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  if ("serviceWorker" in navigator) {
+    var hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      /* a new version was just installed: reload once, but only right after opening so nothing typed is lost */
+      if (hadController && !window.__sijilReloaded && performance.now() < 20000) { window.__sijilReloaded = true; location.reload(); }
+    });
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
 
   /* ---------- "install the app" banner (Android Chrome) */
   var deferred = null;
