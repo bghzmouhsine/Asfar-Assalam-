@@ -679,6 +679,93 @@ nav.tabs button { font-size: 11px; }
   .hero-scene { height: 148px; }
 }
 @media (min-width: 1100px) { .hero-scene { height: 160px; } }
+/* ---------- v12: compact, unified cards (more on each screen) */
+:root { --r: 12px; --pad: 12px; }
+.view { gap: 12px; padding-block: 12px 8px; }
+.pad16 { padding: var(--pad); gap: 10px; }
+.card h2, .pad16 > h2, form.card h2, .sec-h h2 { font-size: 14px; }
+.btn { min-height: 38px; padding: 6px 13px; font-size: 13px; border-radius: 10px; }
+.btn.block { min-height: 44px; }
+.btn.sm { min-height: 30px; padding: 3px 9px; font-size: 11.5px; border-radius: 8px; }
+.iconbtn { width: 36px; height: 36px; border-radius: 10px; }
+.iconbtn svg { width: 18px; height: 18px; }
+.input { height: 40px; border-radius: 10px; }
+textarea.input { min-height: 72px; }
+.search { height: 40px; border-radius: 10px; }
+.field { gap: 4px; }
+.grid2 { gap: 10px; }
+.seg button { height: 38px; }
+.notice { padding: 8px 10px; }
+.savebar .wrap { padding-block: 8px; }
+.savebar .btn { min-height: 42px; }
+/* home */
+.hero-scene { height: 104px; }
+.hero-head { padding: 8px 14px 9px; }
+.hero .date { font-size: 17px; }
+.hero .sub { font-size: 11.5px; }
+.hero-body { padding: 11px 14px 13px; gap: 10px; }
+.clock .bar { margin-top: 6px; height: 5px; }
+.stats3 { gap: 6px; }
+.stats3 div { padding: 7px 4px 6px; border-radius: 10px; }
+.stats3 b { font-size: 21px; }
+.stats3 span { font-size: 11px; }
+.hero .btn.cta { min-height: 42px; font-size: 14px; border-radius: 10px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); overflow: hidden; }
+.kpis > .card.kpi { border: 0; border-radius: 0; box-shadow: none; padding: 9px 6px 8px; text-align: center; align-items: center; justify-content: flex-start; border-inline-start: 1px solid var(--line); }
+.kpis > .card.kpi:first-child { border-inline-start: 0; }
+.kpi span { font-size: 10.5px; line-height: 1.35; }
+.kpi b { font-size: 17px; line-height: 1.3; }
+.kpi small { font-size: 10px; line-height: 1.3; }
+.alert { padding: 9px 12px; font-size: 12.5px; gap: 8px; }
+.cal { padding: 10px; gap: 6px; }
+.calhead { grid-template-columns: 36px 1fr 36px; }
+.calhead h2 { font-size: 14px; }
+.calgrid { gap: 3px; }
+.calday { aspect-ratio: 1.25 / 1; font-size: 12.5px; border-radius: 8px; }
+.calday small { font-size: 9px; min-height: 9px; }
+.legend { font-size: 10.5px; }
+/* attendance */
+.daynav { grid-template-columns: 40px 1fr 40px; }
+.daynav .iconbtn { width: 40px; height: 40px; }
+.datebox { height: 48px; border-radius: 12px; }
+.datebox .d1 { font-size: 14px; }
+.tally > div { padding: 7px 4px; }
+.tally b { font-size: 17px; }
+.tally span { font-size: 10.5px; }
+.wrow { padding: 8px 10px; gap: 10px; }
+.av { width: 30px; height: 30px; font-size: 11.5px; }
+.wrow .nm { font-size: 13px; }
+.wrow .times { padding-inline-start: 40px; }
+.tog button { height: 34px; min-width: 54px; font-size: 12px; }
+.tf { height: 30px; padding-inline: 7px 2px; border-radius: 8px; }
+.tf .tin { height: 28px; }
+/* register */
+table.reg td { height: 32px; min-width: 36px; }
+.cell { height: 32px; font-size: 13px; }
+table.reg thead th { padding: 4px 2px; min-width: 38px; }
+table.reg .who { min-width: 132px; padding: 4px 8px; }
+/* workers */
+.wcards { gap: 8px; }
+.whead { padding: 9px 12px; gap: 10px; }
+.whead .nm { font-size: 13.5px; }
+.whead .meta { font-size: 11px; }
+.whead .amt b { font-size: 14px; }
+.wdetail { padding: 10px 12px; gap: 10px; }
+.chip { padding: 3px 8px; font-size: 11px; }
+/* wages */
+.money-card { padding: 12px 14px; gap: 10px; }
+.money-card b { font-size: 22px; }
+.coins { width: 42px; height: 42px; }
+table.pay { font-size: 12px; }
+table.pay th, table.pay td { padding: 7px 8px; }
+.brow { padding: 7px 0; }
+.chips button { padding: 5px 11px; font-size: 11.5px; }
+/* settings */
+.audit li { padding: 6px 0; font-size: 12px; }
+@media (min-width: 600px) { .hero-scene { height: 128px; } .kpi b { font-size: 20px; } .kpi span { font-size: 11.5px; } }
+@media (min-width: 1100px) { .hero-scene { height: 140px; } }
+@media (max-width: 360px) { .hero-scene { height: 96px; } .stats3 b { font-size: 19px; } .kpi b { font-size: 15px; } .kpi span { font-size: 10px; } }
+@media (pointer: coarse) { .input { font-size: 16px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .sico.done circle, .sico.done path { stroke-dashoffset: 0; } }
 </style>
 
