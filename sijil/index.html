@@ -601,6 +601,84 @@ label.btn.off { opacity: .5; pointer-events: none; }
 @media (pointer: coarse) { .tf .tin { font-size: 16px; width: 58px; } }
 @media (max-width: 560px) { .gfilter { grid-template-columns: 1fr 1fr; } .gfilter .full { grid-column: 1 / -1; } }
 @media (max-width: 400px) { .wrow .times { padding-inline-start: 0; } }
+/* ---------- v11: calm, consistent, official look */
+:root { --bg: #F3F4F7; --line: #DFE3EA; --r: 14px; --sh: 0 1px 2px rgba(19, 26, 43, .04), 0 4px 14px rgba(19, 26, 43, .05); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0A0F1C; --line: #243049; --sh: 0 1px 2px rgba(0, 0, 0, .45); } }
+:root[data-theme="dark"] { --bg: #0A0F1C; --line: #243049; --sh: 0 1px 2px rgba(0, 0, 0, .45); }
+body { background-image: none; }
+.card, .hero, .money-card, .gridwrap { border-radius: var(--r); box-shadow: var(--sh); }
+.card { border-color: var(--line); }
+.card h2, .pad16 > h2, form.card h2 { font-size: 15px; }
+.sec-h h2 { font-size: 15px; }
+.hint { font-size: 12px; }
+.view { gap: 16px; padding-block: 14px 8px; }
+.zellige {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.04' stroke-width='.7'%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Cpath d='M28 8.2 47.8 28 28 47.8 8.2 28z'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(160deg, var(--hero), var(--hero-2));
+  background-size: 128px 128px, 100% 100%;
+}
+/* top bar: no logo, full subtitle */
+.topbar .logo { display: none; }
+.topbar { background: var(--bg); background: color-mix(in srgb, var(--bg) 92%, transparent); }
+.topbar .wrap { padding-block: 9px; }
+.tb-title b { font-size: 15.5px; }
+.tb-title span { font-size: 11.5px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.45; }
+/* splash: letterhead in the chosen language only */
+.lh { display: flex; justify-content: center; max-width: none; }
+.lh .logo { display: none; }
+html[lang="ar"] .lh .lh-fr, html[lang="fr"] .lh .lh-ar { display: none; }
+.lh > div { text-align: center !important; align-items: center; font-size: 11px; }
+.auth-top .wrap { padding-block: 22px 104px; gap: 10px; }
+/* main card */
+.hero { border: 0; }
+.hero-scene { height: 124px; }
+.hero-scene::after { background: linear-gradient(0deg, rgba(6, 14, 36, .82) 0%, rgba(6, 14, 36, .42) 50%, rgba(6, 14, 36, 0) 82%); }
+.hero-head { position: absolute; inset-inline: 0; bottom: 0; padding: 10px 16px 11px; align-items: flex-end; flex-wrap: nowrap; }
+.hero-head > div:first-child { min-width: 0; }
+.hero .date { font-size: 18.5px; line-height: 1.25; }
+.hero .sub { font-size: 12px; margin-top: 2px; }
+#hChip { flex: none; }
+.hero-body { padding: 14px 16px 16px; gap: 13px; }
+.clock .ticks { font-size: 11.5px; align-items: center; }
+.clock .ticks b { font-size: 13px; }
+.clock .state { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, .92); }
+.clock .bar { height: 6px; margin-top: 8px; }
+.stats3 { gap: 8px; }
+.stats3 div { padding: 10px 6px 9px; border-radius: 12px; background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .1); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.stats3 b { font-size: 26px; line-height: 1.1; }
+.stats3 span { font-size: 11.5px; display: inline-flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, .82); }
+.stats3 span::before { width: 7px; height: 7px; margin: 0; box-shadow: 0 0 0 3px rgba(255, 255, 255, .07); }
+.stats3 .p span::before { background: #6FD3A0; }
+.stats3 .a span::before { background: #F3A097; }
+.stats3 .n span::before { background: #EBC872; }
+.hero .note { font-size: 12.5px; padding: 9px 12px; }
+.hero .btn.cta { min-height: 48px; border-radius: 12px; font-size: 14.5px; font-weight: 700; gap: 10px; box-shadow: 0 4px 14px rgba(214, 154, 31, .26); }
+.hero .btn.cta::before { content: ""; width: 18px; height: 18px; flex: none; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='14' height='17' rx='2.5'/%3E%3Cpath d='M9 4h6v3H9z'/%3E%3Cpath d='M8.5 13.5l2.5 2.5 4.5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='14' height='17' rx='2.5'/%3E%3Cpath d='M9 4h6v3H9z'/%3E%3Cpath d='M8.5 13.5l2.5 2.5 4.5-5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.hero .btn.cta:active { transform: translateY(1px); }
+/* week figures, alerts, calendar */
+.kpis { gap: 10px; }
+.kpi { padding: 12px 14px; gap: 3px; }
+.kpi span { font-size: 12px; }
+.kpi b { font-size: 21px; }
+.kpi small { font-size: 11px; }
+.alert { font-size: 13px; }
+.cal { padding: 14px; }
+nav.tabs { box-shadow: 0 -1px 0 var(--line), 0 -6px 18px rgba(19, 26, 43, .05); border-top-color: transparent; }
+nav.tabs button { font-size: 11px; }
+@media (max-width: 360px) {
+  .hero-scene { height: 112px; }
+  .hero .date { font-size: 17px; }
+  .stats3 b { font-size: 22px; }
+  .kpi b { font-size: 19px; }
+}
+@media (min-width: 600px) {
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hero-scene { height: 148px; }
+}
+@media (min-width: 1100px) { .hero-scene { height: 160px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .sico.done circle, .sico.done path { stroke-dashoffset: 0; } }
 </style>
 
@@ -634,7 +712,6 @@ label.btn.off { opacity: .5; pointer-events: none; }
     <div class="wrap">
       <div class="lh">
         <div class="lh-ar"><b>المملكة المغربية</b><span>وزارة الداخلية</span><span>عمالة إقليم الرشيدية</span><span>دائرة الرشيدية</span><span class="cd">قيادة أوفوس</span></div>
-        <div class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="#EDB54A" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="16" height="16"/><path d="M16 4.7 27.3 16 16 27.3 4.7 16z"/><circle cx="16" cy="16" r="3" fill="#EDB54A" stroke="none"/></svg></div>
         <div class="lh-fr"><b>Royaume du Maroc</b><span>Ministère de l'Intérieur</span><span>Province d'Errachidia</span><span>Cercle d'Errachidia</span><span class="cd">Caïdat Aoufous</span></div>
       </div>
       <h1 data-t="app.name">حضور وأجور</h1>
@@ -655,9 +732,6 @@ label.btn.off { opacity: .5; pointer-events: none; }
   <header class="topbar">
     <div class="ribbon"></div>
     <div class="wrap">
-      <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 32 32" fill="none" stroke="#EDB54A" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="16" height="16"/><path d="M16 4.7 27.3 16 16 27.3 4.7 16z"/><circle cx="16" cy="16" r="3" fill="#EDB54A" stroke="none"/></svg>
-      </div>
       <div class="tb-title"><b id="tbTitle">سجل حضور العمال</b><span id="tbSub"></span></div>
       <button class="iconbtn txt" id="langBtn" type="button">FR</button>
       <button class="iconbtn" id="gearBtn" type="button" data-ta="nav.settings">
@@ -795,7 +869,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <button class="btn" id="wlShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button>
       </div>
       <form class="card pad16" id="addForm" hidden autocomplete="off">
-        <h2 style="font-size:14.5px" data-t="w.new">عامل جديد</h2>
+        <h2 data-t="w.new">عامل جديد</h2>
         <div class="grid2">
           <div class="field full"><label for="fName" data-t="w.name">الاسم الكامل</label><input class="input" id="fName" required maxlength="80"></div>
           <div class="field"><label for="fJoin" data-t="w.join">تاريخ الالتحاق</label><input class="input ltr" type="date" id="fJoin" required></div>
@@ -807,7 +881,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <div class="row"><button class="btn primary" type="submit" id="fSubmit" data-t="w.save">حفظ العامل</button><button class="btn ghost" type="button" id="fCancel" data-t="common.cancel">إلغاء</button></div>
       </form>
       <form class="card pad16" id="bulkForm" hidden autocomplete="off">
-        <h2 style="font-size:14.5px" data-t="w.bulk">إضافة عدة عمال</h2>
+        <h2 data-t="w.bulk">إضافة عدة عمال</h2>
         <div class="field"><label for="bNames" data-t="w.bulkNames">الأسماء</label><textarea class="input" id="bNames" style="min-height:150px"></textarea></div>
         <div class="grid2">
           <div class="field"><label for="bJoin" data-t="w.bulkJoin">تاريخ التحاقهم</label><input class="input ltr" type="date" id="bJoin" required></div>
@@ -847,7 +921,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       </div>
       <textarea class="input" id="copyFallback" style="min-height:150px" hidden readonly></textarea>
       <div class="card pad16" id="balCard">
-        <div class="sec-h"><h2 style="font-size:14.5px" data-t="py.balTitle">الباقي للعمال اليوم</h2><b id="balTotal"></b></div>
+        <div class="sec-h"><h2 data-t="py.balTitle">الباقي للعمال اليوم</h2><b id="balTotal"></b></div>
         <p class="hint" data-t="py.balHint"></p>
         <div id="balList"></div>
         <div class="row"><button class="btn primary" id="payAllBtn" type="button" data-t="py.all">أداء الجميع</button></div>
@@ -855,7 +929,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <ul class="batches" id="batchList"></ul>
       </div>
       <div class="card pad16" id="finalCard">
-        <h2 style="font-size:14.5px" data-t="fr.title">التقرير الختامي للورش</h2>
+        <h2 data-t="fr.title">التقرير الختامي للورش</h2>
         <p class="hint" data-t="fr.hint"></p>
         <div class="row"><button class="btn primary" id="finalPdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="fr.pdf">تحميل التقرير الختامي PDF</span></button><button class="btn" id="finalShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></div>
       </div>
@@ -865,7 +939,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
     <section class="view" id="v-settings" hidden>
       <div class="sec-h"><h2 data-t="nav.settings">الإعدادات</h2></div>
       <form class="card pad16" id="setForm" autocomplete="off">
-        <h2 style="font-size:14.5px" data-t="set.site.h">الورش</h2>
+        <h2 data-t="set.site.h">الورش</h2>
         <div class="grid2">
           <div class="field full"><label for="sSite" data-t="set.site">اسم الورش</label><input class="input" id="sSite" maxlength="80" data-tp="set.sitePh"></div>
           <div class="field"><label for="sStart" data-t="set.start">بداية الحساب</label><input class="input ltr" type="date" id="sStart" required></div>
@@ -877,19 +951,19 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <div class="row"><button class="btn primary" type="submit" id="sSubmit" data-t="set.save">حفظ الإعدادات</button></div>
       </form>
       <div class="card pad16" id="protCard">
-        <h2 style="font-size:14.5px" data-t="prot.title">الحماية</h2>
+        <h2 data-t="prot.title">الحماية</h2>
         <p class="hint" data-t="prot.body"></p>
       </div>
       <div class="card pad16">
-        <h2 style="font-size:14.5px" data-t="lang.title">اللغة</h2>
+        <h2 data-t="lang.title">اللغة</h2>
         <div class="seg" role="group" id="langSeg"><button type="button" data-lang="ar">العربية</button><button type="button" data-lang="fr">Français</button></div>
       </div>
       <div class="card pad16" id="cloudCard">
-        <h2 style="font-size:14.5px" data-t="cl.title">الحفظ السحابي</h2>
+        <h2 data-t="cl.title">الحفظ السحابي</h2>
         <div class="cbody" style="display:flex;flex-direction:column;gap:12px"></div>
       </div>
       <div class="card pad16" id="bkCard">
-        <h2 style="font-size:14.5px" data-t="bk.title">النسخ الاحتياطي والاسترجاع</h2>
+        <h2 data-t="bk.title">النسخ الاحتياطي والاسترجاع</h2>
         <p class="hint" data-t="bk.hint"></p>
         <div class="row">
           <button class="btn primary" id="bkDown" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="bk.download">تحميل نسخة احتياطية</span></button>
@@ -901,12 +975,12 @@ label.btn.off { opacity: .5; pointer-events: none; }
         <div><p class="sub-h" data-t="bk.safety">نسخ الأمان</p><p class="hint" data-t="bk.safetyHint"></p><ul class="safelist" id="safeList"></ul></div>
       </div>
       <div class="card pad16">
-        <h2 style="font-size:14.5px" data-t="audit.title">سجل التعديلات</h2>
+        <h2 data-t="audit.title">سجل التعديلات</h2>
         <p class="hint" data-t="audit.hint"></p>
         <ul class="audit" id="auditList"></ul>
       </div>
       <div class="card pad16">
-        <h2 style="font-size:14.5px" data-t="help.title">طريقة الاستعمال</h2>
+        <h2 data-t="help.title">طريقة الاستعمال</h2>
         <p class="hint" style="font-size:13px;line-height:1.9" id="helpTxt"></p>
       </div>
     </section>
@@ -1084,7 +1158,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "sec.remembered": "هذا الجهاز متذكَّر حتى {0}، فلا يُقفل تلقائياً.", "sec.change": "تغيير كلمة المرور", "sec.current": "كلمة المرور الحالية",
       "sec.new": "كلمة المرور الجديدة", "sec.new2": "تأكيد كلمة المرور الجديدة", "sec.changed": "تم تغيير كلمة المرور", "sec.wrong": "كلمة المرور الحالية غير صحيحة",
       "sec.logout": "تسجيل الخروج", "sec.share": "لا يستطيع أحد غيرك تعديل البيانات. وإذا شاركت رابط التطبيق، فمن يفتحه لا يرى أي بيانات.",
-      "sec.autoSaved": "تم حفظ مدة القفل التلقائي", "lang.title": "اللغة / Langue",
+      "sec.autoSaved": "تم حفظ مدة القفل التلقائي", "lang.title": "اللغة",
       "audit.title": "سجل التعديلات", "audit.hint": "كل تغيير في الحضور أو العمال أو الإعدادات يُسجَّل هنا بتاريخه وساعته.", "audit.empty": "لا توجد تعديلات مسجّلة بعد.",
       "help.title": "طريقة الاستعمال",
       "help.body": "«الرئيسية»: يومك في نظرة — ساعة الدوام، حالة التسجيل، التنبيهات، وتقويم الشهر.<br>«التسجيل»: كل يوم، اضغط «الكل حاضر» ثم «غائب» أمام من غاب، ثم «حفظ اليوم».<br>«السجل»: أمام كل عامل ح أو غ لكل يوم؛ اضغط على خانة لتغييرها.<br>«العمال»: إضافة العمال الجدد بتاريخ التحاقهم وتعديل معلوماتهم.<br>«الأجور»: المبالغ لأي فترة مع تحميل Excel ونسخ الملخص.",
@@ -1223,7 +1297,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
       "sec.remembered": "Cet appareil est mémorisé jusqu'au {0} : pas de verrouillage automatique.", "sec.change": "Changer le mot de passe", "sec.current": "Mot de passe actuel",
       "sec.new": "Nouveau mot de passe", "sec.new2": "Confirmer le nouveau mot de passe", "sec.changed": "Mot de passe modifié", "sec.wrong": "Mot de passe actuel incorrect",
       "sec.logout": "Se déconnecter", "sec.share": "Personne d'autre ne peut modifier les données. Si vous partagez le lien, les visiteurs ne voient aucune donnée.",
-      "sec.autoSaved": "Délai de verrouillage enregistré", "lang.title": "Langue / اللغة",
+      "sec.autoSaved": "Délai de verrouillage enregistré", "lang.title": "Langue",
       "audit.title": "Journal des modifications", "audit.hint": "Chaque modification des présences, des ouvriers ou des paramètres est enregistrée avec sa date et son heure.", "audit.empty": "Aucune modification pour l'instant.",
       "help.title": "Mode d'emploi",
       "help.body": "Accueil : votre journée en un coup d'œil — horaire, état du pointage, alertes et calendrier.<br>Pointage : chaque jour, « Tous présents », puis « Absent » pour les absents, puis « Enregistrer ».<br>Registre : P ou A pour chaque ouvrier et chaque jour ; touchez une case pour la modifier.<br>Ouvriers : ajoutez les nouveaux avec leur date d'arrivée et modifiez leurs informations.<br>Paie : montants sur toute période, export Excel et résumé à copier.",
@@ -2001,7 +2075,7 @@ label.btn.off { opacity: .5; pointer-events: none; }
   }
   function editCard(w) {
     return `<form class="card pad16" data-edit="${esc(w.id)}" autocomplete="off">
-      <h2 style="font-size:14.5px">${esc(t("w.editTitle", w.name))}</h2>
+      <h2>${esc(t("w.editTitle", w.name))}</h2>
       <div class="grid2">
         <div class="field full"><label for="eName">${esc(t("w.name"))}</label><input class="input" id="eName" required maxlength="80" value="${esc(w.name)}"></div>
         <div class="field"><label for="eJoin">${esc(t("w.join"))}</label><input class="input ltr" type="date" id="eJoin" required value="${esc(w.joinDate)}"></div>
@@ -2225,11 +2299,6 @@ label.btn.off { opacity: .5; pointer-events: none; }
     const y0 = D.y + 4;
     AR.forEach((x, i) => txt(g, x, p.w - m - colW / 2, y0 + i * 12.5, { wt: i === 0 || i === 4 ? 700 : 500, size: i === 4 ? 10 : 9, color: i === 4 ? NAVY : INK, dir: "rtl" }));
     FR.forEach((x, i) => txt(g, x, m + colW / 2, y0 + i * 12.5, { wt: i === 0 || i === 4 ? 700 : 500, size: i === 4 ? 10 : 9, color: i === 4 ? NAVY : INK, dir: "ltr" }));
-    const cx = p.w / 2, cy = y0 + 2 * 12.5;
-    g.fillStyle = "#172E6E"; g.fillRect(cx - 14, cy - 14, 28, 28);
-    g.strokeStyle = "#EDB54A"; g.lineWidth = 1.2; g.strokeRect(cx - 6, cy - 6, 12, 12);
-    g.beginPath(); g.moveTo(cx, cy - 8.5); g.lineTo(cx + 8.5, cy); g.lineTo(cx, cy + 8.5); g.lineTo(cx - 8.5, cy); g.closePath(); g.stroke();
-    g.fillStyle = "#EDB54A"; g.beginPath(); g.arc(cx, cy, 2.2, 0, Math.PI * 2); g.fill();
     let y = y0 + 5 * 12.5 + 4;
     g.fillStyle = "#C1272D"; g.fillRect(m, y, p.w - 2 * m, 1.6);
     g.fillStyle = "#006233"; g.fillRect(m, y + 2.6, p.w - 2 * m, 1.1);
