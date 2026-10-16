@@ -15,6 +15,7 @@
 <script src="local-db.js"></script>
 </head>
 <body>
+<div class="appbg" aria-hidden="true"></div>
 <title>سجل حضور العمال</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>(function(){var l="ar";try{l=localStorage.getItem("sijil.lang")||"ar"}catch(e){}if(l!=="fr")l="ar";var d=document.documentElement;d.setAttribute("lang",l);d.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
@@ -3175,6 +3176,20 @@ label.btn.off { opacity: .5; pointer-events: none; }
   })();
 })();
 </script>
+
+<style>
+/* the background chosen by the user: Moroccan pattern with the national emblem */
+:root { --bgveil: rgba(236, 239, 244, .30); --bgedge: #CFD3D7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bgveil: rgba(10, 15, 28, .86); --bgedge: #0A0F1C; } }
+:root[data-theme="dark"] { --bgveil: rgba(10, 15, 28, .86); --bgedge: #0A0F1C; }
+html { background: var(--bgedge); }
+body { background: transparent !important; }
+.appbg { position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--bgedge);
+  background-image: linear-gradient(var(--bgveil), var(--bgveil)), url("bg.jpg");
+  background-size: cover, cover; background-position: center, center; background-repeat: no-repeat; }
+@media (min-aspect-ratio: 3/4) { .appbg { background-size: cover, auto 100%; } }
+.sec-h h2, .sec-h .hint { text-shadow: 0 0 6px var(--bg), 0 0 12px var(--bg); }
+</style>
 
 </body>
 </html>
