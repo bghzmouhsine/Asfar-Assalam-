@@ -1,5 +1,5 @@
 /* Sijil service worker: the app opens instantly and works without Internet. */
-var V = "sijil-v12";
+var V = "sijil-v13";
 var RT = "sijil-rt-v1";
 var SHELL = ["./", "index.html", "local-db.js", "manifest.webmanifest", "icons/emb-192.png", "icons/emb-512.png", "icons/emb-mask-512.png", "icons/emb-180.png", "icons/emb-32.png"];
 self.addEventListener("install", function (e) {
