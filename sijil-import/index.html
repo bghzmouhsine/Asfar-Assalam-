@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#172E6E">
+<meta name="robots" content="noindex">
+<title>سجل الحضور — استيراد البيانات</title>
+<style>
+  :root { --hero: #172E6E; --gold: #D69A1F; --ink: #131A2B; --muted: #5B6578; --bg: #F2F4F8; --ok: #17754B; --bad: #C0362C; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink);
+    font: 15px/1.7 "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif; padding: 24px max(16px, env(safe-area-inset-left, 0px)) 24px max(16px, env(safe-area-inset-right, 0px)); }
+  .card { width: 100%; max-width: 420px; background: #fff; border-radius: 20px; padding: 26px 22px; box-shadow: 0 10px 30px rgba(19,26,43,.1); text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  img { width: 72px; height: 72px; border-radius: 18px; }
+  h1 { font-size: 19px; margin: 0; color: var(--hero); }
+  p { margin: 0; color: var(--muted); }
+  .ok { color: var(--ok); font-weight: 700; }
+  .bad { color: var(--bad); font-weight: 700; }
+  .btn { display: inline-flex; justify-content: center; align-items: center; min-height: 50px; padding: 0 22px; border-radius: 13px; border: 0; background: var(--hero); color: #fff; font: inherit; font-weight: 700; text-decoration: none; width: 100%; }
+  .btn.alt { background: #fff; color: var(--hero); border: 1.5px solid var(--hero); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="card">
+  <img src="../sijil/icons/icon-192.png" alt="">
+  <h1>سجل حضور العمال</h1>
+  <p id="msg">جارٍ استيراد بياناتك…</p>
+  <button class="btn" id="replace" type="button" hidden>استبدال ما في التطبيق ببياناتي السابقة</button>
+  <a class="btn" id="open" href="../sijil/" hidden>فتح التطبيق</a>
+  <a class="btn alt" id="cancel" href="../sijil/" hidden>إلغاء</a>
+</main>
+<script>
+(async function () {
+  "use strict";
+  var PFX = "sijil:doc:";
+  var $ = function (id) { return document.getElementById(id); };
+  function say(text, cls) { var m = $("msg"); m.textContent = text; m.className = cls || ""; }
+  var m = /[#&]k=([A-Za-z0-9_-]{43})/.exec(location.hash);
+  try { history.replaceState(null, "", location.pathname); } catch (e) { /* the key stays in the address bar */ }
+  if (!m) { say("الرابط غير كامل. افتح الرابط كما وصلك.", "bad"); $("open").hidden = false; return; }
+  var ls;
+  try { ls = window.localStorage; ls.setItem("sijil:probe", "1"); ls.removeItem("sijil:probe"); } catch (e) { say("المتصفح لا يسمح بالحفظ. افتح الرابط في Chrome عادي (ليس في نافذة خاصة).", "bad"); return; }
+  var data;
+  try {
+    var b64 = function (s) { var bin = atob(s.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - s.length % 4) % 4)); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+    var res = await fetch("data.enc", { cache: "no-store" });
+    var box = await res.json();
+    var key = await crypto.subtle.importKey("raw", b64(m[1]), "AES-GCM", false, ["decrypt"]);
+    var plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(box.iv) }, key, b64(box.ct));
+    data = JSON.parse(new TextDecoder().decode(plain));
+  } catch (e) { say("تعذّر قراءة البيانات. تحقق من الإنترنت ثم افتح الرابط مرة أخرى.", "bad"); return; }
+  var keys = function () { var out = []; for (var i = 0; i < ls.length; i++) { var k = ls.key(i); if (k && k.indexOf(PFX) === 0) out.push(k); } return out; };
+  var hasWorkers = keys().some(function (k) { return k.indexOf(PFX + "workers/") === 0; });
+  function write() {
+    var current = keys();
+    if (current.length) {
+      var snap = {};
+      current.forEach(function (k) { snap[k] = ls.getItem(k); });
+      var id = "s" + Date.now();
+      try {
+        ls.setItem(PFX + "safety/" + id + "/parts/p0", JSON.stringify({ i: 0, data: JSON.stringify({ format: "sijil-registre", version: 2, exportedAt: new Date().toISOString(), raw: snap,
+          workers: current.filter(function (k) { return k.indexOf(PFX + "workers/") === 0; }).map(function (k) { var o = JSON.parse(ls.getItem(k)); o.id = k.split("/").pop(); return o; }),
+          days: current.filter(function (k) { return k.indexOf(PFX + "days/") === 0; }).map(function (k) { return JSON.parse(ls.getItem(k)); }) }) }));
+        ls.setItem(PFX + "safety/" + id, JSON.stringify({ at: new Date().toISOString(), workers: current.filter(function (k) { return k.indexOf(PFX + "workers/") === 0; }).length, days: current.filter(function (k) { return k.indexOf(PFX + "days/") === 0; }).length, parts: 1 }));
+      } catch (e) { /* safety copy is best-effort */ }
+      current.forEach(function (k) { if (k.indexOf(PFX + "workers/") === 0 || k.indexOf(PFX + "days/") === 0) ls.removeItem(k); });
+    }
+    if (data.settings) ls.setItem(PFX + "app/settings", JSON.stringify(data.settings));
+    (data.workers || []).forEach(function (w) { var o = Object.assign({}, w); var id = o.id; delete o.id; if (id) ls.setItem(PFX + "workers/" + id, JSON.stringify(o)); });
+    (data.days || []).forEach(function (d) { if (d && d.date) ls.setItem(PFX + "days/" + d.date, JSON.stringify(d)); });
+    say("تم: " + (data.workers || []).length + " عاملاً و" + (data.days || []).length + " أيام مسجّلة أصبحت في التطبيق.", "ok");
+    $("replace").hidden = true; $("cancel").hidden = true; $("open").hidden = false;
+    setTimeout(function () { location.href = "../sijil/"; }, 1800);
+  }
+  if (hasWorkers) {
+    say("في التطبيق عمال مضافون على هذا الهاتف. هل تريد استبدالهم ببياناتك السابقة (" + (data.workers || []).length + " عاملاً و" + (data.days || []).length + " أيام)؟ تُحفظ نسخة أمان مما هو موجود.");
+    $("replace").hidden = false; $("cancel").hidden = false;
+    $("replace").addEventListener("click", write);
+  } else write();
+})();
+</script>
+</body>
+</html>
