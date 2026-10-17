@@ -792,6 +792,13 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
 @media (min-width: 600px) { .hero-scene { height: 116px; } }
 @media (min-width: 1100px) { .hero-scene { height: 128px; } }
 @media (max-width: 360px) { .hero-scene { height: 84px; } }
+/* ---------- worker signature (finger on screen) */
+.sheet { max-height: calc(100% - 10px); overflow-y: auto; overscroll-behavior: contain; }
+.sigwrap { display: flex; flex-direction: column; gap: 6px; }
+.sig-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sig-h b { font-size: 13px; }
+.sigpad { display: block; width: 100%; max-width: 100%; aspect-ratio: 5 / 2; border: 1.5px dashed var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); touch-action: none; cursor: crosshair; }
+.sigok { display: inline-flex; align-items: center; white-space: nowrap; padding: 3px 9px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 11.5px; font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .sico.done circle, .sico.done path { stroke-dashoffset: 0; } }
 </style>
 
@@ -1124,6 +1131,11 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
           <div class="field"><label for="pyDate" data-t="py.date">التاريخ</label><input class="input ltr" type="date" id="pyDate"></div>
           <div class="field full"><label for="pyNote" data-t="py.note">ملاحظة</label><input class="input" id="pyNote" maxlength="120" autocomplete="off"></div>
         </div>
+        <div class="sigwrap">
+          <div class="sig-h"><b data-t="sig.label">توقيع العامل</b><button type="button" class="btn sm ghost" id="pySigClear" data-t="sig.clear">مسح</button></div>
+          <canvas class="sigpad" id="pySig" data-ta="sig.label"></canvas>
+          <p class="hint" data-t="sig.hint">يوقّع العامل بإصبعه داخل الإطار، ويمكن التوقيع لاحقاً.</p>
+        </div>
         <div class="row"><button class="btn primary" id="pySave" type="button" data-t="py.save">حفظ</button><button class="btn ghost" id="pyCancel" type="button" data-t="common.cancel">إلغاء</button></div>
       </div>
       <div id="pyDone" hidden>
@@ -1133,6 +1145,16 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     </div>
   </div>
 
+  <div class="sheet-back" id="sigSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sgTitle">
+      <div><p class="hint" id="sgStep" hidden></p><h3 id="sgTitle">—</h3><p class="hint" id="sgSub"></p></div>
+      <div class="sigwrap">
+        <div class="sig-h"><b data-t="sig.label">توقيع العامل</b><button type="button" class="btn sm ghost" id="sgClear" data-t="sig.clear">مسح</button></div>
+        <canvas class="sigpad" id="sgPad" data-ta="sig.label"></canvas>
+      </div>
+      <div class="row"><button class="btn primary" id="sgSave" type="button">—</button><button class="btn" id="sgSkip" type="button" data-t="sig.skip" hidden>تخطّي</button><button class="btn ghost" id="sgClose" type="button" data-t="common.close">إغلاق</button></div>
+    </div>
+  </div>
   <div class="sheet-back" id="cellSheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cTitle">
       <div><h3 id="cTitle">—</h3><p class="hint" id="cSub"></p></div>
@@ -1302,7 +1324,10 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       "pay.dayTitle": "ورقة الحضور اليومية", "x.daySum": "الحاضرون: {0} · الغائبون: {1} · غير المسجّلين: {2} · مجموع الأجور: {3} درهم",
       "x.dayNote": "ملاحظة اليوم: {0}", "x.site": "الورش: {0}", "x.page": "صفحة {0} من {1}", "x.pdfFile": "كشف العمال {0} إلى {1}.pdf",
       "x.dayPdf": "حضور العمال {0}.pdf", "x.absLine": "غياب: {0}", "x.regTitle": "سجل الحضور من {0} إلى {1}",
-      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "sig.label": "توقيع العامل", "sig.clear": "مسح", "sig.hint": "يوقّع العامل بإصبعه داخل الإطار، ويمكن التوقيع لاحقاً.", "sig.btn": "توقيع", "sig.signed": "✓ موقّع",
+      "sig.batch": "توقيع العمال ({0}/{1})", "sig.batchDone": "✓ موقّع {0}/{1}", "sig.count": "موقّع {0}/{1}", "sig.step": "العامل {0} من {1}", "sig.save": "حفظ التوقيع", "sig.saveNext": "حفظ والتالي",
+      "sig.skip": "تخطّي", "sig.empty": "اطلب من العامل أن يوقّع داخل الإطار أولاً.", "sig.allSaved": "تم حفظ التوقيعات: {0}", "sig.none": "كل هذه الأداءات موقّعة.", "sig.with": "مع توقيع العامل ✓",
+      "log.sign": "توقيع {0} على الوصل {1} ({2} درهم)", "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1441,7 +1466,10 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       "pay.dayTitle": "Feuille de présence journalière", "x.daySum": "Présents : {0} · Absents : {1} · Non pointés : {2} · Total des salaires : {3} DH",
       "x.dayNote": "Note du jour : {0}", "x.site": "Chantier : {0}", "x.page": "Page {0} sur {1}", "x.pdfFile": "Paie ouvriers {0} au {1}.pdf",
       "x.dayPdf": "Presence ouvriers {0}.pdf", "x.absLine": "Absences : {0}", "x.regTitle": "Registre des présences du {0} au {1}",
-      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "sig.label": "Signature de l'ouvrier", "sig.clear": "Effacer", "sig.hint": "L'ouvrier signe du doigt dans le cadre ; il peut aussi signer plus tard.", "sig.btn": "Signer", "sig.signed": "✓ Signé",
+      "sig.batch": "Faire signer ({0}/{1})", "sig.batchDone": "✓ Signé {0}/{1}", "sig.count": "Signé {0}/{1}", "sig.step": "Ouvrier {0} sur {1}", "sig.save": "Enregistrer la signature", "sig.saveNext": "Enregistrer et suivant",
+      "sig.skip": "Passer", "sig.empty": "Demandez d'abord à l'ouvrier de signer dans le cadre.", "sig.allSaved": "Signatures enregistrées : {0}", "sig.none": "Tous ces paiements sont signés.", "sig.with": "avec la signature de l'ouvrier ✓",
+      "log.sign": "Signature de {0} sur le reçu {1} ({2} DH)", "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -2474,6 +2502,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
         let yy = D.y + (rh - blockH) / 2 + lh / 2;
         for (const ln of x.L) { txt(g, ln, ax, yy, { wt: x.wt, size: fs, color: x.v.color || INK, align, dir }); yy += lh; }
         for (const ln of x.Sb) { txt(g, ln, ax, yy - 1, { size: fs - 1.5, color: "#B42318", align }); yy += lh - 1.6; }
+        if (x.v.draw) x.v.draw(g, x1, D.y, x2, D.y + rh);
       });
       g.strokeStyle = RULE; g.lineWidth = 0.5; g.beginPath();
       g.moveTo(L0, D.y + rh); g.lineTo(L0 + totalW, D.y + rh);
@@ -2483,6 +2512,32 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       if (row.topRule) { g.fillStyle = INK; g.fillRect(L0, D.y - 0.5, totalW, 1.1); }
       D.y += rh;
     });
+  }
+  /* a signature is kept as strokes in a 600 × 240 box: ["x,y x,y …", …] */
+  const SIG_W = 600, SIG_H = 240;
+  const sigPts = (str) => String(str).split(" ").map((p) => p.split(",").map(Number)).filter((p) => p.length === 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]));
+  function cleanSig(sig) {
+    if (!sig || typeof sig !== "object" || !Array.isArray(sig.s)) return null;
+    const st = sig.s.filter((x) => typeof x === "string" && /^\d{1,3},\d{1,3}( \d{1,3},\d{1,3})*$/.test(x)).slice(0, 120);
+    if (!st.length || st.join(" ").length > 60000) return null;
+    return { v: 1, s: st, at: typeof sig.at === "string" ? sig.at.slice(0, 40) : "" };
+  }
+  function drawSig(g, sig, x, y, w, h, o = {}) {
+    const strokes = (sig && Array.isArray(sig.s) ? sig.s : []).map(sigPts).filter((p) => p.length);
+    if (!strokes.length) return false;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const stp of strokes) for (const [px, py] of stp) { x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py); }
+    const k = Math.min(w / Math.max(x1 - x0, 20), h / Math.max(y1 - y0, 12), (h / SIG_H) * 2.4);
+    const ox = x + (w - (x1 - x0) * k) / 2 - x0 * k, oy = y + (h - (y1 - y0) * k) / 2 - y0 * k;
+    g.save(); g.strokeStyle = o.color || "#1B2A57"; g.lineWidth = o.lw || 1.1; g.lineCap = "round"; g.lineJoin = "round";
+    for (const stp of strokes) {
+      g.beginPath(); g.moveTo(ox + stp[0][0] * k, oy + stp[0][1] * k);
+      if (stp.length === 1) g.lineTo(ox + stp[0][0] * k + 0.4, oy + stp[0][1] * k + 0.4);
+      for (let i = 1; i < stp.length; i++) g.lineTo(ox + stp[i][0] * k, oy + stp[i][1] * k);
+      g.stroke();
+    }
+    g.restore();
+    return true;
   }
   function keepTogether(D, h) { if (D.y + h > D.p.h - D.bottom) D.add(D.p.w > D.p.h); }
   function signatures(D) {
@@ -2773,6 +2828,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     y += 22;
     txt(g, t("rc.signWorker"), rtl ? W - m - 90 : m + 90, y, { wt: 700, size: 9.5 });
     txt(g, t("x.signMaker"), rtl ? m + 90 : W - m - 90, y, { wt: 700, size: 9.5 });
+    if (p.sig) drawSig(g, p.sig, (rtl ? W - m - 90 : m + 90) - 78, y + 9, 156, 50);
   }
   async function receiptPdfBytes(list) {
     await fontsReady();
@@ -2800,10 +2856,11 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
         { h: t("th.daysTo"), w: 56, al: "c", ltr: true }, { h: t("th.paidAmt"), w: 80, al: "e", ltr: true }, { h: t("th.sign"), w: 161 },
       ];
       const list = b.list.slice().sort((x, y) => String(x.name || "").localeCompare(String(y.name || ""), "ar"));
-      const rows = list.map((p, i) => { const f = receiptFigures(p); return { cells: [i + 1, p.name || f.w.name, p.cin || "—", num(f.worked), money(p.amount), ""] }; });
+      const rows = list.map((p, i) => { const f = receiptFigures(p); return { cells: [i + 1, p.name || f.w.name, p.cin || "—", num(f.worked), money(p.amount),
+        p.sig ? { t: "", draw: (g, a, b, c, d) => drawSig(g, p.sig, a + 8, b + 3, c - a - 16, d - b - 6, { lw: 0.9 }) } : ""] }; });
       const tot = r2(list.reduce((a, p) => a + Number(p.amount || 0), 0));
       rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("th.total"), "", "", money(tot), ""] });
-      table(D, cols, rows, { rowH: 26 });
+      table(D, cols, rows, { rowH: list.some((p) => p.sig) ? 32 : 26 });
       D.y += 8;
       para(D, t("pl.words", amountWords(tot)), { wt: 600 });
       keepTogether(D, 110);
@@ -2820,10 +2877,15 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     for (const p of S.payments.values()) if (p.batch) { const b = m.get(p.batch) || { id: p.batch, date: p.date, list: [] }; b.list.push(p); m.set(p.batch, b); }
     return [...m.values()].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
   }
+  function signChip(list, bid) {
+    const n = list.filter((p) => p.sig).length;
+    if (n === list.length) return `<span class="sigok">${esc(t("sig.batchDone", n, list.length))}</span>`;
+    return S.canWrite ? `<button type="button" class="btn sm" data-batch="${esc(bid)}" data-k="sign">${esc(t("sig.batch", n, list.length))}</button>` : `<span class="hint">${esc(t("sig.count", n, list.length))}</span>`;
+  }
   function payBlock(w) {
     const b = balanceOf(w), list = payList(w.id).slice().reverse(), share = canShareFiles();
     const rows = list.map((p) => `<li><span class="pk ${p.kind === "adv" ? "adv" : ""}">${esc(p.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"))}</span><span>${esc(fmtShort(p.date))}</span><b class="pa">${money(p.amount)} ${esc(t("cur"))}</b>
-      <span class="pb">${S.downloads ? `<button type="button" class="btn sm" data-act="rc" data-p="${esc(p.id)}">${esc(t("py.receipt"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-act="rcs" data-p="${esc(p.id)}">${esc(t("py.share"))}</button>` : ""}${S.canWrite ? (S.confirmPay === p.id
+      <span class="pb">${p.sig ? `<span class="sigok">${esc(t("sig.signed"))}</span>` : S.canWrite ? `<button type="button" class="btn sm" data-act="sign" data-p="${esc(p.id)}">${esc(t("sig.btn"))}</button>` : ""}${S.downloads ? `<button type="button" class="btn sm" data-act="rc" data-p="${esc(p.id)}">${esc(t("py.receipt"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-act="rcs" data-p="${esc(p.id)}">${esc(t("py.share"))}</button>` : ""}${S.canWrite ? (S.confirmPay === p.id
         ? `<button type="button" class="btn sm danger solid" data-act="pdelYes" data-p="${esc(p.id)}">${esc(t("py.delConfirm"))}</button>`
         : `<button type="button" class="btn sm ghost" data-act="pdel" data-p="${esc(p.id)}">${esc(t("py.del"))}</button>`) : ""}</span></li>`).join("");
     return `<div class="payblk"><p class="sub-h" style="margin:0">${esc(t("py.title"))}</p>
@@ -2857,7 +2919,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const share = canShareFiles();
     $("batchList").innerHTML = batches().map((bt) => {
       const sum = r2(bt.list.reduce((a, p) => a + Number(p.amount || 0), 0));
-      return `<li><span>${esc(t("py.batch", fmtShort(bt.date), bt.list.length, money(sum)))}</span>${S.downloads ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="list">${esc(t("py.list"))}</button><button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="rc">${esc(t("py.receipts"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="share">${esc(t("py.share"))}</button>` : ""}</li>`;
+      return `<li><span>${esc(t("py.batch", fmtShort(bt.date), bt.list.length, money(sum)))}</span>${S.downloads ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="list">${esc(t("py.list"))}</button><button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="rc">${esc(t("py.receipts"))}</button>` : ""}${share ? `<button type="button" class="btn sm" data-batch="${esc(bt.id)}" data-k="share">${esc(t("py.share"))}</button>` : ""}${signChip(bt.list, bt.id)}</li>`;
     }).join("");
   }
   function pdfHeading(D, text) {
@@ -3004,6 +3066,8 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     $("pyForm").hidden = false; $("pyDone").hidden = true;
     setPayKind(S.pay.kind);
     $("paySheet").hidden = false;
+    S.pyPad = S.pyPad || makePad($("pySig"));
+    S.pyPad.clear(); requestAnimationFrame(() => S.pyPad.fit());
     $("pyAmt").focus();
   }
   function setPayKind(k) {
@@ -3020,17 +3084,117 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     S.paySaving = true; $("pySave").disabled = true;
     try {
       const doc = { workerId: w.id, name: w.name, cin: w.cin || "", kind: S.pay.kind, amount, date, note: $("pyNote").value.trim().slice(0, 120), createdAt: new Date().toISOString() };
+      const sig = S.pyPad ? S.pyPad.value() : null;
+      if (sig) doc.sig = sig;
       const ref = await S.db.collection("payments").add(doc);
       const id = ref && ref.id ? ref.id : "p" + Date.now();
       S.pay.saved = { id, ...doc };
       if (!S.payments.has(id)) S.payments.set(id, S.pay.saved);
       logChange(t("log.pay", w.name, S.pay.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"), money(amount)));
-      $("pyDoneMsg").textContent = t("py.saved", money(amount), w.name);
+      $("pyDoneMsg").textContent = t("py.saved", money(amount), w.name) + (doc.sig ? " " + t("sig.with") : "");
       $("pyForm").hidden = true; $("pyDone").hidden = false;
       $("pyRc").hidden = !S.downloads; $("pyRcShare").hidden = !canShareFiles();
       renderAll();
     } catch (e) { writeError(e); }
     finally { S.paySaving = false; $("pySave").disabled = false; }
+  }
+  /* ----- worker signature: pad, and a sheet to sign one payment or a whole group, one worker after another */
+  function makePad(canvas) {
+    const strokes = [];
+    let cur = null;
+    const at = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return [Math.max(0, Math.min(SIG_W, ((e.clientX - r.left) / r.width) * SIG_W)), Math.max(0, Math.min(SIG_H, ((e.clientY - r.top) / r.height) * SIG_H))];
+    };
+    const pad = {
+      clear() { strokes.length = 0; cur = null; pad.draw(); },
+      fit() {
+        const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+        if (r.width < 2) return;
+        canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+        pad.draw();
+      },
+      draw() {
+        const g = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+        if (!W || !H) return;
+        g.clearRect(0, 0, W, H);
+        const ink = getComputedStyle(canvas).color || "#111827";
+        g.save(); g.globalAlpha = 0.22; g.strokeStyle = ink; g.lineWidth = Math.max(1, W / 500); g.setLineDash([W / 90, W / 90]);
+        g.beginPath(); g.moveTo(W * 0.07, H * 0.78); g.lineTo(W * 0.93, H * 0.78); g.stroke(); g.restore();
+        const kx = W / SIG_W, ky = H / SIG_H;
+        g.strokeStyle = ink; g.lineWidth = Math.max(2, W / 200); g.lineCap = "round"; g.lineJoin = "round";
+        for (const stp of strokes) {
+          g.beginPath(); g.moveTo(stp[0][0] * kx, stp[0][1] * ky);
+          if (stp.length === 1) g.lineTo(stp[0][0] * kx + 0.5, stp[0][1] * ky + 0.5);
+          for (let i = 1; i < stp.length; i++) g.lineTo(stp[i][0] * kx, stp[i][1] * ky);
+          g.stroke();
+        }
+      },
+      value() {
+        const pts = strokes.reduce((a, stp) => a + stp.length, 0);
+        if (pts < 8) return null; /* a dot or a tap is not a signature */
+        return cleanSig({ s: strokes.map((stp) => stp.map(([x, y]) => Math.round(x) + "," + Math.round(y)).join(" ")), at: new Date().toISOString() });
+      },
+    };
+    canvas.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (document.activeElement && document.activeElement !== canvas && document.activeElement.blur) document.activeElement.blur();
+      try { canvas.setPointerCapture(e.pointerId); } catch (x) { /* older browsers */ }
+      cur = [at(e)]; strokes.push(cur); pad.draw();
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!cur) return;
+      e.preventDefault();
+      const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+      for (const ev of evs.length ? evs : [e]) { const pt = at(ev), l = cur[cur.length - 1]; if (Math.hypot(pt[0] - l[0], pt[1] - l[1]) >= 2.5) cur.push(pt); }
+      pad.draw();
+    });
+    const end = () => { cur = null; };
+    canvas.addEventListener("pointerup", end); canvas.addEventListener("pointercancel", end);
+    return pad;
+  }
+  function openSign(ids) {
+    if (!S.canWrite || !S.db) return;
+    const list = ids.map((id) => S.payments.get(id)).filter((p) => p && !p.sig);
+    if (!list.length) { toast(t("sig.none")); return; }
+    S.sign = { ids: list.map((p) => p.id), i: 0, n: 0, busy: false };
+    S.sgPad = S.sgPad || makePad($("sgPad"));
+    $("sigSheet").hidden = false;
+    showSign();
+  }
+  function showSign() {
+    const st = S.sign; if (!st) return;
+    const p = S.payments.get(st.ids[st.i]);
+    if (!p) { nextSign(); return; }
+    const many = st.ids.length > 1;
+    $("sgStep").hidden = !many; $("sgStep").textContent = many ? t("sig.step", st.i + 1, st.ids.length) : "";
+    $("sgTitle").textContent = p.name || "—";
+    $("sgSub").textContent = `${p.kind === "adv" ? t("py.kindAdv") : t("py.kindPay")} · ${money(p.amount)} ${t("cur")} · ${fmtLong(p.date)}`;
+    $("sgSave").textContent = st.i < st.ids.length - 1 ? t("sig.saveNext") : t("sig.save");
+    $("sgSkip").hidden = !many || st.i >= st.ids.length - 1;
+    S.sgPad.clear(); requestAnimationFrame(() => S.sgPad.fit());
+  }
+  function nextSign() {
+    const st = S.sign; if (!st) return;
+    st.i++;
+    if (st.i >= st.ids.length) { const n = st.n; closeSign(); if (n) toast(t("sig.allSaved", n)); return; }
+    showSign();
+  }
+  function closeSign() { $("sigSheet").hidden = true; S.sign = null; renderAll(); }
+  async function saveSign() {
+    const st = S.sign; if (!st || st.busy) return;
+    const p = S.payments.get(st.ids[st.i]); if (!p) { nextSign(); return; }
+    const sig = S.sgPad.value();
+    if (!sig) { toast(t("sig.empty")); return; }
+    st.busy = true; $("sgSave").disabled = true;
+    try {
+      await S.db.doc("payments/" + p.id).update({ sig });
+      S.payments.set(p.id, { ...p, sig });
+      logChange(t("log.sign", p.name || "", receiptNo(p), money(p.amount)));
+      st.n++;
+      nextSign();
+    } catch (e) { writeError(e); }
+    finally { if (S.sign === st) st.busy = false; $("sgSave").disabled = false; }
   }
   async function shareBackup() {
     const data = JSON.stringify(backupData(), null, 1), name = `sijil-sauvegarde-${todayISO()}.txt`;
@@ -3091,6 +3255,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const o = { workerId: String(p.workerId), name: String(p.name || "").slice(0, 80), cin: String(p.cin || "").slice(0, 20), kind: p.kind === "adv" ? "adv" : "pay",
       amount: r2(Number(p.amount)), date: p.date, note: String(p.note || "").slice(0, 120), createdAt: String(p.createdAt || new Date().toISOString()) };
     if (typeof p.batch === "string" && SAFE_ID.test(p.batch)) o.batch = p.batch;
+    const sg = cleanSig(p.sig); if (sg) o.sig = sg;
     return o;
   }
   function parseBackup(text) {
@@ -3278,7 +3443,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     S.gridScrolled = false; renderGrid();
   });
   $("cClose").addEventListener("click", closeCell);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); });
 
   $("openAdd").addEventListener("click", () => { S.returnToDay = false; openForm("add", S.sel); });
   $("openBulk").addEventListener("click", () => openForm("bulk", start()));
@@ -3330,6 +3495,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const id = b.dataset.id, act = b.dataset.act;
     if (act === "pay" || act === "adv") return openPay(id, act);
     if (act === "rc" || act === "rcs") return receiptFor(b.dataset.p, act === "rcs", b);
+    if (act === "sign") return openSign([b.dataset.p]);
     if (act === "pdel") { S.confirmPay = b.dataset.p; return renderWorkers(); }
     if (act === "pdelYes") {
       const p = S.payments.get(b.dataset.p); S.confirmPay = null;
@@ -3397,6 +3563,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const bb = e.target.closest("[data-batch]");
     if (bb) {
       const bt = batches().find((x) => x.id === bb.dataset.batch); if (!bt) return;
+      if (bb.dataset.k === "sign") return openSign(bt.list.slice().sort((x, y) => String(x.name || "").localeCompare(String(y.name || ""), "ar")).map((p) => p.id));
       if (bb.dataset.k === "rc") return pdfJob(bb, async () => deliver(await receiptPdfBytes(bt.list), t("rc.fileAll", bt.date), false));
       return pdfJob(bb, async () => deliver(await payListPdfBytes(bt), t("pl.file", bt.date), bb.dataset.k === "share"));
     }
@@ -3409,6 +3576,13 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
   $("pySave").addEventListener("click", savePay);
   $("pyAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); savePay(); } });
   $("pyCancel").addEventListener("click", closePay);
+  $("pySigClear").addEventListener("click", () => { if (S.pyPad) S.pyPad.clear(); });
+  $("sgSave").addEventListener("click", saveSign);
+  $("sgSkip").addEventListener("click", nextSign);
+  $("sgClose").addEventListener("click", closeSign);
+  $("sgClear").addEventListener("click", () => { if (S.sgPad) S.sgPad.clear(); });
+  $("sigSheet").addEventListener("click", (e) => { if (e.target === $("sigSheet")) closeSign(); });
+  window.addEventListener("resize", () => { if (S.pyPad && !$("paySheet").hidden) S.pyPad.fit(); if (S.sgPad && !$("sigSheet").hidden) S.sgPad.fit(); });
   $("pyClose").addEventListener("click", closePay);
   $("pyRc").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, false, e.currentTarget); });
   $("pyRcShare").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, true, e.currentTarget); });
