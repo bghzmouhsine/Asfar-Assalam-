@@ -794,6 +794,19 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
 @media (max-width: 360px) { .hero-scene { height: 84px; } }
 /* ---------- worker signature (finger on screen) */
 .sheet { max-height: calc(100% - 10px); overflow-y: auto; overscroll-behavior: contain; }
+/* document verification */
+.ckres { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.ckres .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 800; font-size: 17px; background: var(--brand-soft); color: var(--link); }
+.ckres.ok { background: var(--ok-soft); } .ckres.ok .ic { background: var(--ok); color: var(--surface); }
+.ckres.warn { background: var(--warn-soft); } .ckres.warn .ic { background: var(--warn); color: var(--surface); }
+.ckres.bad { background: var(--bad-soft); } .ckres.bad .ic { background: var(--bad); color: var(--surface); }
+.ckres .bd { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.ckres .tt { font-size: 14px; line-height: 1.5; }
+.ckform { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.ckform .field { flex: 1; min-width: 150px; }
+#ckCode { letter-spacing: .12em; font-weight: 700; text-transform: uppercase; }
+.amlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink); }
+#dsCard .chips, #dsCard .row, #ckCard .row { margin-top: 10px; }
 .sigwrap { display: flex; flex-direction: column; gap: 6px; }
 .sig-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sig-h b { font-size: 13px; }
@@ -1100,10 +1113,21 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
         <div id="payAllBox" hidden></div>
         <ul class="batches" id="batchList"></ul>
       </div>
+      <div class="card pad16" id="dsCard">
+        <h2 data-t="ds.card">الملف الشهري الكامل</h2>
+        <p class="hint" data-t="ds.hint"></p>
+        <div class="chips" id="dsMonths"></div>
+        <div class="row"><button class="btn primary" id="dsPdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="ds.pdf">تحميل الملف الشهري PDF</span></button><button class="btn" id="dsShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></div>
+      </div>
       <div class="card pad16" id="finalCard">
         <h2 data-t="fr.title">التقرير الختامي للورش</h2>
         <p class="hint" data-t="fr.hint"></p>
         <div class="row"><button class="btn primary" id="finalPdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="fr.pdf">تحميل التقرير الختامي PDF</span></button><button class="btn" id="finalShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></div>
+      </div>
+      <div class="card pad16" id="ckCard">
+        <h2 data-t="chk.card">التحقق من وثيقة</h2>
+        <p class="hint" data-t="chk.cardHint"></p>
+        <div class="row"><button class="btn" id="ckOpen" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18v2M18 14h2"/></svg><span data-t="chk.open">إدخال رمز التحقق</span></button></div>
       </div>
     </section>
 
@@ -1213,6 +1237,14 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
         <canvas class="sigpad" id="sgPad" data-ta="sig.label"></canvas>
       </div>
       <div class="row"><button class="btn primary" id="sgSave" type="button">—</button><button class="btn" id="sgSkip" type="button" data-t="sig.skip" hidden>تخطّي</button><button class="btn ghost" id="sgClose" type="button" data-t="common.close">إغلاق</button></div>
+    </div>
+  </div>
+  <div class="sheet-back" id="chkSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+      <div><h3 id="ckTitle" data-t="chk.title">التحقق من وثيقة</h3><p class="hint" data-t="chk.sub"></p></div>
+      <div id="ckBody" aria-live="polite"></div>
+      <form class="ckform" id="ckForm" autocomplete="off"><div class="field"><label for="ckCode" data-t="chk.codeLbl">رمز التحقق</label><input class="input ltr" id="ckCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX"></div><button class="btn primary" type="submit" data-t="chk.go">تحقّق</button></form>
+      <div class="row"><button class="btn ghost" id="ckClose" type="button" data-t="common.close">إغلاق</button></div>
     </div>
   </div>
   <div class="sheet-back" id="cellSheet" hidden>
@@ -1399,7 +1431,26 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "لوحة المؤشرات", "dash.rate": "نسبة الحضور يوماً بيوم", "dash.cum": "الكلفة المتراكمة منذ البداية", "dash.cumB": "الكلفة المتراكمة مقابل الاعتماد المالي", "dash.abs": "الغيابات حسب العامل",
       "dash.noAbs": "لا غياب في هذه الفترة.", "dash.budget": "الاعتماد {0}", "dash.unrec": "غير مسجّل", "dash.tipRate": "{0}: {1} حاضر، {2} غائب ({3}%)", "dash.tipCum": "{0}: {1} درهم هذا اليوم · المجموع {2} درهم",
       "dash.table": "عرض البيانات كجدول", "dash.th.date": "اليوم", "dash.th.p": "حاضر", "dash.th.a": "غائب", "dash.th.rate": "النسبة", "dash.th.pay": "كلفة اليوم", "dash.th.cum": "المتراكم", "dash.others": "آخرون ({0})", "dash.absN": "{0} غياب",
-      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "chk.title": "التحقق من وثيقة", "chk.sub": "تأكّد أن الوصل أو لائحة الأداء أو الملف الشهري مطابق لما في السجل.", "chk.card": "التحقق من وثيقة",
+      "chk.cardHint": "كل وصل ولائحة أداء وملف شهري يحمل رمزاً مربعاً (QR) ورمز تحقق. امسح الرمز بكاميرا الهاتف، أو أدخل رمز التحقق هنا.", "chk.open": "إدخال رمز التحقق",
+      "chk.codeLbl": "رمز التحقق (8 أحرف وأرقام)", "chk.go": "تحقّق", "chk.badCode": "رمز التحقق يتكون من 8 أحرف وأرقام، مثل F820-R689.", "chk.codeLine": "رمز التحقق: {0}", "chk.scan": "امسح الرمز للتحقق",
+      "chk.okR": "وصل صحيح ومطابق للسجل", "chk.okB": "لائحة أداء صحيحة ومطابقة للسجل", "chk.okM": "الملف الشهري مطابق للسجل",
+      "chk.chgR": "هذا الوصل لا يطابق السجل الحالي", "chk.chgB": "تغيّرت هذه اللائحة في السجل بعد طباعتها", "chk.chgM": "تغيّر السجل بعد طباعة هذا الملف",
+      "chk.chgHint": "قارن الأرقام أسفله بما في الورقة. كل تعديل مسجّل في سجل التعديلات.", "chk.miss": "هذه الوثيقة غير موجودة في السجل", "chk.missHint": "قد تكون حُذفت بعد طباعتها، أو أن الوثيقة غير صحيحة.",
+      "chk.missCode": "لا توجد في السجل وثيقة بهذا الرمز", "chk.noReg": "هذا الهاتف لا يحتوي على السجل",
+      "chk.noRegHint": "يتم التحقق على هاتف صاحب السجل، أو بعد فتح رابط المشاهدة الذي يرسله. افتح الرابط أولاً ثم امسح الرمز من جديد.",
+      "chk.kind": "الوثيقة", "chk.kR": "وصل", "chk.kB": "لائحة أداء", "chk.kM": "ملف شهري", "chk.type": "النوع", "chk.worker": "العامل", "chk.amount": "المبلغ", "chk.date": "التاريخ", "chk.no": "رقم الوصل",
+      "chk.sig": "التوقيع", "chk.signed": "موقّع ✓", "chk.unsigned": "غير موقّع", "chk.count": "عدد العمال", "chk.total": "المجموع", "chk.sigs": "التوقيعات", "chk.period": "الفترة", "chk.workDays": "أيام العمل",
+      "chk.man": "مجموع أيام العمال", "chk.wages": "الأجور المستحقة", "chk.paid": "المؤدى خلال الفترة", "chk.amends": "تعديلات الأيام المغلقة", "chk.code": "رمز التحقق", "chk.note": "ملاحظة", "chk.amendLine": "{0} — عُدّل في {1}: {2}",
+      "ds.card": "الملف الشهري الكامل", "ds.hint": "ملف PDF واحد للشهر: سجل الحضور، كشف الأجور، الأداءات بتوقيعات العمال، تعديلات الأيام المغلقة وأسبابها، وإثبات الحضور (الموقع والصور)، مع رقم مرجعي ورمز تحقق.",
+      "ds.pdf": "تحميل الملف الشهري PDF", "ds.making": "جارٍ إعداد الملف…", "ds.title": "الملف الشهري — {0}", "ds.ref": "المرجع: {0}", "ds.file": "الملف الشهري {0}.pdf", "ds.toc": "محتويات الملف",
+      "ds.s1": "سجل الحضور اليومي", "ds.s2": "كشف الأجور المستحقة عن الفترة", "ds.s3": "الأداءات والتسبيقات خلال الفترة", "ds.s4": "تعديلات الأيام المغلقة", "ds.s5": "إثبات الحضور: الموقع والصور", "ds.pg": "ص {0}",
+      "ds.k.workers": "العمال", "ds.k.workDays": "أيام العمل", "ds.k.man": "مجموع أيام العمال", "ds.k.abs": "أيام الغياب", "ds.k.earned": "المستحق عن الفترة", "ds.k.paid": "المؤدى خلال الفترة", "ds.k.unrec": "أيام ناقصة التسجيل", "ds.k.budget": "الاعتماد المستعمل",
+      "ds.noPays": "لا توجد أداءات خلال هذه الفترة.", "ds.noAmends": "لم يُعدَّل أي يوم مغلق خلال هذه الفترة.", "ds.noProof": "لا توجد مواقع أو صور مسجّلة خلال هذه الفترة.",
+      "ds.th.day": "اليوم", "ds.th.at": "تاريخ التعديل", "ds.th.reason": "السبب", "ds.th.no": "رقم الوصل", "ds.th.kind": "النوع", "ds.th.pa": "ح / غ", "ds.th.state": "التسجيل", "ds.th.geo": "الموقع (GPS)", "ds.th.photo": "صورة",
+      "ds.geo": "{0}, {1} (±{2} م\u200E) — {3}", "ds.yes": "نعم", "ds.stFull": "كامل", "ds.stPart": "ناقص", "ds.stNone": "غير مسجّل", "ds.photos": "صور الفريق", "ds.verify": "التحقق من هذا الملف",
+      "ds.verifyNote": "امسح الرمز بكاميرا الهاتف، أو أدخل رمز التحقق في التطبيق (الأجور ← التحقق من وثيقة)، للتأكد أن هذا الملف مطابق للسجل ولم يُغيَّر بعد طباعته.",
+      "ds.closing": "أيام العمل: {0} — مجموع أيام العمال: {1} — الأجور المستحقة: {2} درهم ({3}) — المؤدى خلال الفترة: {4} درهم.", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1553,7 +1604,26 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "Tableau de bord", "dash.rate": "Taux de présence par jour", "dash.cum": "Coût cumulé depuis le début", "dash.cumB": "Coût cumulé face au crédit alloué", "dash.abs": "Absences par ouvrier",
       "dash.noAbs": "Aucune absence sur cette période.", "dash.budget": "Crédit {0}", "dash.unrec": "non pointé", "dash.tipRate": "{0} : {1} présents, {2} absents ({3} %)", "dash.tipCum": "{0} : {1} DH ce jour · total {2} DH",
       "dash.table": "Voir les données en tableau", "dash.th.date": "Jour", "dash.th.p": "Présents", "dash.th.a": "Absents", "dash.th.rate": "Taux", "dash.th.pay": "Coût du jour", "dash.th.cum": "Cumul", "dash.others": "Autres ({0})", "dash.absN": "{0} absence(s)",
-      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "chk.title": "Vérifier un document", "chk.sub": "Assurez-vous qu'un reçu, un état de paiement ou un dossier mensuel correspond au registre.", "chk.card": "Vérifier un document",
+      "chk.cardHint": "Chaque reçu, état de paiement et dossier mensuel porte un code QR et un code de vérification. Scannez le QR avec l'appareil photo du téléphone, ou saisissez le code ici.", "chk.open": "Saisir un code de vérification",
+      "chk.codeLbl": "Code de vérification (8 lettres et chiffres)", "chk.go": "Vérifier", "chk.badCode": "Le code de vérification compte 8 lettres et chiffres, par ex. F820-R689.", "chk.codeLine": "Code de vérification : {0}", "chk.scan": "Scannez pour vérifier",
+      "chk.okR": "Reçu authentique, conforme au registre", "chk.okB": "État de paiement authentique, conforme au registre", "chk.okM": "Dossier mensuel conforme au registre",
+      "chk.chgR": "Ce reçu ne correspond pas au registre actuel", "chk.chgB": "Cet état de paiement a changé dans le registre après son impression", "chk.chgM": "Le registre a changé après l'impression de ce dossier",
+      "chk.chgHint": "Comparez les chiffres ci-dessous avec le papier. Chaque modification figure au journal des modifications.", "chk.miss": "Ce document n'existe pas dans le registre", "chk.missHint": "Il a pu être supprimé après son impression, ou le document n'est pas authentique.",
+      "chk.missCode": "Aucun document du registre ne porte ce code", "chk.noReg": "Ce téléphone ne contient pas le registre",
+      "chk.noRegHint": "La vérification se fait sur le téléphone du propriétaire du registre, ou après ouverture du lien de consultation qu'il envoie. Ouvrez d'abord ce lien, puis scannez à nouveau le code.",
+      "chk.kind": "Document", "chk.kR": "Reçu", "chk.kB": "État de paiement", "chk.kM": "Dossier mensuel", "chk.type": "Type", "chk.worker": "Ouvrier", "chk.amount": "Montant", "chk.date": "Date", "chk.no": "N° du reçu",
+      "chk.sig": "Signature", "chk.signed": "Signé ✓", "chk.unsigned": "Non signé", "chk.count": "Nombre d'ouvriers", "chk.total": "Total", "chk.sigs": "Signatures", "chk.period": "Période", "chk.workDays": "Jours de travail",
+      "chk.man": "Total jours-ouvriers", "chk.wages": "Salaires dus", "chk.paid": "Payé sur la période", "chk.amends": "Modifications de jours fermés", "chk.code": "Code de vérification", "chk.note": "Note", "chk.amendLine": "{0} — modifié le {1} : {2}",
+      "ds.card": "Dossier mensuel complet", "ds.hint": "Un seul PDF pour le mois : registre de présence, état des salaires, paiements avec signatures des ouvriers, modifications des jours fermés et leurs motifs, preuves de présence (position et photos), avec référence et code de vérification.",
+      "ds.pdf": "Télécharger le dossier mensuel PDF", "ds.making": "Préparation du dossier…", "ds.title": "Dossier mensuel — {0}", "ds.ref": "Référence : {0}", "ds.file": "Dossier mensuel {0}.pdf", "ds.toc": "Contenu du dossier",
+      "ds.s1": "Registre de présence quotidien", "ds.s2": "État des salaires dus pour la période", "ds.s3": "Paiements et avances de la période", "ds.s4": "Modifications des jours fermés", "ds.s5": "Preuves de présence : position et photos", "ds.pg": "p. {0}",
+      "ds.k.workers": "Ouvriers", "ds.k.workDays": "Jours de travail", "ds.k.man": "Jours-ouvriers", "ds.k.abs": "Absences", "ds.k.earned": "Dû pour la période", "ds.k.paid": "Payé sur la période", "ds.k.unrec": "Jours incomplets", "ds.k.budget": "Crédit utilisé",
+      "ds.noPays": "Aucun paiement sur cette période.", "ds.noAmends": "Aucun jour fermé n'a été modifié sur cette période.", "ds.noProof": "Aucune position ni photo enregistrée sur cette période.",
+      "ds.th.day": "Jour", "ds.th.at": "Modifié le", "ds.th.reason": "Motif", "ds.th.no": "N° reçu", "ds.th.kind": "Type", "ds.th.pa": "P / A", "ds.th.state": "Saisie", "ds.th.geo": "Position (GPS)", "ds.th.photo": "Photo",
+      "ds.geo": "{0}, {1} (±{2} m) — {3}", "ds.yes": "Oui", "ds.stFull": "Complet", "ds.stPart": "Incomplet", "ds.stNone": "Non saisi", "ds.photos": "Photos de l'équipe", "ds.verify": "Vérification de ce dossier",
+      "ds.verifyNote": "Scannez le code avec l'appareil photo du téléphone, ou saisissez-le dans l'application (Salaires → Vérifier un document), pour confirmer que ce dossier correspond au registre et n'a pas été modifié après impression.",
+      "ds.closing": "Jours de travail : {0} — Total jours-ouvriers : {1} — Salaires dus : {2} DH ({3}) — Payé sur la période : {4} DH.", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -1642,6 +1712,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     calMonth: todayISO().slice(0, 7), noteDirty: false, noteDate: null, auditQ: Promise.resolve(), gridScrolled: false,
     gFrom: null, gTo: null, restore: null, restoring: false, rp: [0, 0], safety: [], dListHTML: null, rebuilding: false,
   };
+  /* a verification link opened from the QR code of a printed document (#chk=…) */
+  try {
+    const cm = /[#&]chk=([rbm])([0-9A-Z]{8})\.([A-Za-z0-9_-]{1,64})/.exec(location.hash);
+    if (cm) { S.chkPending = { kind: cm[1], code: cm[2], key: cm[3] }; history.replaceState(null, "", location.pathname + location.search); }
+  } catch (e) { /* not a verification link */ }
   { const tb = ls.get("sijil.tab"); if (["home", "day", "grid", "workers", "pay", "settings"].includes(tb)) S.tab = tb; }
   try {
     const raw = JSON.parse(ls.get("sijil.drafts") || "{}");
@@ -1830,6 +1905,8 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     if (S.tab === "workers") renderWorkers();
     if (S.tab === "pay") renderPay();
     if (S.tab === "settings") { renderSettings(); renderAudit(); renderBackup(); }
+    if (S.chkPending && allLoaded()) { const c = S.chkPending; S.chkPending = null; openChk(c); }
+    else if (!$("chkSheet").hidden) renderChk();
   }
 
   /* =========================================================== motion & scenes */
@@ -2474,6 +2551,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("pFrom").value = S.repFrom || ""; $("pTo").value = S.repTo || "";
     for (const b of $("pChips").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.p === S.period));
     renderBalances();
+    renderDossierCard();
     const hideX = (h) => { $("xlsxBtn").hidden = h; $("pdfBtn").hidden = h; $("copyBtn").hidden = h; $("pdfShareBtn").hidden = h || !canShareFiles(); $("shareTxtBtn").hidden = h || !(window.SIJIL_LOCAL && navigator.share); };
     if (!allLoaded()) { $("pBody").innerHTML = `<div class="loading">${esc(t("common.loading"))}</div>`; return; }
     if (!S.repFrom || !S.repTo || S.repFrom > S.repTo) { $("pBody").innerHTML = `<p class="notice warn">${esc(t("pay.bad"))}</p>`; hideX(true); return; }
@@ -2683,6 +2761,148 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     }
   }
 
+  /* ----- QR code (byte mode, error correction M, versions 1–10) for verification links on documents */
+  function qrMatrix(text) {
+    const ECC = [0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26], BLK = [0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5];
+    const bytes = Array.from(new TextEncoder().encode(String(text)));
+    const rawMods = (v) => { let r = (16 * v + 128) * v + 64; if (v >= 2) { const na = Math.floor(v / 7) + 2; r -= (25 * na - 10) * na - 55; if (v >= 7) r -= 36; } return r; };
+    const dataCap = (v) => Math.floor(rawMods(v) / 8) - ECC[v] * BLK[v];
+    let ver = 0;
+    for (let v = 1; v <= 10; v++) { const ccBits = v <= 9 ? 8 : 16; if (4 + ccBits + 8 * bytes.length <= dataCap(v) * 8) { ver = v; break; } }
+    if (!ver) throw new Error("qr: text too long");
+    const size = ver * 4 + 17, cap = dataCap(ver);
+    /* bit stream */
+    const bits = [];
+    const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    put(4, 4); put(bytes.length, ver <= 9 ? 8 : 16); for (const b of bytes) put(b, 8);
+    put(0, Math.min(4, cap * 8 - bits.length));
+    put(0, (8 - (bits.length % 8)) % 8);
+    for (let pad = 0xEC; bits.length < cap * 8; pad ^= 0xEC ^ 0x11) put(pad, 8);
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; data.push(b); }
+    /* Reed–Solomon over GF(256), polynomial 0x11D */
+    const mul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z & 0xFF; };
+    const divisor = (deg) => { const r = new Array(deg - 1).fill(0); r.push(1); let root = 1; for (let i = 0; i < deg; i++) { for (let j = 0; j < r.length; j++) { r[j] = mul(r[j], root); if (j + 1 < r.length) r[j] ^= r[j + 1]; } root = mul(root, 2); } return r; };
+    const remainder = (dat, div) => { const r = div.map(() => 0); for (const b of dat) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => { r[i] ^= mul(c, f); }); } return r; };
+    const nb = BLK[ver], eccLen = ECC[ver], raw = Math.floor(rawMods(ver) / 8), nShort = nb - (raw % nb), shortLen = Math.floor(raw / nb), div = divisor(eccLen);
+    const blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const dat = data.slice(k, k + shortLen - eccLen + (i < nShort ? 0 : 1)); k += dat.length;
+      const ecc = remainder(dat, div);
+      if (i < nShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    const cw = [];
+    for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - eccLen || j >= nShort) cw.push(b[i]); });
+    /* modules */
+    const M = Array.from({ length: size }, () => new Array(size).fill(false));
+    const F = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = (x, y, dark) => { M[y][x] = dark; F[y][x] = true; };
+    for (let i = 0; i < size; i++) { fn(6, i, i % 2 === 0); fn(i, 6, i % 2 === 0); }
+    const finder = (cx, cy) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const d = Math.max(Math.abs(dx), Math.abs(dy)), x = cx + dx, y = cy + dy; if (x >= 0 && x < size && y >= 0 && y < size) fn(x, y, d !== 2 && d !== 4); } };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    if (ver >= 2) {
+      const na = Math.floor(ver / 7) + 2, step = Math.ceil((ver * 4 + 4) / (na * 2 - 2)) * 2, pos = [6];
+      for (let p = size - 7; pos.length < na; p -= step) pos.splice(1, 0, p);
+      for (let i = 0; i < na; i++) for (let j = 0; j < na; j++) {
+        if ((i === 0 && j === 0) || (i === 0 && j === na - 1) || (i === na - 1 && j === 0)) continue;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) fn(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+    }
+    const formatBits = (mask) => {
+      const d = (0 << 3) | mask; /* level M = 00 */
+      let rem = d; for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      const b = ((d << 10) | rem) ^ 0x5412, bit = (i) => ((b >>> i) & 1) !== 0;
+      for (let i = 0; i <= 5; i++) fn(8, i, bit(i));
+      fn(8, 7, bit(6)); fn(8, 8, bit(7)); fn(7, 8, bit(8));
+      for (let i = 9; i < 15; i++) fn(14 - i, 8, bit(i));
+      for (let i = 0; i < 8; i++) fn(size - 1 - i, 8, bit(i));
+      for (let i = 8; i < 15; i++) fn(8, size - 15 + i, bit(i));
+      fn(8, size - 8, true);
+    };
+    formatBits(0);
+    if (ver >= 7) {
+      let rem = ver; for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+      const b = (ver << 12) | rem;
+      for (let i = 0; i < 18; i++) { const c = ((b >>> i) & 1) !== 0, a = size - 11 + (i % 3), q = Math.floor(i / 3); fn(a, q, c); fn(q, a, c); }
+    }
+    let n = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+        if (!F[y][x] && n < cw.length * 8) { M[y][x] = ((cw[n >>> 3] >>> (7 - (n & 7))) & 1) !== 0; n++; }
+      }
+    }
+    const maskFn = [(x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, (x) => x % 3 === 0, (x, y) => (x + y) % 3 === 0,
+      (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => ((x * y) % 2) + ((x * y) % 3) === 0,
+      (x, y) => (((x * y) % 2) + ((x * y) % 3)) % 2 === 0, (x, y) => (((x + y) % 2) + ((x * y) % 3)) % 2 === 0];
+    const applyMask = (k) => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!F[y][x] && maskFn[k](x, y)) M[y][x] = !M[y][x]; };
+    const penalty = () => {
+      let p = 0, dark = 0;
+      const line = (get) => {
+        for (let a = 0; a < size; a++) {
+          let run = 1;
+          for (let b = 1; b <= size; b++) {
+            if (b < size && get(a, b) === get(a, b - 1)) run++;
+            else { if (run >= 5) p += 3 + (run - 5); run = 1; }
+          }
+          for (let b = 0; b + 10 < size; b++) {
+            const s = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => get(a, b + k));
+            const pat = [true, false, true, true, true, false, true];
+            const m1 = pat.every((v, k) => s[k] === v) && !s[7] && !s[8] && !s[9] && !s[10];
+            const m2 = !s[0] && !s[1] && !s[2] && !s[3] && pat.every((v, k) => s[k + 4] === v);
+            if (m1 || m2) p += 40;
+          }
+        }
+      };
+      line((a, b) => M[a][b]); line((a, b) => M[b][a]);
+      for (let y = 0; y + 1 < size; y++) for (let x = 0; x + 1 < size; x++) { const c = M[y][x]; if (c === M[y][x + 1] && c === M[y + 1][x] && c === M[y + 1][x + 1]) p += 3; }
+      for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (M[y][x]) dark++;
+      p += Math.floor(Math.abs(dark * 20 - size * size * 10) / (size * size)) * 10;
+      return p;
+    };
+    let best = 0, bestP = Infinity;
+    for (let k = 0; k < 8; k++) { applyMask(k); formatBits(k); const pk = penalty(); if (pk < bestP) { bestP = pk; best = k; } applyMask(k); }
+    applyMask(best); formatBits(best);
+    return { size, ver, dark: (x, y) => M[y][x] };
+  }
+  /* ----- verification codes: SHA-256 (small synchronous version) of the document's key figures, shown as XXXX-XXXX */
+  const SHA_K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+  function sha256hex(str) {
+    const src = new TextEncoder().encode(String(str)), l = src.length, total = Math.ceil((l + 9) / 64) * 64;
+    const m = new Uint8Array(total); m.set(src); m[l] = 0x80;
+    const dv = new DataView(m.buffer);
+    dv.setUint32(total - 4, (l * 8) >>> 0); dv.setUint32(total - 8, Math.floor((l * 8) / 4294967296));
+    const h = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19], w = new Uint32Array(64);
+    const rr = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let o = 0; o < total; o += 64) {
+      for (let i = 0; i < 16; i++) w[i] = dv.getUint32(o + i * 4);
+      for (let i = 16; i < 64; i++) w[i] = (w[i - 16] + (rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3)) + w[i - 7] + (rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10))) >>> 0;
+      let [a, b, c, d, e, f, g, k] = h;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (k + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & f) ^ (~e & g)) + SHA_K[i] + w[i]) >>> 0;
+        const t2 = ((rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+        k = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+      }
+      [a, b, c, d, e, f, g, k].forEach((x, i) => { h[i] = (h[i] + x) >>> 0; });
+    }
+    return h.map((x) => x.toString(16).padStart(8, "0")).join("");
+  }
+  const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  function vcode(str) {
+    let n = parseInt(sha256hex("sijil-v1|" + str).slice(0, 10), 16), out = "";
+    for (let i = 0; i < 8; i++) { out = B32[n % 32] + out; n = Math.floor(n / 32); }
+    return out;
+  }
+  const fmtCode = (c) => c.slice(0, 4) + "-" + c.slice(4);
+  function normCode(v) {
+    const x = String(v || "").toUpperCase().replace(/[٠-٩]/g, (ch) => String(ch.charCodeAt(0) - 0x660)).replace(/O/g, "0").replace(/[IL]/g, "1").replace(/[^0-9A-Z]/g, "");
+    return x.length === 8 && [...x].every((ch) => B32.includes(ch)) ? x : "";
+  }
   /* ----- PDF reports: pages drawn on canvas (the browser shapes the Arabic), stored as JPEG pages in a small PDF */
   const PT = 2.4;
   const A4 = { w: 595.28, h: 841.89 };
@@ -2704,7 +2924,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const out = [];
     for (const para of String(str).split("\n")) {
       let cur = "";
-      for (const w of para.split(/\s+/).filter(Boolean)) {
+      for (const w of para.split(/[ \t\r]+/).filter(Boolean)) {
         const t2 = cur ? cur + " " + w : w;
         if (!cur || g.measureText(t2).width <= maxW) cur = t2; else { out.push(cur); cur = w; }
       }
@@ -2712,19 +2932,20 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     }
     return out;
   }
-  function newPage(land) {
+  function newPage(land, dry) {
     const w = land ? A4.h : A4.w, h = land ? A4.w : A4.h;
     const c = document.createElement("canvas");
-    c.width = Math.round(w * PT); c.height = Math.round(h * PT);
+    c.width = dry ? 1 : Math.round(w * PT); c.height = dry ? 1 : Math.round(h * PT);
     const g = c.getContext("2d");
     g.scale(PT, PT);
     g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, w, h);
     return { c, g, w, h };
   }
   function pdfDoc(title) {
-    const D = { pages: [], m: 32, top: 30, bottom: 46, title };
+    const D = { pages: [], m: 32, top: 30, bottom: 46, title, done: [] };
     D.add = (land) => {
-      const p = newPage(!!land);
+      if (D.stream && D.p) D.finish();
+      const p = newPage(!!land, D.dry);
       D.pages.push(p); D.p = p; D.y = D.top;
       if (D.pages.length > 1 && !D.noRun) {
         const rtl = LANG === "ar";
@@ -2734,7 +2955,16 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       }
       return p;
     };
+    /* streaming: a finished page gets its footer and becomes JPEG bytes at once, then its canvas is released */
+    D.finish = () => { const p = D.p; if (!p || p.done) return; p.done = true; footerOne(D, p, D.done.length, D.stream.n); D.done.push(encodeNow(p)); };
     return D;
+  }
+  function encodeNow(p) {
+    const url = p.c.toDataURL("image/jpeg", 0.9), bin = atob(url.slice(url.indexOf(",") + 1)), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const im = { bytes, pw: p.c.width, ph: p.c.height, w: p.w.toFixed(2), h: p.h.toFixed(2) };
+    p.c.width = 1; p.c.height = 1;
+    return im;
   }
   function letterhead(D, title, lines) {
     const p = D.p, g = p.g, m = D.m, colW = 180;
@@ -2841,14 +3071,15 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     return true;
   }
   function keepTogether(D, h) { if (D.y + h > D.p.h - D.bottom) D.add(D.p.w > D.p.h); }
-  function signatures(D) {
-    if (D.y + 86 > D.p.h - D.bottom) D.add(D.p.w > D.p.h);
+  function signatures(D, qr) {
+    if (D.y + (qr ? 116 : 86) > D.p.h - D.bottom) D.add(D.p.w > D.p.h);
     D.y += 16;
     const p = D.p, rtl = LANG === "ar", colW = 200;
     const a = rtl ? p.w - D.m - colW / 2 : D.m + colW / 2, b = rtl ? D.m + colW / 2 : p.w - D.m - colW / 2;
     txt(p.g, t("x.signMaker"), a, D.y, { wt: 700, size: 9.5 });
     txt(p.g, t("x.signCaid"), b, D.y, { wt: 700, size: 9.5 });
-    D.y += 70;
+    if (qr) qrBlock(p.g, qr.url, qr.code, p.w / 2, D.y - 8, 70);
+    D.y += qr ? 96 : 70;
   }
   function footers(D) {
     const n = D.pages.length;
@@ -3130,6 +3361,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     txt(g, t("rc.signWorker"), rtl ? W - m - 90 : m + 90, y, { wt: 700, size: 9.5 });
     txt(g, t("x.signMaker"), rtl ? m + 90 : W - m - 90, y, { wt: 700, size: 9.5 });
     if (p.sig) drawSig(g, p.sig, (rtl ? W - m - 90 : m + 90) - 78, y + 9, 156, 50);
+    if (p.id) { const code = rcCode(p); qrBlock(g, chkUrl("r", code, String(p.id).slice(0, 12)), code, W / 2, y - 14, 70); }
   }
   async function receiptPdfBytes(list) {
     await fontsReady();
@@ -3166,18 +3398,20 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       para(D, t("pl.words", amountWords(tot)), { wt: 600 });
       keepTogether(D, 110);
       para(D, t("pay.madeAt", fmtLong(b.date)), { align: "end", wt: 600 });
-      signatures(D);
+      const code = batchCode(b.id);
+      signatures(D, { url: chkUrl("b", code, b.id), code });
     });
   }
   async function receiptFor(pid, share, btn) {
     const p = S.payments.get(pid); if (!p) return;
     await pdfJob(btn, async () => { await deliver(await receiptPdfBytes([p]), t("rc.file", p.name || "", p.date), share); });
   }
-  function batches() {
+  function allBatches() {
     const m = new Map();
     for (const p of S.payments.values()) if (p.batch) { const b = m.get(p.batch) || { id: p.batch, date: p.date, list: [] }; b.list.push(p); m.set(p.batch, b); }
-    return [...m.values()].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
+    return [...m.values()].sort((a, b) => b.id.localeCompare(a.id));
   }
+  function batches() { return allBatches().slice(0, 5); }
   function signChip(list, bid) {
     const n = list.filter((p) => p.sig).length;
     if (n === list.length) return `<span class="sigok">${esc(t("sig.batchDone", n, list.length))}</span>`;
@@ -3338,6 +3572,297 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
       signatures(D);
     });
+  }
+  /* ----- document verification: each receipt, pay list and monthly file carries a QR code and a code (XXXX-XXXX)
+     computed from its key figures. Scanning it opens the app on #chk=…, which compares the paper with the register. */
+  const amt2 = (x) => r2(Number(x) || 0).toFixed(2);
+  const rcCode = (p) => vcode(`r|${p.id}|${p.workerId}|${p.kind === "adv" ? "adv" : "pay"}|${amt2(p.amount)}|${p.date}`);
+  function batchList(id) { return [...S.payments.values()].filter((p) => p.batch === id).sort((a, b) => String(a.id).localeCompare(String(b.id))); }
+  const batchCode = (id) => vcode(`b|${id}|` + batchList(id).map((p) => `${p.id}:${p.workerId}:${amt2(p.amount)}:${p.date}`).join(","));
+  function monthSig(from, to) {
+    const ws = [...S.workers.values()].filter((w) => w.joinDate <= to && (!w.exitDate || w.exitDate >= from)).sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    const rows = [];
+    for (const w of ws) { const st = workerStats(w, from, to); if (st.worked || st.absences.length) rows.push(`${w.id}:${st.worked}:${st.absences.length}:${amt2(st.amount)}`); }
+    const pays = [...S.payments.values()].filter((p) => p.date >= from && p.date <= to).sort((a, b) => String(a.id).localeCompare(String(b.id))).map((p) => `${p.id}:${amt2(p.amount)}`);
+    return `m|${from}|${to}|${rows.join(",")}|${pays.join(",")}`;
+  }
+  const monthCode = (from, to) => vcode(monthSig(from, to));
+  const chkUrl = (kind, code, key) => `${location.origin}${location.pathname}#chk=${kind}${code}.${key}`;
+  function monthRange(ym) {
+    const [y, m] = ym.split("-").map(Number);
+    return { from: maxD(`${ym}-01`, start()), to: minD(isoOf(new Date(y, m, 0)), todayISO()) };
+  }
+  function monthsList() {
+    const out = [], last = todayISO().slice(0, 7);
+    let ym = minD(start(), todayISO()).slice(0, 7);
+    while (ym <= last && out.length < 60) { out.push(ym); let [y, m] = ym.split("-").map(Number); m++; if (m > 12) { m = 1; y++; } ym = `${y}-${pad2(m)}`; }
+    return out;
+  }
+  const monthLabel = (ym) => { const [y, m] = ym.split("-").map(Number); return `${MONTHS[LANG][m - 1]} ${y}`; };
+  function monthFigures(from, to) {
+    let workDays = 0, man = 0, wages = 0, amends = [];
+    for (const d of daysBetween(from, to)) {
+      const c = dayCounts(d); if (c.p > 0) workDays++; man += c.p; wages += c.pay;
+      for (const a of S.days.get(d)?.amends || []) amends.push({ d, at: a.at, reason: a.reason });
+    }
+    const paid = [...S.payments.values()].filter((p) => p.date >= from && p.date <= to).reduce((a, p) => a + Number(p.amount || 0), 0);
+    amends.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    return { workDays, man, wages: r2(wages), paid: r2(paid), amends };
+  }
+  /* what a scanned code points to, checked against the register as it is now */
+  function verifyDoc(c) {
+    if (c.kind === "r") {
+      let cands = [...S.payments.values()];
+      if (c.key) cands = cands.filter((p) => String(p.id).startsWith(c.key));
+      const hit = cands.find((p) => rcCode(p) === c.code);
+      if (hit) return { kind: "r", st: "ok", p: hit };
+      return c.key && cands.length ? { kind: "r", st: "changed", p: cands[0] } : { kind: "r", st: "missing" };
+    }
+    if (c.kind === "b") {
+      const list = batchList(c.key);
+      if (!list.length) return { kind: "b", st: "missing" };
+      return { kind: "b", st: batchCode(c.key) === c.code ? "ok" : "changed", list };
+    }
+    if (c.kind === "m") {
+      const to = /^\d{8}$/.test(c.key || "") ? `${c.key.slice(0, 4)}-${c.key.slice(4, 6)}-${c.key.slice(6)}` : "";
+      if (!isISO(to)) return { kind: "m", st: "missing" };
+      const from = maxD(to.slice(0, 8) + "01", start());
+      return { kind: "m", st: monthCode(from, to) === c.code ? "ok" : "changed", from, to };
+    }
+    return verifyCode(c.code);
+  }
+  /* a code typed by hand: look for the document it belongs to */
+  function verifyCode(code) {
+    for (const p of S.payments.values()) if (rcCode(p) === code) return { kind: "r", st: "ok", p };
+    for (const b of allBatches()) if (batchCode(b.id) === code) return { kind: "b", st: "ok", list: batchList(b.id) };
+    for (const ym of monthsList()) {
+      const { from, to } = monthRange(ym);
+      for (let d = to; d >= from; d = addDays(d, -1)) if (monthCode(from, d) === code) return { kind: "m", st: "ok", from, to: d };
+    }
+    return { kind: "", st: "missing" };
+  }
+  function openChk(c) {
+    S.chkRes = c;
+    $("ckCode").value = c && c.code ? fmtCode(c.code) : "";
+    $("chkSheet").hidden = false;
+    renderChk();
+    if (!c) setTimeout(() => { try { $("ckCode").focus(); } catch (e) { /* ignore */ } }, 60);
+  }
+  function closeChk() { $("chkSheet").hidden = true; S.chkRes = null; }
+  function renderChk() {
+    const box = $("ckBody"), c = S.chkRes;
+    if (!c) { box.innerHTML = ""; return; }
+    if (!allLoaded()) { box.innerHTML = `<div class="loading">${esc(t("common.loading"))}</div>`; return; }
+    const res = (cls, ic, title, hint, rows) => `<div class="ckres ${cls}"><span class="ic" aria-hidden="true">${ic}</span><div class="bd"><b class="tt">${esc(title)}</b>${hint ? `<p class="hint">${esc(hint)}</p>` : ""}${rows && rows.length ? `<dl class="kv">${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>` : ""}</div></div>`;
+    if (window.SIJIL_FOREMAN || (!S.workers.size && !S.payments.size)) { box.innerHTML = res("", "i", t("chk.noReg"), t("chk.noRegHint"), [[t("chk.code"), `<b class="ltr">${esc(fmtCode(c.code))}</b>`]]); return; }
+    const v = c.manual ? verifyCode(c.code) : verifyDoc(c);
+    const codeRow = [t("chk.code"), `<b class="ltr">${esc(fmtCode(c.code))}</b>`];
+    if (v.st === "missing") {
+      box.innerHTML = res("bad", "✕", c.manual ? t("chk.missCode") : t("chk.miss"), t("chk.missHint"), [...(c.kind && !c.manual ? [[t("chk.kind"), esc(t("chk.k" + c.kind.toUpperCase()))]] : []), codeRow]);
+      return;
+    }
+    const ok = v.st === "ok", K = v.kind.toUpperCase();
+    let rows = [[t("chk.kind"), esc(t("chk.k" + K))]];
+    if (v.kind === "r") {
+      const p = v.p;
+      rows.push([t("chk.type"), esc(p.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"))], [t("chk.worker"), `<b>${esc(p.name || "—")}</b>${p.cin ? ` <span class="ltr hint">${esc(p.cin)}</span>` : ""}`],
+        [t("chk.amount"), `<b class="ltr">${money(p.amount)}</b> ${esc(t("cur"))}`], [t("chk.date"), esc(fmtLong(p.date))], [t("chk.no"), `<span class="ltr">${esc(receiptNo(p))}</span>`],
+        [t("chk.sig"), p.sig ? `<span class="sigok">${esc(t("chk.signed"))}</span>` : esc(t("chk.unsigned"))]);
+      if (p.note) rows.push([t("chk.note"), esc(p.note)]);
+    } else if (v.kind === "b") {
+      const sum = r2(v.list.reduce((a, p) => a + Number(p.amount || 0), 0));
+      rows.push([t("chk.date"), esc(fmtLong(v.list[0].date))], [t("chk.count"), String(v.list.length)], [t("chk.total"), `<b class="ltr">${money(sum)}</b> ${esc(t("cur"))}`],
+        [t("chk.sigs"), `${v.list.filter((p) => p.sig).length}/${v.list.length}`]);
+    } else {
+      const f = monthFigures(v.from, v.to);
+      rows.push([t("chk.period"), esc(`${fmtShort(v.from)} — ${fmtShort(v.to)}`)], [t("chk.workDays"), String(f.workDays)], [t("chk.man"), num(f.man)],
+        [t("chk.wages"), `<b class="ltr">${money(f.wages)}</b> ${esc(t("cur"))}`], [t("chk.paid"), `<span class="ltr">${money(f.paid)}</span> ${esc(t("cur"))}`], [t("chk.amends"), String(f.amends.length)]);
+      if (!ok && f.amends.length) rows.push(["", `<ul class="amlist">${f.amends.slice(0, 5).map((a) => `<li>${esc(t("chk.amendLine", fmtShort(a.d), fmtShort(isoOf(new Date(a.at))) + " " + hmOf(a.at), a.reason))}</li>`).join("")}</ul>`]);
+    }
+    rows.push(codeRow);
+    box.innerHTML = ok ? res("ok", "✓", t("chk.ok" + K), "", rows) : res("warn", "!", t("chk.chg" + K), t("chk.chgHint"), rows);
+  }
+
+  /* ----- QR drawing on the PDF pages (modules aligned to the page pixels so the code stays sharp) */
+  function qrDraw(g, text, cx, top, maxPt) {
+    let q;
+    try { q = qrMatrix(text); } catch (e) { return 0; }
+    const n = q.size, px = Math.max(2, Math.min(4, Math.floor((maxPt * PT) / (n + 4))));
+    const side = px * n, x0 = Math.round(cx * PT - side / 2), y0 = Math.round(top * PT) + 2 * px;
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = "#FFFFFF"; g.fillRect(x0 - 2 * px, y0 - 2 * px, side + 4 * px, side + 4 * px);
+    g.fillStyle = "#000000";
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n;) {
+        if (!q.dark(x, y)) { x++; continue; }
+        let e = x; while (e < n && q.dark(e, y)) e++;
+        g.fillRect(x0 + x * px, y0 + y * px, (e - x) * px, px); x = e;
+      }
+    }
+    g.restore();
+    return (side + 4 * px) / PT;
+  }
+  /* QR code with its verification code written under it */
+  function qrBlock(g, text, code, cx, top, maxPt) {
+    const h = qrDraw(g, text, cx, top, maxPt);
+    txt(g, t("chk.codeLine", "‎" + fmtCode(code) + "‎"), cx, top + h + 6, { size: 7.5, wt: 700, color: INK });
+    txt(g, t("chk.scan"), cx, top + h + 16, { size: 6.5, color: GREY });
+    return h + 20;
+  }
+
+  /* ----- monthly file: one PDF for the month (register, wages, payments with signatures, changes, presence proof) */
+  function dossierData(ym) {
+    const { from, to } = monthRange(ym);
+    const days = daysBetween(from, to);
+    const rows = sortedWorkers().filter((w) => w.joinDate <= to && (!w.exitDate || w.exitDate >= from)).map((w) => ({ w, st: workerStats(w, from, to) }));
+    const tot = rows.reduce((a, r) => { a.worked += r.st.worked; a.abs += r.st.absences.length; a.amount += r.st.amount; return a; }, { worked: 0, abs: 0, amount: 0 });
+    tot.amount = r2(tot.amount);
+    const f = monthFigures(from, to);
+    const pays = [...S.payments.values()].filter((p) => p.date >= from && p.date <= to).sort((a, b) => (a.date + (a.createdAt || "")).localeCompare(b.date + (b.createdAt || "")));
+    const unrec = days.filter((d) => activeWorkers(d).length && savedState(d).state !== "full").length;
+    const code = monthCode(from, to);
+    return { ym, from, to, days, rows, tot, f, pays, unrec, code, key: to.replace(/-/g, ""), label: monthLabel(ym), ref: `${ym.replace("-", "/")}-${fmtCode(code)}` };
+  }
+  function loadPhotos(days) {
+    const out = new Map();
+    return Promise.all(days.filter((d) => S.photos.get(d)?.data).map((d) => new Promise((res) => {
+      const im = new Image();
+      im.onload = () => { out.set(d, im); res(); }; im.onerror = () => res();
+      im.src = S.photos.get(d).data;
+    }))).then(() => out);
+  }
+  function drawCover(g, im, x, y, w, h) {
+    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+    if (!iw || !ih) return;
+    const k = Math.max(w / iw, h / ih), sw = w / k, sh = h / k;
+    g.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, y, w, h);
+  }
+  function drawDossier(D, M, imgs, marks) {
+    const rtl = LANG === "ar", site = S.settings.siteName ? [t("x.site", S.settings.siteName)] : [];
+    const mk = D.marks = {};
+    const sec = (k, n, title) => { pdfHeading(D, `${n}. ${title}`); mk[k] = D.pages.length; };
+    D.add(false);
+    letterhead(D, t("ds.title", M.label), [...site, t("x.period", fmtLong(M.from), fmtLong(M.to)), t("x.hours", hFrom(), hTo())]);
+    txt(D.p.g, t("ds.ref", "‎" + M.ref + "‎"), D.p.w / 2, D.y - 2, { wt: 700, size: 9.5, color: NAVY });
+    D.y += 14;
+    const bi = budgetInfo();
+    pdfKpis(D, [[t("ds.k.workers"), String(M.rows.length)], [t("ds.k.workDays"), String(M.f.workDays)], [t("ds.k.man"), num(M.tot.worked)], [t("ds.k.abs"), String(M.tot.abs)],
+      [t("ds.k.earned"), money(M.tot.amount), true], [t("ds.k.paid"), money(M.f.paid)], [t("ds.k.unrec"), String(M.unrec)], [t("ds.k.budget"), bi ? `${Math.round(bi.pct)}%` : "—"]]);
+    pdfHeading(D, t("ds.toc"));
+    const toc = [["s1", t("ds.s1")], ["s2", t("ds.s2")], ["s3", t("ds.s3")], ["s4", t("ds.s4")], ["s5", t("ds.s5")]];
+    toc.forEach(([k, label], i) => {
+      const g = D.p.g, y = D.y + 7;
+      txt(g, `${i + 1}. ${label}`, rtl ? D.p.w - D.m - 6 : D.m + 6, y, { size: 9.5, align: rtl ? "right" : "left" });
+      if (marks && marks[k]) txt(g, t("ds.pg", marks[k]), rtl ? D.m + 6 : D.p.w - D.m - 6, y, { size: 9.5, color: GREY, align: rtl ? "left" : "right" });
+      g.fillStyle = RULE; g.fillRect(D.m, D.y + 15, D.p.w - 2 * D.m, 0.4);
+      D.y += 17;
+    });
+    D.y += 12;
+    { /* verification panel */
+      const h = 104;
+      keepTogether(D, h + 8);
+      const g = D.p.g, W = D.p.w, m = D.m;
+      g.fillStyle = "#F4F6FA"; g.fillRect(m, D.y, W - 2 * m, h);
+      g.fillStyle = NAVY; g.fillRect(rtl ? W - m - 3 : m, D.y, 3, h);
+      qrDraw(g, chkUrl("m", M.code, M.key), rtl ? m + 52 : W - m - 52, D.y + 8, 84);
+      const tx = rtl ? W - m - 16 : m + 16, al = rtl ? "right" : "left", tw = W - 2 * m - 130;
+      txt(g, t("ds.verify"), tx, D.y + 18, { wt: 700, size: 11, color: NAVY, align: al });
+      txt(g, t("chk.codeLine", "‎" + fmtCode(M.code) + "‎"), tx, D.y + 38, { wt: 700, size: 12.5, align: al });
+      let yy = D.y + 58;
+      for (const ln of wrapT(g, t("ds.verifyNote"), tw, `400 8.5px ${PFONT}`).slice(0, 3)) { txt(g, ln, tx, yy, { size: 8.5, color: "#374151", align: al }); yy += 12.5; }
+      D.y += h + 8;
+    }
+    /* 1. register (landscape pages) */
+    mk.s1 = D.pages.length + 1;
+    buildGridPdf(D, { from: M.from, to: M.to, rows: M.rows });
+    /* 2. wages */
+    D.add(false);
+    sec("s2", 2, t("ds.s2"));
+    const wr = M.rows.map((r, i) => ({ cells: [i + 1, { t: r.w.name, sub: r.st.absences.length ? t("x.absLine", r.st.absences.map((d) => fmtDM(d).slice(0, 5)).join("، ")) : "" },
+      r.w.cin || "—", num(r.st.worked), r.st.absences.length || "—", wageCell(r), money(r.st.amount)] }));
+    wr.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("th.total"), "", num(M.tot.worked), M.tot.abs || "—", "", money(M.tot.amount)] });
+    table(D, [{ h: t("th.n"), w: 22, al: "c", ltr: true }, { h: t("th.name"), w: 175 }, { h: t("th.cin"), w: 64, al: "c", ltr: true }, { h: t("th.days"), w: 50, al: "c", ltr: true },
+      { h: t("th.abs"), w: 46, al: "c", ltr: true }, { h: t("th.wage"), w: 56, al: "c", ltr: true }, { h: t("th.amount"), w: 118, al: "e", ltr: true }], wr, { size: 8.5, rowH: 22 });
+    D.y += 14;
+    /* 3. payments */
+    sec("s3", 3, t("ds.s3"));
+    if (M.pays.length) {
+      const pr = M.pays.map((p) => ({ cells: [fmtDM(p.date), receiptNo(p), p.name || "—", p.kind === "adv" ? t("py.kindAdv") : t("py.kindPay"), money(p.amount),
+        p.sig ? { t: "", draw: (g, a, b, c, d) => drawSig(g, p.sig, a + 6, b + 3, c - a - 12, d - b - 6, { lw: 0.9 }) } : { t: t("chk.unsigned"), color: GREY }] }));
+      pr.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", "", t("th.total"), "", money(M.f.paid), ""] });
+      table(D, [{ h: t("th.date"), w: 62, al: "c", ltr: true }, { h: t("ds.th.no"), w: 70, al: "c", ltr: true }, { h: t("th.name"), w: 160 }, { h: t("ds.th.kind"), w: 60, al: "c" },
+        { h: t("th.amount"), w: 74, al: "e", ltr: true }, { h: t("th.sign"), w: 105, al: "c" }], pr, { size: 8.5, rowH: M.pays.some((p) => p.sig) ? 28 : 20 });
+    } else para(D, t("ds.noPays"), { color: GREY });
+    D.y += 14;
+    /* 4. changes made to closed days, with their reasons */
+    sec("s4", 4, t("ds.s4"));
+    if (M.f.amends.length) {
+      const am = M.f.amends.slice().sort((a, b) => a.d.localeCompare(b.d) || String(a.at).localeCompare(String(b.at)));
+      table(D, [{ h: t("ds.th.day"), w: 110 }, { h: t("ds.th.at"), w: 110, al: "c", ltr: true }, { h: t("ds.th.reason"), w: 311 }],
+        am.map((a) => ({ cells: [fmtShort(a.d), `${fmtDM(isoOf(new Date(a.at)))} ${hmOf(a.at)}`, a.reason || "—"] })), { size: 8.5, rowH: 20 });
+    } else para(D, t("ds.noAmends"), { color: GREY });
+    D.y += 14;
+    /* 5. presence proof: location and time of each recording, group photos */
+    sec("s5", 5, t("ds.s5"));
+    const pf = M.days.filter((d) => activeWorkers(d).length).map((d) => {
+      const c = dayCounts(d), s = savedState(d).state, geo = S.days.get(d)?.geo, ph = S.photos.get(d);
+      return { cells: [fmtShort(d), s === "none" ? "—" : `${num(c.p)} / ${c.a}`, { t: t(s === "full" ? "ds.stFull" : s === "partial" ? "ds.stPart" : "ds.stNone"), color: s === "full" ? "#17754B" : s === "partial" ? "#A9640C" : "#C0362C", wt: 600 },
+        geo && Number.isFinite(geo.lat) ? { t: t("ds.geo", geo.lat.toFixed(5), geo.lng.toFixed(5), Math.round(geo.acc || 0), hmOf(geo.at)) } : "—", ph ? t("ds.yes") : "—"] };
+    });
+    if (pf.length) table(D, [{ h: t("ds.th.day"), w: 110 }, { h: t("ds.th.pa"), w: 60, al: "c", ltr: true }, { h: t("ds.th.state"), w: 70, al: "c" }, { h: t("ds.th.geo"), w: 221, al: "c", ltr: true }, { h: t("ds.th.photo"), w: 70, al: "c" }], pf, { size: 8, rowH: 18 });
+    else para(D, t("ds.noProof"), { color: GREY });
+    const shots = M.days.filter((d) => imgs.has(d));
+    if (shots.length) {
+      D.y += 12;
+      pdfHeading(D, t("ds.photos"));
+      const per = 3, gap = 10, cw = (D.p.w - 2 * D.m - gap * (per - 1)) / per, ch = cw * 0.75;
+      for (let i = 0; i < shots.length; i += per) {
+        keepTogether(D, ch + 24);
+        const g = D.p.g;
+        shots.slice(i, i + per).forEach((d, j) => {
+          const x = rtl ? D.p.w - D.m - (j + 1) * cw - j * gap : D.m + j * (cw + gap), ph = S.photos.get(d);
+          if (!D.dry) drawCover(g, imgs.get(d), x, D.y, cw, ch);
+          g.strokeStyle = RULE; g.lineWidth = 0.6; g.strokeRect(x, D.y, cw, ch);
+          txt(g, fmtShort(d) + (ph && ph.at ? ` · ${hmOf(ph.at)}` : ""), x + cw / 2, D.y + ch + 9, { size: 7.5, color: GREY });
+        });
+        D.y += ch + 24;
+      }
+    }
+    /* closing */
+    D.y += 10;
+    keepTogether(D, 150);
+    para(D, t("ds.closing", M.f.workDays, num(M.tot.worked), money(M.tot.amount), amountWords(M.tot.amount), money(M.f.paid)), { wt: 600 });
+    D.y += 4;
+    para(D, t("pay.madeAt", fmtLong(todayISO())), { align: "end", wt: 600 });
+    signatures(D);
+  }
+  async function dossierBytes(ym) {
+    await fontsReady();
+    const M = dossierData(ym), imgs = await loadPhotos(M.days);
+    const title = `${t("ds.title", M.label)} · ${M.ref}`;
+    /* first pass on tiny canvases: counts the pages and finds where each part starts (for the contents list) */
+    const D1 = pdfDoc(title); D1.dry = true;
+    drawDossier(D1, M, imgs, null);
+    /* second pass: each page is turned into JPEG and released as soon as the next one starts (little memory on the phone) */
+    const D = pdfDoc(title); D.stream = { n: D1.pages.length };
+    drawDossier(D, M, imgs, D1.marks);
+    D.finish();
+    return { bytes: await pdfBytes([], `${t("ds.title", M.label)} — ${t("org.caidat")}`, D.done), label: M.label };
+  }
+  function renderDossierCard() {
+    const ms = monthsList();
+    if (!S.dsMonth || !ms.includes(S.dsMonth)) S.dsMonth = ms[ms.length - 1];
+    const html = ms.slice(-12).map((ym) => `<button type="button" data-m="${ym}" aria-pressed="${ym === S.dsMonth}">${esc(monthLabel(ym))}</button>`).join("");
+    if (S.dsHTML !== html) { $("dsMonths").innerHTML = html; S.dsHTML = html; }
+    $("dsPdf").hidden = !S.downloads; $("dsShare").hidden = !S.downloads || !canShareFiles();
+    $("dsPdf").disabled = $("dsShare").disabled = !allLoaded() || !S.workers.size || S.pdfBusy;
+  }
+  async function dossierPdf(share, btn) {
+    if (!allLoaded() || !S.workers.size || S.pdfBusy) return;
+    const lbl = btn.querySelector("span"), l0 = lbl ? lbl.textContent : "";
+    if (lbl) lbl.textContent = t("ds.making");
+    try { await pdfJob(btn, async () => { const r = await dossierBytes(S.dsMonth); await deliver(r.bytes, t("ds.file", r.label), share); }); }
+    finally { if (lbl) lbl.textContent = l0; renderDossierCard(); }
   }
   async function payAll() {
     if (!S.db || S.payingAll) return;
@@ -3750,7 +4275,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     S.gridScrolled = false; renderGrid();
   });
   $("cClose").addEventListener("click", closeCell);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); if (e.key === "Escape" && !$("reasonSheet").hidden) closeReason(null); if (e.key === "Escape" && !$("photoView").hidden) $("photoView").hidden = true; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); if (e.key === "Escape" && !$("reasonSheet").hidden) closeReason(null); if (e.key === "Escape" && !$("photoView").hidden) $("photoView").hidden = true; if (e.key === "Escape" && !$("chkSheet").hidden) closeChk(); });
 
   $("openAdd").addEventListener("click", () => { S.returnToDay = false; openForm("add", S.sel); });
   $("openBulk").addEventListener("click", () => openForm("bulk", start()));
@@ -3919,6 +4444,19 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   $("sigSheet").addEventListener("click", (e) => { if (e.target === $("sigSheet")) closeSign(); });
   window.addEventListener("resize", () => { if (S.pyPad && !$("paySheet").hidden) S.pyPad.fit(); if (S.sgPad && !$("sigSheet").hidden) S.sgPad.fit(); });
   $("pyClose").addEventListener("click", closePay);
+  $("ckOpen").addEventListener("click", () => openChk(null));
+  $("ckClose").addEventListener("click", closeChk);
+  $("chkSheet").addEventListener("click", (e) => { if (e.target === $("chkSheet")) closeChk(); });
+  $("ckForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const c = normCode($("ckCode").value);
+    if (!c) { toast(t("chk.badCode")); return; }
+    $("ckCode").value = fmtCode(c); $("ckCode").blur();
+    S.chkRes = { manual: true, code: c }; renderChk();
+  });
+  $("dsMonths").addEventListener("click", (e) => { const b = e.target.closest("button[data-m]"); if (!b) return; S.dsMonth = b.dataset.m; renderDossierCard(); });
+  $("dsPdf").addEventListener("click", (e) => dossierPdf(false, e.currentTarget));
+  $("dsShare").addEventListener("click", (e) => dossierPdf(true, e.currentTarget));
   $("pyRc").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, false, e.currentTarget); });
   $("pyRcShare").addEventListener("click", (e) => { if (S.pay && S.pay.saved) receiptFor(S.pay.saved.id, true, e.currentTarget); });
   $("paySheet").addEventListener("click", (e) => { if (e.target === $("paySheet")) closePay(); });
