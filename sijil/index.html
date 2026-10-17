@@ -799,6 +799,54 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
 .sig-h b { font-size: 13px; }
 .sigpad { display: block; width: 100%; max-width: 100%; aspect-ratio: 5 / 2; border: 1.5px dashed var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); touch-action: none; cursor: crosshair; }
 .sigok { display: inline-flex; align-items: center; white-space: nowrap; padding: 3px 9px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 11.5px; font-weight: 700; }
+/* ---------- locks, proof, budget, dashboard */
+textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: vertical; }
+.lockbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: var(--r, 12px); background: var(--surface-2); border: 1px solid var(--line); font-size: 12.5px; }
+.lockbar .t { flex: 1; min-width: 0; }
+.lockbar .lk { font-size: 15px; }
+.lockbar .am { flex-basis: 100%; color: var(--muted); font-size: 12px; }
+.proof { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.proof .geo { flex: 1 1 220px; min-width: 0; font-size: 12.5px; color: var(--link); text-decoration: none; }
+.proof .ph { padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; width: 64px; height: 48px; background: var(--surface-2); flex: none; }
+.proof .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.proof label.btn { cursor: pointer; }
+#reasonSheet { z-index: 45; }
+.photoview { position: fixed; inset: 0; z-index: 70; background: rgba(5, 8, 16, .92); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.photoview img { max-width: 100%; max-height: 100%; border-radius: 10px; }
+.photoview .iconbtn { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); inset-inline-end: 12px; background: rgba(255, 255, 255, .14); color: #fff; border-color: transparent; }
+.budget { display: flex; flex-direction: column; gap: 8px; }
+.budget .bh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.budget .bh span { color: var(--muted); font-size: 12.5px; }
+.budget .meter { height: 10px; border-radius: 999px; background: var(--brand-soft); overflow: hidden; }
+.budget .meter i { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.budget.warn .meter { background: var(--warn-soft); } .budget.warn .meter i { background: var(--warn); }
+.budget.bad .meter { background: var(--bad-soft); } .budget.bad .meter i { background: var(--bad); }
+.budget .bk { display: flex; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.budget .bk b { color: var(--ink); font-weight: 700; }
+.dash { position: relative; display: flex; flex-direction: column; gap: 14px; }
+.dash h3 { margin: 0; font-size: 13.5px; }
+.dash .ch { display: flex; flex-direction: column; gap: 6px; }
+.dash svg { display: block; width: 100%; height: auto; overflow: visible; }
+.dash .grid { stroke: var(--line); stroke-width: 1; }
+.dash .tick { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.dash .lbl { fill: var(--ink); font-size: 11px; font-weight: 700; }
+.dash .nm { fill: var(--ink); font-size: 11.5px; }
+.dash .bar { fill: var(--brand); }
+.dash .bar.abs { fill: var(--bad); }
+.dash .line { fill: none; stroke: var(--brand); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dash .area { fill: var(--brand); opacity: .1; }
+.dash .dot { fill: var(--brand); stroke: var(--surface); stroke-width: 2; }
+.dash .ref { stroke: var(--muted); stroke-width: 1.2; }
+.dash .unrec { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+.dash .hit { fill: transparent; cursor: default; }
+.dash .hit:hover + .hl, .dash .hit.on + .hl { opacity: 1; }
+.dash .hl { fill: var(--ink); opacity: 0; pointer-events: none; }
+.dash .ctip { position: absolute; z-index: 3; pointer-events: none; max-width: 240px; padding: 6px 9px; border-radius: 8px; background: var(--ink); color: var(--surface); font-size: 12px; line-height: 1.5; box-shadow: var(--shadow); }
+.dash details summary { cursor: pointer; color: var(--link); font-size: 12.5px; }
+.dash .dtab { overflow-x: auto; }
+.dash .dtab table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+.dash .dtab th, .dash .dtab td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dash .empty-note { color: var(--muted); font-size: 12.5px; margin: 0; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .sico.done circle, .sico.done path { stroke-dashoffset: 0; } }
 </style>
 
@@ -918,6 +966,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
           <div class="card kpi"><span data-t="kpi.rate">نسبة الحضور</span><b id="kRate">—</b><small id="kRateSub"></small></div>
           <div class="card kpi"><span data-t="kpi.abs">الغيابات</span><b id="kAbs" style="color:var(--bad)">0</b><small>&nbsp;</small></div>
         </div>
+        <div class="card pad16 budget" id="hBudget" hidden></div>
       </div>
       <div class="home-b">
         <div class="sec-h"><h2 data-t="dash.alerts">تنبيهات</h2></div>
@@ -946,6 +995,8 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
         <button class="iconbtn" id="nextDay" type="button" data-ta="day.next"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
       </div>
       <div class="row" id="dState"></div>
+      <div class="lockbar" id="dLockBar" hidden></div>
+      <div class="proof" id="dProof" hidden></div>
       <div class="card tally" id="dTally"></div>
       <div class="row">
         <button class="btn" id="allP" type="button" data-t="day.allP">الكل حاضر</button>
@@ -1065,6 +1116,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
           <div class="field full"><label for="sSite" data-t="set.site">اسم الورش</label><input class="input" id="sSite" maxlength="80" data-tp="set.sitePh"></div>
           <div class="field"><label for="sStart" data-t="set.start">بداية الحساب</label><input class="input ltr" type="date" id="sStart" required></div>
           <div class="field"><label for="sWage" data-t="set.wage">ثمن اليوم</label><input class="input ltr" type="number" id="sWage" min="1" step="0.5" inputmode="decimal" required></div>
+          <div class="field"><label for="sBudget" data-t="set.budget">الاعتماد المالي المرصود (درهم)</label><input class="input ltr" type="number" id="sBudget" min="0" step="1" inputmode="decimal" data-tp="set.budgetPh"></div>
           <div class="field"><label for="sFrom" data-t="set.from">بداية العمل</label><input class="input ltr" type="text" id="sFrom" inputmode="numeric" maxlength="5" placeholder="08:00" autocomplete="off" required></div>
           <div class="field"><label for="sTo" data-t="set.to">نهاية العمل</label><input class="input ltr" type="text" id="sTo" inputmode="numeric" maxlength="5" placeholder="13:00" autocomplete="off" required></div>
         </div>
@@ -1145,6 +1197,14 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     </div>
   </div>
 
+  <div class="sheet-back" id="reasonSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rsTitle">
+      <div><h3 id="rsTitle">—</h3><p class="hint" id="rsSub"></p></div>
+      <div class="field"><label for="rsText" data-t="lock.reason">سبب التعديل</label><textarea class="input" id="rsText" rows="3" maxlength="300"></textarea></div>
+      <div class="row"><button class="btn primary" id="rsOk" type="button" data-t="lock.ok">متابعة</button><button class="btn ghost" id="rsCancel" type="button" data-t="common.cancel">إلغاء</button></div>
+    </div>
+  </div>
+  <div class="photoview" id="photoView" hidden><img id="pvImg" alt=""><button type="button" class="iconbtn" id="pvClose" data-ta="common.close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="sheet-back" id="sigSheet" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sgTitle">
       <div><p class="hint" id="sgStep" hidden></p><h3 id="sgTitle">—</h3><p class="hint" id="sgSub"></p></div>
@@ -1327,7 +1387,19 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       "sig.label": "توقيع العامل", "sig.clear": "مسح", "sig.hint": "يوقّع العامل بإصبعه داخل الإطار، ويمكن التوقيع لاحقاً.", "sig.btn": "توقيع", "sig.signed": "✓ موقّع",
       "sig.batch": "توقيع العمال ({0}/{1})", "sig.batchDone": "✓ موقّع {0}/{1}", "sig.count": "موقّع {0}/{1}", "sig.step": "العامل {0} من {1}", "sig.save": "حفظ التوقيع", "sig.saveNext": "حفظ والتالي",
       "sig.skip": "تخطّي", "sig.empty": "اطلب من العامل أن يوقّع داخل الإطار أولاً.", "sig.allSaved": "تم حفظ التوقيعات: {0}", "sig.none": "كل هذه الأداءات موقّعة.", "sig.with": "مع توقيع العامل ✓",
-      "log.sign": "توقيع {0} على الوصل {1} ({2} درهم)", "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "log.sign": "توقيع {0} على الوصل {1} ({2} درهم)", "lock.bar": "هذا اليوم مُغلق بعد حفظه. أي تعديل فيه يحتاج ذكر السبب، ويُسجَّل في سجل التعديلات.", "lock.edit": "تعديل هذا اليوم", "lock.open": "مفتوح للتعديل — السبب: {0}",
+      "lock.reason": "سبب التعديل", "lock.ok": "متابعة", "lock.short": "اكتب السبب بوضوح (4 أحرف على الأقل).", "lock.dayTitle": "تعديل يوم {0}", "lock.daySub": "هذا اليوم مُغلق. اكتب سبب التعديل، وسيُحفظ مع اليوم وفي سجل التعديلات.",
+      "lock.cellTitle": "تعديل يوم مُغلق", "lock.cellSub": "{0} — {1}. اكتب سبب التعديل.", "lock.payTitle": "حذف أداء", "lock.paySub": "{0}: {1} درهم بتاريخ {2}. اكتب سبب الحذف، وسيُسجَّل في سجل التعديلات.",
+      "lock.amends": "تعديلات بعد الإغلاق: {0}", "lock.last": "آخرها: {0} ({1})", "log.amend": "تعديل يوم {0} بعد الإغلاق — السبب: {1}", "log.payDelR": "حذف أداء {0}: {1} درهم بتاريخ {2} — السبب: {3}",
+      "geo.line": "سُجّل الحضور من عين المكان على {0} (دقة ±{1} م) — الخريطة", "photo.add": "صورة جماعية", "photo.replace": "تغيير الصورة", "photo.alt": "صورة جماعية ليوم {0}", "photo.saved": "تم حفظ الصورة.", "log.photo": "صورة جماعية ليوم {0}",
+      "set.budget": "الاعتماد المالي المرصود (درهم)", "set.budgetPh": "اختياري",
+      "bud.title": "الاعتماد المالي", "bud.spent": "المستحق حتى الآن", "bud.rest": "الباقي", "bud.aria": "استُعمل {0}% من الاعتماد",
+      "bud.until": "بالوتيرة الحالية (حوالي {0} درهم في اليوم) يكفي نحو {1}، أي إلى {2}.", "bud.lessDay": "الباقي لا يكفي ليوم عمل كامل بالوتيرة الحالية (حوالي {0} درهم في اليوم).", "bud.noRate": "سيظهر التوقّع بعد تسجيل بعض الأيام.", "bud.over": "تجاوزت الأجور المستحقة الاعتماد بـ {0} درهم.",
+      "al.budOver": "تجاوزت الأجور المستحقة الاعتماد المالي بـ {0} درهم.", "al.budLow": "اقترب نفاد الاعتماد المالي: يكفي نحو {0} فقط.", "al.budLess": "الباقي من الاعتماد المالي لا يكفي ليوم عمل كامل.", "al.budPct": "استُعمل {0}% من الاعتماد المالي.",
+      "dash.title": "لوحة المؤشرات", "dash.rate": "نسبة الحضور يوماً بيوم", "dash.cum": "الكلفة المتراكمة منذ البداية", "dash.cumB": "الكلفة المتراكمة مقابل الاعتماد المالي", "dash.abs": "الغيابات حسب العامل",
+      "dash.noAbs": "لا غياب في هذه الفترة.", "dash.budget": "الاعتماد {0}", "dash.unrec": "غير مسجّل", "dash.tipRate": "{0}: {1} حاضر، {2} غائب ({3}%)", "dash.tipCum": "{0}: {1} درهم هذا اليوم · المجموع {2} درهم",
+      "dash.table": "عرض البيانات كجدول", "dash.th.date": "اليوم", "dash.th.p": "حاضر", "dash.th.a": "غائب", "dash.th.rate": "النسبة", "dash.th.pay": "كلفة اليوم", "dash.th.cum": "المتراكم", "dash.others": "آخرون ({0})", "dash.absN": "{0} غياب",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1469,7 +1541,19 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       "sig.label": "Signature de l'ouvrier", "sig.clear": "Effacer", "sig.hint": "L'ouvrier signe du doigt dans le cadre ; il peut aussi signer plus tard.", "sig.btn": "Signer", "sig.signed": "✓ Signé",
       "sig.batch": "Faire signer ({0}/{1})", "sig.batchDone": "✓ Signé {0}/{1}", "sig.count": "Signé {0}/{1}", "sig.step": "Ouvrier {0} sur {1}", "sig.save": "Enregistrer la signature", "sig.saveNext": "Enregistrer et suivant",
       "sig.skip": "Passer", "sig.empty": "Demandez d'abord à l'ouvrier de signer dans le cadre.", "sig.allSaved": "Signatures enregistrées : {0}", "sig.none": "Tous ces paiements sont signés.", "sig.with": "avec la signature de l'ouvrier ✓",
-      "log.sign": "Signature de {0} sur le reçu {1} ({2} DH)", "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "log.sign": "Signature de {0} sur le reçu {1} ({2} DH)", "lock.bar": "Cette journée est fermée après enregistrement. Toute modification exige un motif, inscrit au journal des modifications.", "lock.edit": "Modifier cette journée", "lock.open": "Ouverte à la modification — motif : {0}",
+      "lock.reason": "Motif de la modification", "lock.ok": "Continuer", "lock.short": "Indiquez clairement le motif (4 caractères au moins).", "lock.dayTitle": "Modifier le {0}", "lock.daySub": "Cette journée est fermée. Indiquez le motif ; il sera gardé avec la journée et dans le journal.",
+      "lock.cellTitle": "Modifier une journée fermée", "lock.cellSub": "{0} — {1}. Indiquez le motif de la modification.", "lock.payTitle": "Supprimer un paiement", "lock.paySub": "{0} : {1} DH du {2}. Indiquez le motif ; il sera inscrit au journal.",
+      "lock.amends": "Modifications après fermeture : {0}", "lock.last": "dernière : {0} ({1})", "log.amend": "Modification du {0} après fermeture — motif : {1}", "log.payDelR": "Paiement supprimé {0} : {1} DH du {2} — motif : {3}",
+      "geo.line": "Pointage enregistré sur place à {0} (précision ±{1} m) — carte", "photo.add": "Photo de groupe", "photo.replace": "Changer la photo", "photo.alt": "Photo de groupe du {0}", "photo.saved": "Photo enregistrée.", "log.photo": "Photo de groupe du {0}",
+      "set.budget": "Crédit alloué (DH)", "set.budgetPh": "facultatif",
+      "bud.title": "Crédit alloué", "bud.spent": "Dû à ce jour", "bud.rest": "Reste", "bud.aria": "{0} % du crédit utilisé",
+      "bud.until": "Au rythme actuel (environ {0} DH par jour), il suffit pour environ {1}, soit jusqu'au {2}.", "bud.lessDay": "Le reste ne couvre pas une journée de travail au rythme actuel (environ {0} DH par jour).", "bud.noRate": "La prévision apparaîtra après quelques journées pointées.", "bud.over": "Les salaires dus dépassent le crédit de {0} DH.",
+      "al.budOver": "Les salaires dus dépassent le crédit alloué de {0} DH.", "al.budLow": "Le crédit alloué s'épuise : il reste environ {0}.", "al.budLess": "Le reste du crédit alloué ne couvre pas une journée de travail.", "al.budPct": "{0} % du crédit alloué est utilisé.",
+      "dash.title": "Tableau de bord", "dash.rate": "Taux de présence par jour", "dash.cum": "Coût cumulé depuis le début", "dash.cumB": "Coût cumulé face au crédit alloué", "dash.abs": "Absences par ouvrier",
+      "dash.noAbs": "Aucune absence sur cette période.", "dash.budget": "Crédit {0}", "dash.unrec": "non pointé", "dash.tipRate": "{0} : {1} présents, {2} absents ({3} %)", "dash.tipCum": "{0} : {1} DH ce jour · total {2} DH",
+      "dash.table": "Voir les données en tableau", "dash.th.date": "Jour", "dash.th.p": "Présents", "dash.th.a": "Absents", "dash.th.rate": "Taux", "dash.th.pay": "Coût du jour", "dash.th.cum": "Cumul", "dash.others": "Autres ({0})", "dash.absN": "{0} absence(s)",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -1549,7 +1633,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
   /* =========================================================== state */
   const DEFAULTS = { siteName: "", startDate: "2026-10-13", wage: 105, hourFrom: "08:00", hourTo: "13:00" };
   const S = {
-    db: null, downloads: null, canWrite: true,
+    db: null, downloads: null, canWrite: true, photos: new Map(), unlocked: {},
     settings: { ...DEFAULTS }, workers: new Map(), days: new Map(), audit: new Map(),
     loaded: { settings: false, workers: false, days: false, payments: false }, payments: new Map(), pay: null, confirmPay: null, payAllConfirm: false, payingAll: false,
     authed: false, bootMode: "loading",
@@ -1674,6 +1758,20 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (!act.length) return false;
     return act.some((w) => { const s = savedRec(d, w), r = recFor(d, w); return !s || s.st !== r.st || s.in !== r.in || s.out !== r.out; });
   }
+  /* a past day that was saved is closed: changing it needs a written reason, kept with the day and in the log */
+  function isLocked(d) { return !!(S.canWrite && d < todayISO() && savedState(d).state !== "none" && !S.unlocked[d]); }
+  const hmOf = (iso) => { const x = new Date(iso); return isNaN(x) ? "—" : pad2(x.getHours()) + ":" + pad2(x.getMinutes()); };
+  function amendsWith(prev, reason) { return [...(Array.isArray(prev.amends) ? prev.amends : []), { at: new Date().toISOString(), reason }].slice(-50); }
+  function askReason(title, sub) {
+    return new Promise((resolve) => {
+      if (S.reasonDone) S.reasonDone(null);
+      S.reasonDone = resolve;
+      $("rsTitle").textContent = title; $("rsSub").textContent = sub || "";
+      $("rsText").value = ""; $("reasonSheet").hidden = false;
+      setTimeout(() => { try { $("rsText").focus(); } catch (e) { /* ignore */ } }, 60);
+    });
+  }
+  function closeReason(val) { $("reasonSheet").hidden = true; const f = S.reasonDone; S.reasonDone = null; if (f) f(val); }
   function writeDay(d, patch) {
     const prev = { ...(S.days.get(d) || {}) };
     delete prev.present; delete prev.half; delete prev.absent;
@@ -1810,6 +1908,38 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (cur >= from && cur < to && allLoaded()) { const k = dayCounts(todayISO()); crewN = Math.min(6, Math.round(k.p) || k.act); }
     updateScene($("hScene"), "h", crewN);
   }
+  /* allocated budget: what is owed so far, what is left, and when it runs out at the current pace */
+  function budgetInfo() {
+    const B = Number(S.settings.budget) || 0;
+    if (!(B > 0) || !allLoaded()) return null;
+    const today = todayISO(), days = daysBetween(start(), today);
+    let earned = 0, paid = 0;
+    for (const d of days) earned += dayCounts(d).pay;
+    for (const p of S.payments.values()) paid += Number(p.amount) || 0;
+    const rest = r2(B - earned);
+    const rec = days.filter((d) => savedState(d).state !== "none" && dayCounts(d).pay > 0).slice(-7);
+    const avg = rec.length ? rec.reduce((a, d) => a + dayCounts(d).pay, 0) / rec.length : 0;
+    const daysLeft = avg > 0 && rest > 0 ? Math.floor(rest / avg) : null;
+    return { B, earned: r2(earned), paid: r2(paid), rest, pct: (earned / B) * 100, avg: Math.round(avg), daysLeft, until: daysLeft !== null ? addDays(today, daysLeft) : null };
+  }
+  function daysTxt(n) {
+    if (LANG === "fr") return n + (n > 1 ? " jours" : " jour");
+    if (n === 1) return "يوماً واحداً";
+    if (n === 2) return "يومين";
+    if (n >= 3 && n <= 10) return n + " أيام";
+    return n + " يوماً";
+  }
+  function renderBudget() {
+    const el = $("hBudget"), b = budgetInfo();
+    if (!b) { el.hidden = true; return; }
+    el.hidden = false;
+    const sev = b.rest <= 0 ? "bad" : b.pct >= 85 || (b.daysLeft !== null && b.daysLeft <= 7) ? "warn" : "ok";
+    el.className = "card pad16 budget " + sev;
+    el.innerHTML = `<div class="bh"><b>${esc(t("bud.title"))}</b><span>${money(b.B)} ${esc(t("cur"))}</span></div>
+      <div class="meter" role="img" aria-label="${esc(t("bud.aria", Math.round(b.pct)))}"><i style="width:${Math.min(100, Math.max(0, b.pct)).toFixed(1)}%"></i></div>
+      <div class="bk"><span>${esc(t("bud.spent"))}: <b>${money(b.earned)}</b> (${Math.round(b.pct)}%)</span><span>${esc(t("bud.rest"))}: <b>${money(b.rest)}</b></span></div>
+      <p class="hint" style="margin:0">${esc(b.rest <= 0 ? t("bud.over", money(-b.rest)) : b.daysLeft === null ? t("bud.noRate") : b.daysLeft === 0 ? t("bud.lessDay", moneyShort(b.avg)) : t("bud.until", moneyShort(b.avg), daysTxt(b.daysLeft), fmtLong(b.until)))}</p>`;
+  }
   function renderHome() {
     const today = todayISO();
     $("hDate").textContent = fmtLong(today);
@@ -1864,6 +1994,9 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     for (const d of noOut.slice(-3).reverse()) al.push({ k: "warn", t: t("al.noOut", fmtShort(d)), go: "day:" + d });
     const nc = activeWorkers(today).filter((w) => w.joinDate === today);
     if (nc.length) al.push({ k: "info", t: t("al.first", nc.map((w) => w.name).join("، ")), go: "day:" + today });
+    const bi = budgetInfo();
+    if (bi && bi.rest <= 0) al.unshift({ k: "bad", t: t("al.budOver", money(-bi.rest)), go: "" });
+    else if (bi && (bi.pct >= 85 || (bi.daysLeft !== null && bi.daysLeft <= 7))) al.unshift({ k: "warn", t: bi.daysLeft === 0 ? t("al.budLess") : bi.daysLeft === null ? t("al.budPct", Math.round(bi.pct)) : t("al.budLow", daysTxt(bi.daysLeft)), go: "" });
     if (window.SIJIL_LOCAL && !window.SIJIL_CLOUD) {
       if (!S.workers.size) al.unshift({ k: "info", t: t("al.importFirst"), go: "settings" });
       else {
@@ -1876,6 +2009,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (!al.length) al.push({ k: "ok", t: t("al.none") });
     const chev = `<svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`;
     $("alerts").innerHTML = al.map((x) => `<button type="button" class="alert ${x.k}" ${x.go ? `data-go="${esc(x.go)}"` : "disabled"}><i class="dot"></i><span class="t">${esc(x.t)}</span>${x.go ? chev : ""}</button>`).join("");
+    renderBudget();
     renderCalendar();
   }
   function renderCalendar() {
@@ -1923,7 +2057,9 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (!allLoaded()) return;
     const act = activeWorkers(d), st = savedState(d), dirty = isDirty(d);
     const future = d > today, before = d < start();
-    const editable = S.canWrite && !future && !before;
+    const locked = isLocked(d);
+    const editable = S.canWrite && !future && !before && !locked;
+    renderDayExtras(d, locked, before, future);
     if (!S.noteDirty || S.noteDate !== d) { $("dNote").value = S.days.get(d)?.note || ""; S.noteDirty = false; S.noteDate = d; $("noteHint").textContent = ""; }
     $("dNote").disabled = !editable; $("saveNote").disabled = !editable;
 
@@ -1992,6 +2128,55 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     }
     persistDrafts();
   }
+  function renderDayExtras(d, locked, before, future) {
+    const doc = S.days.get(d) || {}, amends = Array.isArray(doc.amends) ? doc.amends : [];
+    let lb = "";
+    if (locked) lb = `<span class="lk" aria-hidden="true">🔒</span><span class="t">${esc(t("lock.bar"))}</span>${S.canWrite ? `<button type="button" class="btn sm" data-lock="open">${esc(t("lock.edit"))}</button>` : ""}`;
+    else if (S.unlocked[d] && S.canWrite) lb = `<span class="lk" aria-hidden="true">✎</span><span class="t">${esc(t("lock.open", S.unlocked[d]))}</span>`;
+    if (amends.length) { const last = amends[amends.length - 1]; lb += `<span class="am">${esc(t("lock.amends", amends.length))} — ${esc(t("lock.last", last.reason, fmtShort(isoOf(new Date(last.at))) + " " + hmOf(last.at)))}</span>`; }
+    if (S.dLockHTML !== lb) { $("dLockBar").innerHTML = lb; S.dLockHTML = lb; }
+    $("dLockBar").hidden = !lb;
+    const geo = doc.geo, ph = S.photos.get(d);
+    let pr = "";
+    if (geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)) pr += `<a class="geo" href="https://www.google.com/maps?q=${geo.lat},${geo.lng}" target="_blank" rel="noopener">📍 ${esc(t("geo.line", hmOf(geo.at), Math.round(geo.acc || 0)))}</a>`;
+    if (ph && ph.data) pr += `<button type="button" class="ph" data-photo="${esc(d)}" aria-label="${esc(t("photo.alt", fmtShort(d)))}"><img src="${ph.data}" alt=""></button>`;
+    if (S.canWrite && !locked && !before && !future && d === todayISO()) pr += `<label class="btn sm">📷 ${esc(ph ? t("photo.replace") : t("photo.add"))}<input type="file" accept="image/*" capture="environment" data-photoin="${esc(d)}" hidden></label>`;
+    if (S.dProofHTML !== pr) { $("dProof").innerHTML = pr; S.dProofHTML = pr; }
+    $("dProof").hidden = !pr;
+  }
+  function captureGeo(d) {
+    if (!navigator.geolocation || d !== todayISO() || !S.db) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const c = pos.coords;
+      const geo = { lat: Math.round(c.latitude * 1e6) / 1e6, lng: Math.round(c.longitude * 1e6) / 1e6, acc: Math.round(c.accuracy || 0), at: new Date().toISOString() };
+      S.db.doc("days/" + d).update({ geo }).then(() => { if (S.tab === "day") renderDay(); }).catch(() => { /* the day stays saved without a location */ });
+    }, () => { /* location refused or unavailable */ }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+  }
+  function compressImage(file, max, q) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
+        const c = document.createElement("canvas"); c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        res({ url: c.toDataURL("image/jpeg", q), w, h });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("image")); };
+      img.src = url;
+    });
+  }
+  async function addPhoto(file, d) {
+    if (!S.db || !S.canWrite || !file) return;
+    try {
+      const im = await compressImage(file, 1100, 0.62);
+      await S.db.doc("photos/" + d).set({ date: d, at: new Date().toISOString(), w: im.w, h: im.h, data: im.url });
+      S.photos.set(d, { date: d, at: new Date().toISOString(), w: im.w, h: im.h, data: im.url });
+      toast(t("photo.saved")); logChange(t("log.photo", fmtShort(d)));
+      renderDay();
+    } catch (e) { writeError(e); }
+  }
   function setListHTML(html, force) {
     const box = $("dList");
     if (!force && S.dListHTML === html) return;
@@ -2037,9 +2222,14 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       }
     }
     S.saving = true; renderDay();
+    const reason = S.unlocked[d] && d < todayISO() ? S.unlocked[d] : "";
     try {
-      await writeDay(d, { statuses, times, wages, savedAt: new Date().toISOString() });
+      const patch = { statuses, times, wages, savedAt: new Date().toISOString() };
+      if (reason) patch.amends = amendsWith(prev, reason);
+      await writeDay(d, patch);
       delete S.drafts[d];
+      if (reason) { logChange(t("log.amend", fmtShort(d), reason)); delete S.unlocked[d]; }
+      if (d === todayISO()) captureGeo(d);
       const pc = act.filter((w) => statuses[w.id] === "P").length, ac = act.filter((w) => statuses[w.id] === "A").length;
       toast(t("day.savedToast", fmtShort(d)));
       logChange(t("log.day", fmtShort(d), pc, ac));
@@ -2115,6 +2305,8 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (!S.cell || !S.db) return;
     const { wid, d } = S.cell;
     const w = S.workers.get(wid);
+    let reason = "";
+    if (isLocked(d)) { closeCell(); reason = await askReason(t("lock.cellTitle"), t("lock.cellSub", w ? w.name : "—", fmtLong(d))); if (!reason) return; }
     const prev = S.days.get(d) || {};
     const statuses = { ...(prev.statuses || {}) }, times = { ...(prev.times || {}) }, wages = { ...(prev.wages || {}) };
     const was = statuses[wid];
@@ -2127,9 +2319,11 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (S.drafts[d]) { delete S.drafts[d].st[wid]; delete S.drafts[d].tm[wid]; }
     closeCell();
     try {
-      await writeDay(d, { statuses, times, wages, savedAt: new Date().toISOString() });
+      const patch = { statuses, times, wages, savedAt: new Date().toISOString() };
+      if (reason) patch.amends = amendsWith(prev, reason);
+      await writeDay(d, patch);
       toast(st ? `${w ? w.name : ""}: ${t("st." + st)} — ${fmtShort(d)}` : t("sheet.cleared"));
-      logChange(t("log.cell", w ? w.name : "—", st ? t("st." + st) : t("log.clear"), fmtShort(d)));
+      logChange(t("log.cell", w ? w.name : "—", st ? t("st." + st) : t("log.clear"), fmtShort(d)) + (reason ? " — " + t("lock.reason") + ": " + reason : ""));
     } catch (e) { writeError(e); }
   }
   async function saveCellTimes() {
@@ -2139,14 +2333,18 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const vin = normTime($("cIn").value), vout = normTime($("cOut").value);
     if (vin === null || vout === null) { toast(t("err.time")); return; }
     if (vin && vout && toMin(vout) < toMin(vin)) { toast(t("err.timeOrder")); return; }
+    let reason = "";
+    if (isLocked(d)) { closeCell(); reason = await askReason(t("lock.cellTitle"), t("lock.cellSub", w ? w.name : "—", fmtLong(d))); if (!reason) return; }
     const prev = S.days.get(d) || {};
     const times = { ...(prev.times || {}), [wid]: { in: vin, out: vout } };
     if (S.drafts[d]) delete S.drafts[d].tm[wid];
     closeCell();
     try {
-      await writeDay(d, { times, savedAt: new Date().toISOString() });
+      const patch = { times, savedAt: new Date().toISOString() };
+      if (reason) patch.amends = amendsWith(prev, reason);
+      await writeDay(d, patch);
       toast(t("sheet.timesSaved"));
-      logChange(t("log.times", w ? w.name : "—", fmtShort(d), vin || "—", vout || "—"));
+      logChange(t("log.times", w ? w.name : "—", fmtShort(d), vin || "—", vout || "—") + (reason ? " — " + t("lock.reason") + ": " + reason : ""));
     } catch (e) { writeError(e); }
   }
 
@@ -2320,10 +2518,113 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
         <div class="card kpi"><span>${esc(t("pay.wage"))}</span><b>${esc(R.wageLabel)}</b></div>
       </div>
       ${warn ? `<div style="margin-top:12px">${warn}</div>` : ""}
+      ${R.from !== R.to ? `<div class="card pad16 dash" id="pDash" style="margin-top:12px"></div>` : ""}
       ${table}
       <p class="hint madeat" style="margin-top:10px">${esc(t("org.caidat"))} · ${esc(t("pay.madeAt", fmtLong(todayISO())))}</p>`;
+    if (R.from !== R.to) renderDash(R);
     countTo($("pTotal"), R.tot.amount, whole((v) => `${money(v)} ${t("cur")}`), S.lastPay === undefined ? 0 : S.lastPay);
     S.lastPay = R.tot.amount;
+  }
+  /* ----- dashboard: three small charts drawn at the card's real width (crisp text), mirrored in Arabic */
+  function dashData(R) {
+    const today = todayISO();
+    const days = daysBetween(maxD(R.from, start()), minD(R.to, today));
+    let cum = 0;
+    if (days.length) for (const d of daysBetween(start(), addDays(days[0], -1))) cum += dayCounts(d).pay;
+    const pts = days.map((d) => {
+      const k = dayCounts(d); cum += k.pay;
+      return { d, p: k.p, a: k.a, act: k.act, rec: savedState(d).state !== "none", rate: k.p + k.a ? k.p / (k.p + k.a) : null, pay: k.pay, cum };
+    });
+    const abs = R.rows.map((r) => ({ name: r.w.name, n: r.st.absences.length })).filter((x) => x.n > 0).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "ar"));
+    return { pts, abs, budget: Number(S.settings.budget) || 0 };
+  }
+  const svgEsc = (x) => esc(String(x));
+  const AR_CH = /[\u0600-\u06FF]/;
+  function svgT(x, y, str, cls, align) {
+    const r = AR_CH.test(String(str));
+    const anchor = align === "middle" ? "middle" : r ? (align === "right" ? "start" : "end") : (align === "left" ? "start" : "end");
+    return `<text class="${cls}" x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" text-anchor="${anchor}" direction="${r ? "rtl" : "ltr"}">${svgEsc(str)}</text>`;
+  }
+  function colPath(x, y, w, h, r) {
+    if (h <= 0.5) return "";
+    r = Math.min(r, w / 2, h);
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  }
+  function renderDash(R) {
+    const box = $("pDash"); if (!box) return;
+    const W = Math.max(260, Math.round(box.clientWidth - 2 * 16)) || 300, rtl = LANG === "ar";
+    const D = dashData(R), n = D.pts.length;
+    if (!n) { box.innerHTML = ""; box.hidden = true; return; }
+    box.hidden = false;
+    const xs = (i, x0, x1) => { const band = (x1 - x0) / n; return rtl ? x1 - band * (i + 0.5) : x0 + band * (i + 0.5); };
+    const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor((W - 60) / 30))));
+    const xLabels = (x0, x1, y) => D.pts.map((p, i) => (i % step === 0 || i === n - 1) && (i === n - 1 || n - 1 - i >= step / 2 || i % step === 0) ? svgT(xs(i, x0, x1), y, Number(p.d.slice(8)), "tick", "middle") : "").join("");
+    /* 1) attendance rate per day */
+    const H1 = 150, a0 = rtl ? 14 : 40, a1 = rtl ? W - 40 : W - 14, t0 = 12, t1 = H1 - 24;
+    const yr = (v) => t1 - v * (t1 - t0);
+    const band = (a1 - a0) / n, bw = Math.max(3, Math.min(24, band * 0.62));
+    let g1 = [0, 0.5, 1].map((v) => `<line class="grid" x1="${a0}" x2="${a1}" y1="${yr(v)}" y2="${yr(v)}"/>` + svgT(rtl ? a1 + 6 : a0 - 6, yr(v) + 3.5, Math.round(v * 100) + "%", "tick", rtl ? "left" : "right")).join("");
+    let lastI = -1;
+    D.pts.forEach((p, i) => {
+      const cx = xs(i, a0, a1);
+      if (p.rate !== null) { g1 += `<path class="bar" d="${colPath(cx - bw / 2, yr(p.rate), bw, t1 - yr(p.rate), 4)}"/>`; lastI = i; }
+      else if (p.act) g1 += `<circle class="unrec" cx="${cx}" cy="${t1 - 4}" r="3"/>`;
+      const tip = p.rate !== null ? t("dash.tipRate", fmtShort(p.d), num(p.p), num(p.a), Math.round(p.rate * 100)) : `${fmtShort(p.d)}: ${t("dash.unrec")}`;
+      g1 += `<rect class="hit" data-tip="${svgEsc(tip)}" x="${cx - band / 2}" y="${t0}" width="${band}" height="${t1 - t0}"/>`;
+    });
+    if (lastI >= 0) { const p = D.pts[lastI]; g1 += svgT(xs(lastI, a0, a1), Math.max(10, yr(p.rate) - 6), Math.round(p.rate * 100) + "%", "lbl", "middle"); }
+    g1 += xLabels(a0, a1, H1 - 8);
+    /* 2) cumulative cost since the start, against the allocated budget when there is one */
+    const H2 = 160, maxV = Math.max(D.budget, ...D.pts.map((p) => p.cum), 1) * 1.08;
+    const yc = (v) => t1c - (v / maxV) * (t1c - t0c), t0c = 14, t1c = H2 - 24;
+    const ticks = [0, maxV / 2, maxV].map((v) => Math.round(v / 100) * 100);
+    let g2 = ticks.map((v) => `<line class="grid" x1="${a0}" x2="${a1}" y1="${yc(v)}" y2="${yc(v)}"/>` + svgT(rtl ? a1 + 6 : a0 - 6, yc(v) + 3.5, moneyShort(v), "tick", rtl ? "left" : "right")).join("");
+    if (D.budget > 0) {
+      g2 += `<line class="ref" x1="${a0}" x2="${a1}" y1="${yc(D.budget)}" y2="${yc(D.budget)}"/>` + svgT(rtl ? a1 - 4 : a0 + 4, yc(D.budget) - 6, t("dash.budget", moneyShort(D.budget)), "tick", rtl ? "right" : "left");
+    }
+    const line = D.pts.map((p, i) => `${i ? "L" : "M"}${xs(i, a0, a1).toFixed(1)},${yc(p.cum).toFixed(1)}`).join("");
+    const first = xs(0, a0, a1), last = xs(n - 1, a0, a1);
+    g2 += `<path class="area" d="${line}L${last.toFixed(1)},${t1c}L${first.toFixed(1)},${t1c}Z"/><path class="line" d="${line}"/>`;
+    const lp = D.pts[n - 1];
+    g2 += `<circle class="dot" cx="${last}" cy="${yc(lp.cum)}" r="4.5"/>` + svgT(last + (rtl ? -4 : 4), yc(lp.cum) - 11, moneyShort(lp.cum), "lbl", rtl ? "left" : "right");
+    D.pts.forEach((p, i) => { const cx = xs(i, a0, a1); g2 += `<rect class="hit" data-tip="${svgEsc(t("dash.tipCum", fmtShort(p.d), money(p.pay), money(p.cum)))}" x="${cx - band / 2}" y="${t0c}" width="${band}" height="${t1c - t0c}"/>`; });
+    g2 += xLabels(a0, a1, H2 - 8);
+    /* 3) absences per worker (top 8, the rest folded) */
+    let g3 = "", H3 = 0;
+    if (D.abs.length) {
+      const top = D.abs.slice(0, 8), rest = D.abs.slice(8);
+      if (rest.length) top.push({ name: t("dash.others", rest.length), n: rest.reduce((a, x) => a + x.n, 0) });
+      const rowH = 26, nameW = Math.min(150, Math.round(W * 0.36)), maxN = Math.max(...top.map((x) => x.n)), bx0 = nameW + 10, bx1 = W - 40;
+      H3 = top.length * rowH + 4;
+      top.forEach((x, i) => {
+        const y = i * rowH + 4, len = Math.max(2, ((bx1 - bx0) * x.n) / maxN), th = 14;
+        const nx = rtl ? W - 2 : 2, bxS = rtl ? W - bx0 - len : bx0;
+        g3 += svgT(nx, y + th / 2 + 4, x.name.length > 22 ? x.name.slice(0, 21) + "…" : x.name, "nm", rtl ? "right" : "left");
+        g3 += `<path class="bar abs" d="${rtl ? `M${W - bx0},${y}H${bxS + Math.min(4, len / 2)}Q${bxS},${y} ${bxS},${y + Math.min(4, len / 2)}V${y + th - Math.min(4, len / 2)}Q${bxS},${y + th} ${bxS + Math.min(4, len / 2)},${y + th}H${W - bx0}Z` : `M${bx0},${y}H${bx0 + len - Math.min(4, len / 2)}Q${bx0 + len},${y} ${bx0 + len},${y + Math.min(4, len / 2)}V${y + th - Math.min(4, len / 2)}Q${bx0 + len},${y + th} ${bx0 + len - Math.min(4, len / 2)},${y + th}H${bx0}Z`}"/>`;
+        g3 += svgT(rtl ? bxS - 6 : bx0 + len + 6, y + th / 2 + 4, x.n, "lbl", rtl ? "right" : "left");
+        g3 += `<rect class="hit" data-tip="${svgEsc(x.name + ": " + t("dash.absN", x.n))}" x="0" y="${y - 4}" width="${W}" height="${rowH}"/>`;
+      });
+    }
+    const rows = D.pts.map((p) => `<tr><td>${esc(fmtShort(p.d))}</td><td>${p.rec ? num(p.p) : "—"}</td><td>${p.rec ? num(p.a) : "—"}</td><td>${p.rate !== null ? Math.round(p.rate * 100) + "%" : "—"}</td><td>${money(p.pay)}</td><td>${money(p.cum)}</td></tr>`).join("");
+    box.innerHTML = `<h2 style="margin:0">${esc(t("dash.title"))}</h2>
+      <div class="ch"><h3>${esc(t("dash.rate"))}</h3><svg viewBox="0 0 ${W} ${H1}" width="${W}" height="${H1}" role="img" aria-label="${esc(t("dash.rate"))}">${g1}</svg></div>
+      <div class="ch"><h3>${esc(D.budget > 0 ? t("dash.cumB") : t("dash.cum"))}</h3><svg viewBox="0 0 ${W} ${H2}" width="${W}" height="${H2}" role="img" aria-label="${esc(t("dash.cum"))}">${g2}</svg></div>
+      <div class="ch"><h3>${esc(t("dash.abs"))}</h3>${D.abs.length ? `<svg viewBox="0 0 ${W} ${H3}" width="${W}" height="${H3}" role="img" aria-label="${esc(t("dash.abs"))}">${g3}</svg>` : `<p class="empty-note">${esc(t("dash.noAbs"))}</p>`}</div>
+      <details class="dtab"><summary>${esc(t("dash.table"))}</summary><table><thead><tr><th>${esc(t("dash.th.date"))}</th><th>${esc(t("dash.th.p"))}</th><th>${esc(t("dash.th.a"))}</th><th>${esc(t("dash.th.rate"))}</th><th>${esc(t("dash.th.pay"))}</th><th>${esc(t("dash.th.cum"))}</th></tr></thead><tbody>${rows}</tbody></table></details>
+      <div class="ctip" hidden></div>`;
+  }
+  function dashTip(e) {
+    const box = $("pDash"); if (!box) return;
+    const tip = box.querySelector(".ctip"); if (!tip) return;
+    const h = e.target.closest && e.target.closest(".hit");
+    if (!h || !box.contains(h)) { tip.hidden = true; return; }
+    tip.textContent = h.dataset.tip; tip.hidden = false;
+    const r = box.getBoundingClientRect(), z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    const x = (e.clientX - r.left) / (r.width / box.offsetWidth), y = (e.clientY - r.top) / (r.height / box.offsetHeight);
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.max(6, Math.min(box.offsetWidth - tw - 6, x - tw / 2)) + "px";
+    tip.style.top = Math.max(6, y - th - 14) + "px";
+    void z;
   }
   function summaryText() {
     const R = payData();
@@ -3209,9 +3510,10 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
 
   /* =========================================================== settings */
   function renderSettings() {
-    for (const id of ["sSite", "sStart", "sWage", "sFrom", "sTo", "sSubmit"]) $(id).disabled = !S.canWrite;
+    for (const id of ["sSite", "sStart", "sWage", "sBudget", "sFrom", "sTo", "sSubmit"]) $(id).disabled = !S.canWrite;
     if (S.setDirty) return;
     $("sSite").value = S.settings.siteName || ""; $("sStart").value = start(); $("sWage").value = wage();
+    $("sBudget").value = Number(S.settings.budget) > 0 ? S.settings.budget : "";
     $("sFrom").value = hFrom(); $("sTo").value = hTo();
   }
   function renderAudit() {
@@ -3237,7 +3539,8 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
   }
   const SAFE_ID = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
   const cleanSettings = (o) => ({ siteName: String(o.siteName || "").slice(0, 80), startDate: isISO(o.startDate) ? o.startDate : DEFAULTS.startDate,
-    wage: Number(o.wage) > 0 ? Number(o.wage) : DEFAULTS.wage, hourFrom: normTime(o.hourFrom) || DEFAULTS.hourFrom, hourTo: normTime(o.hourTo) || DEFAULTS.hourTo });
+    wage: Number(o.wage) > 0 ? Number(o.wage) : DEFAULTS.wage, hourFrom: normTime(o.hourFrom) || DEFAULTS.hourFrom, hourTo: normTime(o.hourTo) || DEFAULTS.hourTo,
+    budget: Number(o.budget) > 0 ? Math.round(Number(o.budget) * 100) / 100 : 0 });
   function cleanWorker(w) {
     const o = { name: String(w.name).slice(0, 80), joinDate: w.joinDate, exitDate: isISO(w.exitDate) ? w.exitDate : "", cin: String(w.cin || "").slice(0, 20),
       phone: String(w.phone || "").slice(0, 20), createdAt: String(w.createdAt || new Date().toISOString()) };
@@ -3249,6 +3552,8 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     for (const [k, v] of Object.entries(d.statuses || {})) if (SAFE_ID.test(k) && ["P", "A", "H"].includes(v)) o.statuses[k] = v;
     for (const [k, v] of Object.entries(d.times || {})) if (SAFE_ID.test(k) && v && typeof v === "object") o.times[k] = { in: normTime(v.in) || "", out: normTime(v.out) || "" };
     for (const [k, v] of Object.entries(d.wages || {})) if (SAFE_ID.test(k) && Number(v) > 0) o.wages[k] = Number(v);
+    if (Array.isArray(d.amends)) o.amends = d.amends.filter((x) => x && typeof x.reason === "string").slice(-50).map((x) => ({ at: String(x.at || ""), reason: String(x.reason).slice(0, 300) }));
+    if (d.geo && Number.isFinite(Number(d.geo.lat)) && Number.isFinite(Number(d.geo.lng))) o.geo = { lat: Number(d.geo.lat), lng: Number(d.geo.lng), acc: Math.round(Number(d.geo.acc) || 0), at: String(d.geo.at || "") };
     return o;
   }
   function cleanPayment(p) {
@@ -3419,7 +3724,9 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     const d = S.sel, note = $("dNote").value.trim();
     if (!S.db) return;
     try {
-      await writeDay(d, { statuses: { ...(S.days.get(d)?.statuses || {}) }, note });
+      const prevN = S.days.get(d) || {}, reasonN = S.unlocked[d] && d < todayISO() ? S.unlocked[d] : "";
+      await writeDay(d, reasonN ? { statuses: { ...(prevN.statuses || {}) }, note, amends: amendsWith(prevN, reasonN) } : { statuses: { ...(prevN.statuses || {}) }, note });
+      if (reasonN) logChange(t("log.amend", fmtShort(d), reasonN));
       S.noteDirty = false; $("noteHint").textContent = ""; toast(t("day.noteSaved"));
       logChange(t("log.note", fmtShort(d)) + (note ? ": " + note.slice(0, 60) : ""));
     } catch (err) { writeError(err); }
@@ -3443,7 +3750,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     S.gridScrolled = false; renderGrid();
   });
   $("cClose").addEventListener("click", closeCell);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); if (e.key === "Escape" && !$("reasonSheet").hidden) closeReason(null); if (e.key === "Escape" && !$("photoView").hidden) $("photoView").hidden = true; });
 
   $("openAdd").addEventListener("click", () => { S.returnToDay = false; openForm("add", S.sel); });
   $("openBulk").addEventListener("click", () => openForm("bulk", start()));
@@ -3496,7 +3803,13 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     if (act === "pay" || act === "adv") return openPay(id, act);
     if (act === "rc" || act === "rcs") return receiptFor(b.dataset.p, act === "rcs", b);
     if (act === "sign") return openSign([b.dataset.p]);
-    if (act === "pdel") { S.confirmPay = b.dataset.p; return renderWorkers(); }
+    if (act === "pdel") {
+      const p = S.payments.get(b.dataset.p); if (!p) return;
+      const reason = await askReason(t("lock.payTitle"), t("lock.paySub", p.name || "", money(p.amount), fmtLong(p.date)));
+      if (!reason) return;
+      try { await S.db.doc("payments/" + p.id).delete(); toast(t("py.deleted")); logChange(t("log.payDelR", p.name || "", money(p.amount), fmtShort(p.date), reason)); } catch (err) { writeError(err); }
+      return renderWorkers();
+    }
     if (act === "pdelYes") {
       const p = S.payments.get(b.dataset.p); S.confirmPay = null;
       if (p) { try { await S.db.doc("payments/" + p.id).delete(); toast(t("py.deleted")); logChange(t("log.payDel", p.name || "", money(p.amount))); } catch (err) { writeError(err); } }
@@ -3576,6 +3889,28 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
   $("pySave").addEventListener("click", savePay);
   $("pyAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); savePay(); } });
   $("pyCancel").addEventListener("click", closePay);
+  $("rsOk").addEventListener("click", () => { const v = $("rsText").value.trim(); if (v.length < 4) { toast(t("lock.short")); return; } closeReason(v.slice(0, 300)); });
+  $("rsCancel").addEventListener("click", () => closeReason(null));
+  $("reasonSheet").addEventListener("click", (e) => { if (e.target === $("reasonSheet")) closeReason(null); });
+  $("dLockBar").addEventListener("click", async (e) => {
+    if (!e.target.closest('[data-lock="open"]')) return;
+    const d = S.sel;
+    const reason = await askReason(t("lock.dayTitle", fmtLong(d)), t("lock.daySub"));
+    if (!reason) return;
+    S.unlocked[d] = reason; renderDay(true);
+  });
+  $("dProof").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-photo]"); if (!b) return;
+    const ph = S.photos.get(b.dataset.photo); if (!ph) return;
+    $("pvImg").src = ph.data; $("pvImg").alt = t("photo.alt", fmtShort(b.dataset.photo)); $("photoView").hidden = false;
+  });
+  $("dProof").addEventListener("change", (e) => { const inp = e.target.closest("[data-photoin]"); if (inp && inp.files && inp.files[0]) { addPhoto(inp.files[0], inp.dataset.photoin); inp.value = ""; } });
+  $("pvClose").addEventListener("click", () => { $("photoView").hidden = true; $("pvImg").removeAttribute("src"); });
+  $("photoView").addEventListener("click", (e) => { if (e.target === $("photoView")) { $("photoView").hidden = true; $("pvImg").removeAttribute("src"); } });
+  $("pBody").addEventListener("pointermove", dashTip);
+  $("pBody").addEventListener("pointerdown", dashTip);
+  $("pBody").addEventListener("pointerleave", () => { const tip = document.querySelector("#pDash .ctip"); if (tip) tip.hidden = true; });
+  window.addEventListener("resize", () => { clearTimeout(S.dashT); S.dashT = setTimeout(() => { if (S.tab === "pay" && $("pDash") && allLoaded()) renderDash(payData()); }, 160); });
   $("pySigClear").addEventListener("click", () => { if (S.pyPad) S.pyPad.clear(); });
   $("sgSave").addEventListener("click", saveSign);
   $("sgSkip").addEventListener("click", nextSign);
@@ -3599,7 +3934,7 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
     e.preventDefault();
     const hf = normTime($("sFrom").value), ht = normTime($("sTo").value);
     if (!hf || !ht || toMin(ht) <= toMin(hf)) return toast(t("set.timeBad"));
-    const next = { siteName: $("sSite").value.trim(), startDate: $("sStart").value, wage: Number($("sWage").value), hourFrom: hf, hourTo: ht };
+    const next = { siteName: $("sSite").value.trim(), startDate: $("sStart").value, wage: Number($("sWage").value), hourFrom: hf, hourTo: ht, budget: Number($("sBudget").value) > 0 ? Math.round(Number($("sBudget").value) * 100) / 100 : 0 };
     if (!isISO(next.startDate) || !(next.wage > 0)) return toast(t("set.invalid"));
     try {
       const oldDef = wage();
@@ -3695,6 +4030,11 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
       for (const d of snap.docs) { const v = d.data(); if (v && v.workerId && isISO(v.date) && Number(v.amount) > 0) m.set(d.id, { id: d.id, ...v }); }
       S.payments = m; S.loaded.payments = true; renderAll();
     }, () => { S.loaded.payments = true; renderAll(); });
+    db.collection("photos").onSnapshot((snap) => {
+      const m = new Map();
+      for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date) && typeof v.data === "string" && v.data.indexOf("data:image/") === 0) m.set(v.date, v); }
+      S.photos = m; if (S.tab === "day") renderDay();
+    }, keep);
     db.collection("audit").onSnapshot((snap) => {
       const m = new Map();
       for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date)) m.set(v.date, v); }

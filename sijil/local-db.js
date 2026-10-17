@@ -94,9 +94,15 @@
   var cloud = { cfg: null, app: null, auth: null, fs: null, m: null, user: null, base: "" };
   /* view-only link: this device only looks at someone else's register and never writes */
   var VIEW_KEY = "sijil.view", VIEW = null, badViewLink = false;
+  /* the Firebase project of this site (public identifiers, not secrets): lets a view link be a short code (#v=…) */
+  var HOME_CFG = /*HOME_CFG*/null;
+  /* short public address of this app: a redirect that keeps the #… part of the link */
+  var SHORT_BASE = /*SHORT_BASE*/"";
+  var CODE_RE = /^[a-km-z2-9]{12}$/;
+  function codeView(code) { return { c: HOME_CFG, o: "", e: "view." + code + "@example.com", p: code + "-v", k: code }; }
   function b64e(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
   function b64d(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
-  function validView(v) { return !!(v && v.c && v.c.apiKey && v.c.projectId && v.c.appId && typeof v.o === "string" && v.o && typeof v.e === "string" && v.e && typeof v.p === "string" && v.p); }
+  function validView(v) { return !!(v && v.c && v.c.apiKey && v.c.projectId && v.c.appId && typeof v.o === "string" && typeof v.e === "string" && v.e && typeof v.p === "string" && v.p); }
   function readOnly() { return Promise.reject(err("invalid_argument", "view-only link: writing is not allowed")); }
   function syncError(e) {
     console.error(e);
@@ -188,7 +194,7 @@
   }
   /* copies the cloud data back to the phone (when cloud saving is turned off) */
   function downloadCloud() {
-    var m = cloud.m, cols = ["workers", "days", "payments", "audit", "safety"];
+    var m = cloud.m, cols = ["workers", "days", "payments", "audit", "safety", "photos"];
     return Promise.all([m.getDoc(m.doc(cloud.fs, cloud.base + "app/settings"))].concat(cols.map(function (c) { return m.getDocs(m.collection(cloud.fs, cloud.base + c)); }))).then(function (res) {
       if (res[0].exists()) write("app/settings", res[0].data());
       cols.forEach(function (c, i) {
@@ -211,11 +217,16 @@
     }
   } catch (e) { hashCfg = null; }
   try {
+    var vc = /[#&]v=([a-z0-9]+)/.exec(location.hash);
+    if (vc) {
+      if (HOME_CFG && CODE_RE.test(vc[1])) setJ(VIEW_KEY, codeView(vc[1])); else { badViewLink = true; try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ } }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
     var vm = /[#&]view=([A-Za-z0-9_\-+/=]+)/.exec(location.hash);
     if (vm) {
       var vv = null;
       try { vv = b64d(vm[1]); } catch (x) { vv = null; }
-      if (validView(vv)) { if (!vv.c.authDomain) vv.c.authDomain = vv.c.projectId + ".firebaseapp.com"; setJ(VIEW_KEY, vv); } else badViewLink = true;
+      if (validView(vv)) { if (!vv.c.authDomain) vv.c.authDomain = vv.c.projectId + ".firebaseapp.com"; setJ(VIEW_KEY, vv); } else { badViewLink = true; try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ } }
       history.replaceState(null, "", location.pathname + location.search);
     }
   } catch (e) { badViewLink = true; }
@@ -242,9 +253,9 @@
       if (u && String(u.email || "").toLowerCase() === VIEW.e.toLowerCase()) return u;
       return cloud.au.signInWithEmailAndPassword(cloud.auth, VIEW.e, VIEW.p).then(function (c) { return c.user; });
     }).then(function (u) {
-      cloud.user = u; cloud.base = "sijil/" + VIEW.o + "/";
+      cloud.user = u; cloud.base = "sijil/" + (VIEW.o || u.uid) + "/";
       /* a link reads its own copy (sijil/<link uid>); the copy carries app/viewer while the link is active */
-      var own = VIEW.o === u.uid;
+      var own = !VIEW.o || VIEW.o === u.uid;
       return cloud.m.getDoc(cloud.m.doc(cloud.fs, cloud.base + (own ? "app/viewer" : "app/settings"))).then(function (sn) {
         if (own && !sn.exists() && !(sn.metadata && sn.metadata.fromCache)) throw err("stopped", "link stopped");
       }, function (e) {
@@ -382,7 +393,7 @@
      (sijil/<link uid>/…) up to date; the person with the link reads only that copy, so the owner's register can
      never be touched from the link, and nothing has to be changed in Firebase. */
   var MIR = { ready: false, list: [], pre: [], overflow: false, waiters: [] };
-  var MIR_COLS = ["workers", "days", "payments", "audit"];
+  var MIR_COLS = ["workers", "days", "payments", "audit", "photos"];
   function noop() {}
   function rnd(n) { var a = "abcdefghijkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = ""; crypto.getRandomValues(b); for (var i = 0; i < n; i++) s += a[b[i] % 32]; return s; }
   function isDenied(e) { return String((e && e.code) || "").indexOf("permission-denied") >= 0; }
@@ -474,14 +485,17 @@
   }
   function createViewer() {
     var A = cloud.A, Au = cloud.au, F = cloud.F, c = cloud.cfg, app = null;
-    var v = { e: "view." + rnd(12) + "@example.com", p: rnd(24), at: new Date().toISOString(), q: [] };
+    var code = rnd(12);
+    var short = !!(HOME_CFG && HOME_CFG.projectId === c.projectId && CODE_RE.test(code));
+    var v = short ? { e: codeView(code).e, p: codeView(code).p, at: new Date().toISOString(), q: [] } : { e: "view." + rnd(12) + "@example.com", p: rnd(24), at: new Date().toISOString(), q: [] };
     return Promise.resolve().then(function () {
       app = A.initializeApp(c, "sijilmk" + Date.now());
       var auth = Au.initializeAuth(app, { persistence: Au.inMemoryPersistence });
       return Au.createUserWithEmailAndPassword(auth, v.e, v.p).then(function (cred) { v.auth = auth; return cred; });
     }).then(function (cred) {
       v.uid = cred.user.uid; v.app = app; v.fs = F.getFirestore(app);
-      v.link = location.origin + location.pathname + "#view=" + b64e({ c: { apiKey: c.apiKey, authDomain: c.authDomain, projectId: c.projectId, appId: c.appId }, o: v.uid, e: v.e, p: v.p });
+      v.link = short ? (SHORT_BASE || location.origin + location.pathname) + "#v=" + code
+        : location.origin + location.pathname + "#view=" + b64e({ c: { apiKey: c.apiKey, authDomain: c.authDomain, projectId: c.projectId, appId: c.appId }, o: v.uid, e: v.e, p: v.p });
       MIR.list.push(v);
       return fullSync(v).then(saveViewers);
     }).then(function () { return v; }, function (e) {
