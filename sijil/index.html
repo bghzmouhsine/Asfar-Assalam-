@@ -807,6 +807,19 @@ main { padding-bottom: calc(var(--nav-h) + 80px + env(safe-area-inset-bottom, 0p
 #ckCode { letter-spacing: .12em; font-weight: 700; text-transform: uppercase; }
 .amlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink); }
 #dsCard .chips, #dsCard .row, #ckCard .row { margin-top: 10px; }
+/* site foreman */
+html.fm-on nav.tabs, html.fm-on #gearBtn, html.fm-on #shareBtn, html.fm-on #saveBar { display: none !important; }
+.fmhead { display: flex; flex-direction: column; gap: 10px; }
+.fmstate { display: flex; flex-direction: column; gap: 6px; }
+#fmTally { grid-template-columns: repeat(2, 1fr); }
+.linkish { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--link); cursor: pointer; text-align: start; }
+#fmHist li .chip { margin-inline-start: auto; }
+.fmrows { display: flex; flex-direction: column; gap: 6px; }
+.fmr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 12.5px; }
+.fmr .nm { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.fmr.diff { background: var(--warn-soft); }
+.fmr .was { flex-basis: 100%; color: var(--warn); font-size: 11.5px; font-weight: 700; }
+.fmbar { border-color: var(--link); background: var(--brand-soft); }
 .sigwrap { display: flex; flex-direction: column; gap: 6px; }
 .sig-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sig-h b { font-size: 13px; }
@@ -1008,6 +1021,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
         <button class="iconbtn" id="nextDay" type="button" data-ta="day.next"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
       </div>
       <div class="row" id="dState"></div>
+      <div class="lockbar fmbar" id="dFm" hidden></div>
       <div class="lockbar" id="dLockBar" hidden></div>
       <div class="proof" id="dProof" hidden></div>
       <div class="card tally" id="dTally"></div>
@@ -1131,6 +1145,23 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       </div>
     </section>
 
+    <!-- SITE FOREMAN (opened from the foreman's link) -->
+    <section class="view" id="v-fm" hidden>
+      <div class="sec-h"><h2 data-t="fm.title">تسجيل الحضور — رئيس الورش</h2></div>
+      <div class="card pad16 fmhead">
+        <p class="hint" data-t="fm.hint"></p>
+        <div class="field"><label for="fmDate" data-t="fm.date">تاريخ التسجيل</label><input class="input ltr" type="date" id="fmDate"></div>
+        <div class="fmstate" id="fmState"></div>
+      </div>
+      <div class="card tally" id="fmTally"></div>
+      <div class="row"><button class="btn" id="fmAllP" type="button" data-t="fm.allP">الجميع حاضر</button><button class="btn" id="fmAllOut" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>—</span></button></div>
+      <div id="fmList"><div class="loading" data-t="common.loading">…</div></div>
+      <div class="proof" id="fmProof"></div>
+      <div class="row"><button class="btn primary" id="fmSend" type="button">—</button></div>
+      <div class="card pad16"><h2 data-t="fm.hist">آخر التسجيلات المرسلة</h2><ul class="batches" id="fmHist" style="margin-top:10px"></ul></div>
+      <div class="card pad16"><p class="hint" data-t="fm.exitHint"></p><div class="row" style="margin-top:10px"><button class="btn ghost" id="fmExit" type="button" data-t="fm.exit">الخروج من وضع رئيس الورش</button></div></div>
+    </section>
+
     <!-- SETTINGS -->
     <section class="view" id="v-settings" hidden>
       <div class="sec-h"><h2 data-t="nav.settings">الإعدادات</h2></div>
@@ -1245,6 +1276,14 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       <div id="ckBody" aria-live="polite"></div>
       <form class="ckform" id="ckForm" autocomplete="off"><div class="field"><label for="ckCode" data-t="chk.codeLbl">رمز التحقق</label><input class="input ltr" id="ckCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX"></div><button class="btn primary" type="submit" data-t="chk.go">تحقّق</button></form>
       <div class="row"><button class="btn ghost" id="ckClose" type="button" data-t="common.close">إغلاق</button></div>
+    </div>
+  </div>
+  <div class="sheet-back" id="fmSheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fmTitle">
+      <div><h3 id="fmTitle">—</h3><p class="hint" id="fmSub"></p></div>
+      <div class="proof" id="fmProofR" hidden></div>
+      <div id="fmRows"></div>
+      <div class="row"><button class="btn primary" id="fmApprove" type="button" data-t="fm.approve">اعتماد وحفظ في السجل</button><button class="btn" id="fmReject" type="button" data-t="fm.reject">رفض</button><button class="btn ghost" id="fmClose" type="button" data-t="common.close">إغلاق</button></div>
     </div>
   </div>
   <div class="sheet-back" id="cellSheet" hidden>
@@ -1431,7 +1470,20 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "لوحة المؤشرات", "dash.rate": "نسبة الحضور يوماً بيوم", "dash.cum": "الكلفة المتراكمة منذ البداية", "dash.cumB": "الكلفة المتراكمة مقابل الاعتماد المالي", "dash.abs": "الغيابات حسب العامل",
       "dash.noAbs": "لا غياب في هذه الفترة.", "dash.budget": "الاعتماد {0}", "dash.unrec": "غير مسجّل", "dash.tipRate": "{0}: {1} حاضر، {2} غائب ({3}%)", "dash.tipCum": "{0}: {1} درهم هذا اليوم · المجموع {2} درهم",
       "dash.table": "عرض البيانات كجدول", "dash.th.date": "اليوم", "dash.th.p": "حاضر", "dash.th.a": "غائب", "dash.th.rate": "النسبة", "dash.th.pay": "كلفة اليوم", "dash.th.cum": "المتراكم", "dash.others": "آخرون ({0})", "dash.absN": "{0} غياب",
-      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "chk.title": "التحقق من وثيقة", "chk.sub": "تأكّد أن الوصل أو لائحة الأداء أو الملف الشهري مطابق لما في السجل.", "chk.card": "التحقق من وثيقة",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "fm.title": "تسجيل الحضور — رئيس الورش", "fm.hint": "سجّل حضور العمال ثم اضغط «إرسال للاعتماد». يصل تسجيلك إلى صاحب السجل، ولا يدخل السجل الرسمي إلا بعد اعتماده.",
+      "fm.date": "تاريخ التسجيل", "fm.outDone": "الخروج {0} لـ{1} عامل — اضغط «إرسال للاعتماد»", "fm.allP": "الجميع حاضر", "fm.send": "إرسال للاعتماد", "fm.resend": "إعادة الإرسال", "fm.sending": "جارٍ الإرسال…", "fm.none": "لم يُرسل تسجيل هذا اليوم بعد.",
+      "fm.pending": "أُرسل التسجيل الساعة {0} — في انتظار اعتماد صاحب السجل.", "fm.approved": "✓ اعتمد صاحب السجل هذا التسجيل (الساعة {0}).", "fm.rejected": "✗ رُفض التسجيل: {0} — صحّحه ثم أعد الإرسال.",
+      "fm.official": "في السجل الرسمي: {0} حاضر · {1} غائب.", "fm.photo": "صورة جماعية (اختياري)", "fm.photoRe": "تغيير الصورة", "fm.photoOk": "أُضيفت الصورة، تُرسل مع التسجيل.",
+      "fm.geoNote": "يُسجَّل موقعك (GPS) تلقائياً عند الإرسال كدليل على الحضور في الورش.", "fm.sent": "أُرسل التسجيل ✓ في انتظار الاعتماد", "fm.hist": "آخر التسجيلات المرسلة",
+      "fm.histNone": "لا توجد تسجيلات مرسلة بعد.", "fm.counts": "{0} حاضر · {1} غائب", "fm.st.pending": "في انتظار الاعتماد", "fm.st.approved": "معتمد ✓", "fm.st.rejected": "مرفوض",
+      "fm.noWorkers": "لا يوجد عمال في هذا التاريخ.", "fm.tooOld": "يمكن التسجيل لآخر 7 أيام فقط.", "fm.exit": "الخروج من وضع رئيس الورش", "fm.exitSure": "تأكيد الخروج",
+      "fm.exitHint": "هذا الهاتف مرتبط برابط رئيس الورش الذي أرسله صاحب السجل. لا تظهر هنا الأجور ولا الأداءات.",
+      "al.fm": "تسجيل من رئيس الورش ينتظر اعتمادك: {0} ({1} حاضر، {2} غائب)", "fm.revTitle": "تسجيل رئيس الورش — {0}", "fm.revSub": "أُرسل الساعة {0}",
+      "fm.approve": "اعتماد وحفظ في السجل", "fm.reject": "رفض", "fm.revSum": "{0} حاضر · {1} غائب · {2} اختلاف عن السجل", "fm.was": "في السجل حالياً: {0}",
+      "fm.lockTitle": "اعتماد تسجيل ليوم مغلق", "fm.lockSub": "يوم {0} محفوظ ومغلق. اكتب سبب تعديله بتسجيل رئيس الورش.", "fm.rejTitle": "رفض تسجيل رئيس الورش",
+      "fm.rejSub": "اكتب سبب الرفض ليصل إلى رئيس الورش ({0}).", "fm.approvedToast": "اعتُمد تسجيل {0} وحُفظ في السجل ✓", "fm.rejectedToast": "رُفض التسجيل وأُبلغ رئيس الورش.",
+      "fm.markFail": "حُفظ في السجل، لكن تعذّر إبلاغ رئيس الورش. تحقّق من الاتصال بالإنترنت.", "fm.dayBanner": "رئيس الورش أرسل تسجيلاً لهذا اليوم ينتظر اعتمادك.", "fm.review": "مراجعة",
+      "log.fmOk": "اعتماد تسجيل رئيس الورش ليوم {0}: {1} حاضر، {2} غائب", "log.fmNo": "رفض تسجيل رئيس الورش ليوم {0}: {1}", "chk.title": "التحقق من وثيقة", "chk.sub": "تأكّد أن الوصل أو لائحة الأداء أو الملف الشهري مطابق لما في السجل.", "chk.card": "التحقق من وثيقة",
       "chk.cardHint": "كل وصل ولائحة أداء وملف شهري يحمل رمزاً مربعاً (QR) ورمز تحقق. امسح الرمز بكاميرا الهاتف، أو أدخل رمز التحقق هنا.", "chk.open": "إدخال رمز التحقق",
       "chk.codeLbl": "رمز التحقق (8 أحرف وأرقام)", "chk.go": "تحقّق", "chk.badCode": "رمز التحقق يتكون من 8 أحرف وأرقام، مثل F820-R689.", "chk.codeLine": "رمز التحقق: {0}", "chk.scan": "امسح الرمز للتحقق",
       "chk.okR": "وصل صحيح ومطابق للسجل", "chk.okB": "لائحة أداء صحيحة ومطابقة للسجل", "chk.okM": "الملف الشهري مطابق للسجل",
@@ -1485,7 +1537,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "bk.safetyHint": "تُنشأ تلقائياً قبل كل استرجاع، ويمكن الرجوع إليها.", "bk.safetyNone": "لا توجد نسخ أمان بعد.",
       "bk.safetyItem": "{0} · {1} عامل، {2}", "bk.useSafety": "استرجاع", "bk.noDl": "التحميل غير متاح في هذه النافذة.",
       "log.restore": "استرجاع نسخة احتياطية: {0} عامل و{1}",
-      "help.body": "«الرئيسية»: يومك في نظرة — ساعة الدوام، الحاضرون والغائبون، التنبيهات، وتقويم الشهر.<br>«التسجيل»: اضغط «الكل حاضر» ثم «غائب» أمام من غاب، وعدّل ساعة الدخول أو الخروج عند الحاجة (زر الساعة يضع الوقت الحالي)، ثم «حفظ اليوم».<br>«السجل»: ابحث باسم العامل أو بفترة، واضغط على أي خانة لتغيير الحالة أو الساعات.<br>«العمال»: أضف العمال بتاريخ التحاقهم وأجرهم اليومي، وعدّل معلوماتهم.<br>«الأجور»: تقرير اليوم أو الأسبوع أو الشهر أو أي فترة، مع تحميل PDF وExcel ونسخ الملخص.<br>«الإعدادات»: النسخ الاحتياطي والاسترجاع وسجل التعديلات.",
+      "help.body": "«الرئيسية»: يومك في نظرة — ساعة الدوام، الحاضرون والغائبون، التنبيهات، وتقويم الشهر.<br>«التسجيل»: اضغط «الكل حاضر» ثم «غائب» أمام من غاب، وعدّل ساعة الدخول أو الخروج عند الحاجة (زر الساعة يضع الوقت الحالي)، ثم «حفظ اليوم».<br>«السجل»: ابحث باسم العامل أو بفترة، واضغط على أي خانة لتغيير الحالة أو الساعات.<br>«العمال»: أضف العمال بتاريخ التحاقهم وأجرهم اليومي، وعدّل معلوماتهم.<br>«الأجور»: تقرير اليوم أو الأسبوع أو الشهر أو أي فترة، مع تحميل PDF وExcel ونسخ الملخص.<br>«الإعدادات»: النسخ الاحتياطي والاسترجاع وسجل التعديلات، ورابط المشاهدة ورابط رئيس الورش.<br>رئيس الورش: يسجّل الحضور من هاتفه ويرسله، فيظهر لك تنبيه في «الرئيسية» لتعتمده أو ترفضه.<br>التحقق: كل وصل ولائحة وملف شهري يحمل رمز QR ورمز تحقق؛ امسحه بالكاميرا أو أدخله في «الأجور ← التحقق من وثيقة».",
     },
     fr: {
       "app.name": "Présence et Paie", "app.tag": "Suivi quotidien des présences et des salaires des ouvriers",
@@ -1604,7 +1656,20 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "Tableau de bord", "dash.rate": "Taux de présence par jour", "dash.cum": "Coût cumulé depuis le début", "dash.cumB": "Coût cumulé face au crédit alloué", "dash.abs": "Absences par ouvrier",
       "dash.noAbs": "Aucune absence sur cette période.", "dash.budget": "Crédit {0}", "dash.unrec": "non pointé", "dash.tipRate": "{0} : {1} présents, {2} absents ({3} %)", "dash.tipCum": "{0} : {1} DH ce jour · total {2} DH",
       "dash.table": "Voir les données en tableau", "dash.th.date": "Jour", "dash.th.p": "Présents", "dash.th.a": "Absents", "dash.th.rate": "Taux", "dash.th.pay": "Coût du jour", "dash.th.cum": "Cumul", "dash.others": "Autres ({0})", "dash.absN": "{0} absence(s)",
-      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "chk.title": "Vérifier un document", "chk.sub": "Assurez-vous qu'un reçu, un état de paiement ou un dossier mensuel correspond au registre.", "chk.card": "Vérifier un document",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "fm.title": "Pointage — chef de chantier", "fm.hint": "Saisissez la présence des ouvriers puis appuyez sur « Envoyer pour validation ». Votre saisie parvient au propriétaire du registre et n'entre au registre officiel qu'après sa validation.",
+      "fm.date": "Date du pointage", "fm.outDone": "Sortie à {0} pour {1} ouvrier(s) — appuyez sur « Envoyer pour validation »", "fm.allP": "Tous présents", "fm.send": "Envoyer pour validation", "fm.resend": "Renvoyer", "fm.sending": "Envoi…", "fm.none": "Aucun pointage envoyé pour ce jour.",
+      "fm.pending": "Pointage envoyé à {0} — en attente de validation par le propriétaire du registre.", "fm.approved": "✓ Le propriétaire du registre a validé ce pointage ({0}).", "fm.rejected": "✗ Pointage refusé : {0} — corrigez puis renvoyez.",
+      "fm.official": "Au registre officiel : {0} présent(s) · {1} absent(s).", "fm.photo": "Photo de groupe (facultative)", "fm.photoRe": "Changer la photo", "fm.photoOk": "Photo ajoutée, elle sera envoyée avec le pointage.",
+      "fm.geoNote": "Votre position (GPS) est enregistrée automatiquement à l'envoi, comme preuve de présence sur le chantier.", "fm.sent": "Pointage envoyé ✓ en attente de validation", "fm.hist": "Derniers pointages envoyés",
+      "fm.histNone": "Aucun pointage envoyé pour l'instant.", "fm.counts": "{0} présent(s) · {1} absent(s)", "fm.st.pending": "En attente", "fm.st.approved": "Validé ✓", "fm.st.rejected": "Refusé",
+      "fm.noWorkers": "Aucun ouvrier à cette date.", "fm.tooOld": "Le pointage est possible pour les 7 derniers jours seulement.", "fm.exit": "Quitter le mode chef de chantier", "fm.exitSure": "Confirmer",
+      "fm.exitHint": "Ce téléphone est lié au lien chef de chantier envoyé par le propriétaire du registre. Les salaires et paiements n'apparaissent pas ici.",
+      "al.fm": "Pointage du chef de chantier à valider : {0} ({1} présent(s), {2} absent(s))", "fm.revTitle": "Pointage du chef de chantier — {0}", "fm.revSub": "Envoyé à {0}",
+      "fm.approve": "Valider et enregistrer au registre", "fm.reject": "Refuser", "fm.revSum": "{0} présent(s) · {1} absent(s) · {2} différence(s) avec le registre", "fm.was": "Au registre actuellement : {0}",
+      "fm.lockTitle": "Valider le pointage d'un jour fermé", "fm.lockSub": "Le {0} est enregistré et fermé. Indiquez le motif de sa modification par le pointage du chef de chantier.", "fm.rejTitle": "Refuser le pointage du chef de chantier",
+      "fm.rejSub": "Indiquez le motif du refus, transmis au chef de chantier ({0}).", "fm.approvedToast": "Pointage du {0} validé et enregistré ✓", "fm.rejectedToast": "Pointage refusé, le chef de chantier est informé.",
+      "fm.markFail": "Enregistré au registre, mais le chef de chantier n'a pas pu être informé. Vérifiez la connexion Internet.", "fm.dayBanner": "Le chef de chantier a envoyé un pointage pour ce jour, à valider.", "fm.review": "Examiner",
+      "log.fmOk": "Validation du pointage du chef de chantier du {0} : {1} présent(s), {2} absent(s)", "log.fmNo": "Refus du pointage du chef de chantier du {0} : {1}", "chk.title": "Vérifier un document", "chk.sub": "Assurez-vous qu'un reçu, un état de paiement ou un dossier mensuel correspond au registre.", "chk.card": "Vérifier un document",
       "chk.cardHint": "Chaque reçu, état de paiement et dossier mensuel porte un code QR et un code de vérification. Scannez le QR avec l'appareil photo du téléphone, ou saisissez le code ici.", "chk.open": "Saisir un code de vérification",
       "chk.codeLbl": "Code de vérification (8 lettres et chiffres)", "chk.go": "Vérifier", "chk.badCode": "Le code de vérification compte 8 lettres et chiffres, par ex. F820-R689.", "chk.codeLine": "Code de vérification : {0}", "chk.scan": "Scannez pour vérifier",
       "chk.okR": "Reçu authentique, conforme au registre", "chk.okB": "État de paiement authentique, conforme au registre", "chk.okM": "Dossier mensuel conforme au registre",
@@ -1658,7 +1723,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "bk.safetyHint": "Créées automatiquement avant chaque restauration ; vous pouvez y revenir.", "bk.safetyNone": "Aucune copie de sécurité pour l'instant.",
       "bk.safetyItem": "{0} · {1} ouvriers, {2}", "bk.useSafety": "Restaurer", "bk.noDl": "Téléchargement indisponible dans cette fenêtre.",
       "log.restore": "Sauvegarde restaurée : {0} ouvriers et {1}",
-      "help.body": "Accueil : votre journée en un coup d'œil — horaire, présents et absents, alertes et calendrier.<br>Pointage : « Tous présents », puis « Absent » pour les absents ; corrigez l'heure d'entrée ou de sortie si besoin (le bouton horloge met l'heure actuelle), puis « Enregistrer ».<br>Registre : recherchez par nom ou par période ; touchez une case pour changer le statut ou les horaires.<br>Ouvriers : ajoutez-les avec leur date d'arrivée et leur salaire journalier.<br>Paie : rapport du jour, de la semaine, du mois ou de toute période, avec PDF, Excel et résumé à copier.<br>Paramètres : sauvegarde, restauration et journal des modifications.",
+      "help.body": "Accueil : votre journée en un coup d'œil — horaire, présents et absents, alertes et calendrier.<br>Pointage : « Tous présents », puis « Absent » pour les absents ; corrigez l'heure d'entrée ou de sortie si besoin (le bouton horloge met l'heure actuelle), puis « Enregistrer ».<br>Registre : recherchez par nom ou par période ; touchez une case pour changer le statut ou les horaires.<br>Ouvriers : ajoutez-les avec leur date d'arrivée et leur salaire journalier.<br>Paie : rapport du jour, de la semaine, du mois ou de toute période, avec PDF, Excel et résumé à copier.<br>Paramètres : sauvegarde, restauration, journal des modifications, lien de consultation et lien du chef de chantier.<br>Chef de chantier : il saisit les présences sur son téléphone et vous les envoie ; une alerte à l'accueil vous permet de valider ou refuser.<br>Vérification : chaque reçu, état de paiement et dossier mensuel porte un QR et un code ; scannez-le ou saisissez-le dans « Paie → Vérifier un document ».",
     },
   };
   let LANG = document.documentElement.getAttribute("lang") === "fr" ? "fr" : "ar";
@@ -1711,7 +1776,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     period: "week", repFrom: null, repTo: null, setDirty: false, saving: false, cell: null,
     calMonth: todayISO().slice(0, 7), noteDirty: false, noteDate: null, auditQ: Promise.resolve(), gridScrolled: false,
     gFrom: null, gTo: null, restore: null, restoring: false, rp: [0, 0], safety: [], dListHTML: null, rebuilding: false,
+    fmSel: null, fmDraft: {}, fmPhoto: {}, subs: new Map(), fmSubs: [],
   };
+  /* opened from the site foreman's link: a single screen to record attendance and send it for approval */
+  const FM = !!window.SIJIL_FOREMAN;
+  if (FM) { try { const x = JSON.parse(ls.get("sijil.fmdraft") || "{}"); if (x && typeof x === "object") S.fmDraft = x; } catch (e) { /* no draft */ } }
   /* a verification link opened from the QR code of a printed document (#chk=…) */
   try {
     const cm = /[#&]chk=([rbm])([0-9A-Z]{8})\.([A-Za-z0-9_-]{1,64})/.exec(location.hash);
@@ -1762,6 +1831,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     .replace(/ؤ/g, "و").replace(/ة/g, "ه").toLowerCase().replace(/\s+/g, " ").trim();
   const matchW = (w, q) => !q || norm(w.name).includes(q) || String(w.cin || "").toLowerCase().includes(q) || String(w.phone || "").includes(q);
   const isP = (s) => s === "P" || s === "H";
+  const isImgData = (x) => typeof x === "string" && x.length < 1400000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x);
   const effWage = (w) => { const x = Number(w && w.wage); return x > 0 ? x : wage(); };
   const dayWage = (d, w) => { const v = Number(S.days.get(d)?.wages?.[w.id]); return v > 0 ? v : effWage(w); };
   function savedTimes(d, wid) {
@@ -1873,6 +1943,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function enterApp() {
     S.authed = true;
     $("auth").hidden = true; $("app").hidden = false;
+    if (FM) { for (const v of VIEWS) $("v-" + v).hidden = true; $("v-fm").hidden = false; S.tab = "fm"; renderAll(); return; }
     setTab(S.tab);
   }
 
@@ -1880,7 +1951,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function renderShell() {
     $("tbTitle").textContent = t("org.caidat");
     $("tbSub").textContent = `${S.settings.siteName || t("app.name")} · ${fmtLong(todayISO())}`;
-    $("roNotice").hidden = S.canWrite;
+    $("roNotice").hidden = S.canWrite || FM;
   }
   const VIEWS = ["home", "day", "grid", "workers", "pay", "settings"];
   function setTab(tb) {
@@ -1897,6 +1968,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   function renderAll() {
     if (!S.authed) return;
+    if (FM) { renderShell(); renderFm(); if (S.chkPending) { const c = S.chkPending; S.chkPending = null; openChk(c); } return; }
     renderShell();
     renderDay();
     if (S.tab !== "day") $("saveBar").hidden = true;
@@ -2074,6 +2146,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const bi = budgetInfo();
     if (bi && bi.rest <= 0) al.unshift({ k: "bad", t: t("al.budOver", money(-bi.rest)), go: "" });
     else if (bi && (bi.pct >= 85 || (bi.daysLeft !== null && bi.daysLeft <= 7))) al.unshift({ k: "warn", t: bi.daysLeft === 0 ? t("al.budLess") : bi.daysLeft === null ? t("al.budPct", Math.round(bi.pct)) : t("al.budLow", daysTxt(bi.daysLeft)), go: "" });
+    for (const x of fmPending().slice(0, 3).reverse()) al.unshift({ k: "info", t: t("al.fm", fmtShort(x.date), x.p || 0, x.a || 0), go: "fm:" + x.fid + ":" + x.date });
     if (window.SIJIL_LOCAL && !window.SIJIL_CLOUD) {
       if (!S.workers.size) al.unshift({ k: "info", t: t("al.importFirst"), go: "settings" });
       else {
@@ -2137,6 +2210,12 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const locked = isLocked(d);
     const editable = S.canWrite && !future && !before && !locked;
     renderDayExtras(d, locked, before, future);
+    { /* the site foreman sent this day: offer the review */
+      const fs = S.canWrite ? fmPending().filter((x) => x.date === d) : [];
+      const fh = fs.length ? `<span class="lk" aria-hidden="true">📋</span><span class="t">${esc(t("fm.dayBanner"))}</span><button type="button" class="btn sm primary" data-fmrev="${esc(fs[0].fid)}">${esc(t("fm.review"))}</button>` : "";
+      if (S.dFmHTML !== fh) { $("dFm").innerHTML = fh; S.dFmHTML = fh; }
+      $("dFm").hidden = !fh;
+    }
     if (!S.noteDirty || S.noteDate !== d) { $("dNote").value = S.days.get(d)?.note || ""; S.noteDirty = false; S.noteDate = d; $("noteHint").textContent = ""; }
     $("dNote").disabled = !editable; $("saveNote").disabled = !editable;
 
@@ -2216,7 +2295,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const geo = doc.geo, ph = S.photos.get(d);
     let pr = "";
     if (geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)) pr += `<a class="geo" href="https://www.google.com/maps?q=${geo.lat},${geo.lng}" target="_blank" rel="noopener">📍 ${esc(t("geo.line", hmOf(geo.at), Math.round(geo.acc || 0)))}</a>`;
-    if (ph && ph.data) pr += `<button type="button" class="ph" data-photo="${esc(d)}" aria-label="${esc(t("photo.alt", fmtShort(d)))}"><img src="${ph.data}" alt=""></button>`;
+    if (ph && ph.data) pr += `<button type="button" class="ph" data-photo="${esc(d)}" aria-label="${esc(t("photo.alt", fmtShort(d)))}"><img src="${esc(ph.data)}" alt=""></button>`;
     if (S.canWrite && !locked && !before && !future && d === todayISO()) pr += `<label class="btn sm">📷 ${esc(ph ? t("photo.replace") : t("photo.add"))}<input type="file" accept="image/*" capture="environment" data-photoin="${esc(d)}" hidden></label>`;
     if (S.dProofHTML !== pr) { $("dProof").innerHTML = pr; S.dProofHTML = pr; }
     $("dProof").hidden = !pr;
@@ -3573,6 +3652,194 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       signatures(D);
     });
   }
+  /* =========================================================== site foreman
+     The foreman's link opens this screen only: he records the attendance of the day and sends it. Nothing he sends
+     enters the register until the owner approves it, and no wage or payment is ever shown or copied to his phone. */
+  function getGeo(ms) {
+    return new Promise((res) => {
+      if (!navigator.geolocation) { res(null); return; }
+      const tm = setTimeout(() => res(null), ms + 500);
+      navigator.geolocation.getCurrentPosition((pos) => {
+        clearTimeout(tm);
+        const c = pos.coords;
+        res({ lat: Math.round(c.latitude * 1e6) / 1e6, lng: Math.round(c.longitude * 1e6) / 1e6, acc: Math.round(c.accuracy || 0), at: new Date().toISOString() });
+      }, () => { clearTimeout(tm); res(null); }, { enableHighAccuracy: true, timeout: ms, maximumAge: 60000 });
+    });
+  }
+  function fmSaveDraft() { try { ls.set("sijil.fmdraft", JSON.stringify(S.fmDraft)); } catch (e) { /* kept in memory */ } }
+  function fmRec(d, w) {
+    const dr = S.fmDraft[d], sub = S.subs.get(d), useSub = sub && sub.status !== "approved", sv = savedRec(d, w);
+    const st = (dr && dr.st && dr.st[w.id]) || (useSub && sub.statuses && sub.statuses[w.id]) || (sv ? sv.st : "P");
+    if (st !== "P") return { st: "A", in: "", out: "" };
+    const tm = (dr && dr.tm && dr.tm[w.id]) || (useSub && sub.times && sub.times[w.id]) || (sv && sv.st === "P" ? sv : defaultTimes(d));
+    return { st: "P", in: tm.in || "", out: tm.out || "" };
+  }
+  function fmSetList(html) {
+    const box = $("fmList");
+    if (S.fmListHTML === html) return;
+    const ae = document.activeElement;
+    const keep = ae && ae.classList && ae.classList.contains("tin") && box.contains(ae) && ae.closest(".wrow") ? { id: ae.closest(".wrow").dataset.id, f: ae.dataset.f, v: ae.value } : null;
+    S.rebuilding = true; box.innerHTML = html; S.fmListHTML = html; S.rebuilding = false;
+    if (keep) { const el = box.querySelector(`.wrow[data-id="${CSS.escape(keep.id)}"] .tin[data-f="${keep.f}"]`); if (el) { el.value = keep.v; el.focus({ preventScroll: true }); } }
+  }
+  function renderFm() {
+    const today = todayISO();
+    if (!S.fmSel || S.fmSel > today) S.fmSel = today;
+    const d = S.fmSel, min = maxD(start(), addDays(today, -6));
+    $("fmDate").max = today; $("fmDate").min = min; if (document.activeElement !== $("fmDate")) $("fmDate").value = d;
+    if (!allLoaded() || !S.loaded.subs) { fmSetList(`<div class="loading">${esc(t("common.loading"))}</div>`); return; }
+    const act = activeWorkers(d), sub = S.subs.get(d), dis = S.fmSending ? "disabled" : "";
+    let st = !sub ? `<p class="notice">${esc(t("fm.none"))}</p>`
+      : sub.status === "approved" ? `<p class="notice" style="background:var(--ok-soft)">${esc(t("fm.approved", hmOf(sub.doneAt || sub.at)))}</p>`
+      : sub.status === "rejected" ? `<p class="notice warn">${esc(t("fm.rejected", sub.note || "—"))}</p>`
+      : `<p class="notice">${esc(t("fm.pending", hmOf(sub.at)))}</p>`;
+    if (savedState(d).state !== "none") { const c = dayCounts(d); st += `<p class="hint">${esc(t("fm.official", num(c.p), c.a))}</p>`; }
+    if (S.fmStateHTML !== st) { $("fmState").innerHTML = st; S.fmStateHTML = st; }
+    let p = 0, a = 0;
+    const rows = act.map((w) => {
+      const r = fmRec(d, w), s = r.st;
+      if (s === "P") p++; else a++;
+      const btn = (code) => `<button type="button" data-st="${code}" aria-pressed="${s === code}" ${dis}>${esc(t("st." + code))}</button>`;
+      const tf = (f, v, label) => `<label class="tf"><span>${esc(t(label))}</span><input class="tin" ${TIN} data-f="${f}" value="${esc(v)}" aria-label="${esc(t(label) + " — " + w.name)}" ${dis}></label>`;
+      const times = s === "P" ? `<div class="times">${tf("in", r.in, "day.in")}${tf("out", r.out, "day.out")}</div>` : "";
+      return `<div class="wrow is-${s}" role="listitem" data-id="${esc(w.id)}"><span class="av" aria-hidden="true">${esc(initials(w.name))}</span>
+        <div class="who"><span class="nm">${esc(w.name)}</span></div><div class="tog" role="group" aria-label="${esc(w.name)}">${btn("P")}${btn("A")}</div>${times}</div>`;
+    }).join("");
+    fmSetList(act.length ? `<div class="card wlist" role="list">${rows}</div>` : `<div class="card empty"><p>${esc(t("fm.noWorkers"))}</p></div>`);
+    $("fmTally").innerHTML = `<div class="p"><b>${p}</b><span>${esc(t("st.Pp"))}</span></div><div class="a"><b>${a}</b><span>${esc(t("st.Ap"))}</span></div>`;
+    $("fmAllP").disabled = !act.length || S.fmSending;
+    $("fmAllOut").disabled = S.fmSending || !act.some((w) => { const r = fmRec(d, w); return r.st === "P" && !r.out; });
+    $("fmAllOut").querySelector("span").textContent = d === today ? t("day.allOut") : t("day.allOutAt", hTo());
+    const ph = S.fmPhoto[d] || (sub && sub.status !== "approved" && sub.photo) || "";
+    const pr = `${ph ? `<button type="button" class="ph" data-fmphoto="1" aria-label="${esc(t("fm.photo"))}"><img src="${esc(ph)}" alt=""></button>` : ""}
+      <label class="btn sm">📷 ${esc(ph ? t("fm.photoRe") : t("fm.photo"))}<input type="file" accept="image/*" capture="environment" id="fmPhotoIn" hidden></label>
+      ${d === today ? `<span class="hint" style="flex:1 1 200px">${esc(t("fm.geoNote"))}</span>` : ""}`;
+    if (S.fmProofHTML !== pr) { $("fmProof").innerHTML = pr; S.fmProofHTML = pr; }
+    $("fmSend").disabled = !act.length || S.fmSending;
+    $("fmSend").textContent = S.fmSending ? t("fm.sending") : sub && sub.status === "pending" ? t("fm.resend") : t("fm.send");
+    const hist = [...S.subs.values()].filter((x) => isISO(x.date)).sort((x, y) => y.date.localeCompare(x.date)).slice(0, 10);
+    const hh = hist.map((x) => `<li><button type="button" class="linkish" data-fmday="${esc(x.date)}">${esc(fmtShort(x.date))}</button><span>${esc(t("fm.counts", x.p || 0, x.a || 0))}</span><span class="chip ${x.status === "approved" ? "ok" : x.status === "rejected" ? "bad" : "warn"}">${esc(t("fm.st." + (x.status || "pending")))}</span></li>`).join("")
+      || `<li><span class="hint">${esc(t("fm.histNone"))}</span></li>`;
+    if (S.fmHistHTML !== hh) { $("fmHist").innerHTML = hh; S.fmHistHTML = hh; }
+  }
+  function fmDraft(d) { const x = S.fmDraft[d] || (S.fmDraft[d] = { st: {}, tm: {} }); x.st = x.st || {}; x.tm = x.tm || {}; return x; }
+  async function fmSend() {
+    const d = S.fmSel;
+    if (!S.db || S.fmSending || !allLoaded()) return;
+    const act = activeWorkers(d);
+    if (!act.length) return;
+    const statuses = {}, times = {};
+    let p = 0, a = 0;
+    for (const w of act) {
+      const r = fmRec(d, w);
+      if (r.st === "P" && r.in && r.out && toMin(r.out) < toMin(r.in)) { toast(`${w.name}: ${t("err.timeOrder")}`); return; }
+      statuses[w.id] = r.st;
+      if (r.st === "P") { times[w.id] = { in: r.in || "", out: r.out || "" }; p++; } else a++;
+    }
+    S.fmSending = true; renderFm();
+    try {
+      const prev = S.subs.get(d);
+      const geo = d === todayISO() ? await getGeo(12000) : null;
+      const doc = { date: d, statuses, times, p, a, at: new Date().toISOString(), status: "pending" };
+      if (geo) doc.geo = geo;
+      const ph = S.fmPhoto[d] || (prev && prev.status !== "approved" && prev.photo);
+      if (ph) doc.photo = ph;
+      await S.db.doc("subs/" + d).set(doc);
+      S.subs.set(d, { id: d, ...doc });
+      delete S.fmDraft[d]; delete S.fmPhoto[d]; fmSaveDraft();
+      toast(t("fm.sent"));
+    } catch (e) { toast(t("err.save")); }
+    finally { S.fmSending = false; renderAll(); }
+  }
+
+  /* ----- owner side: submissions from the foreman, reviewed before they enter the register */
+  const fmPending = () => (S.fmSubs || []).filter((x) => x.status === "pending" && isISO(x.date) && x.statuses && typeof x.statuses === "object").sort((x, y) => x.date.localeCompare(y.date));
+  const fmSubOf = (fid, d) => (S.fmSubs || []).find((x) => x.fid === fid && x.date === d);
+  function openFmReview(fid, d) { S.fmRev = { fid, d }; $("fmSheet").hidden = false; renderFmReview(); }
+  function closeFmReview() { $("fmSheet").hidden = true; S.fmRev = null; }
+  function fmLabel(st, tm) {
+    if (st === "A") return t("st.A");
+    if (st !== "P") return t("st.N");
+    return tm && (tm.in || tm.out) ? `${t("st.P")} \u2066${tm.in || "—"}–${tm.out || "—"}\u2069` : t("st.P");
+  }
+  function renderFmReview() {
+    const r = S.fmRev; if (!r) return;
+    const s = fmSubOf(r.fid, r.d);
+    if (!s) { closeFmReview(); return; }
+    $("fmTitle").textContent = t("fm.revTitle", fmtLong(s.date));
+    $("fmSub").textContent = t("fm.revSub", hmOf(s.at)) + (s.status !== "pending" ? " · " + t("fm.st." + s.status) : "");
+    let pr = "";
+    if (s.geo && Number.isFinite(s.geo.lat) && Number.isFinite(s.geo.lng)) pr += `<a class="geo" href="https://www.google.com/maps?q=${s.geo.lat},${s.geo.lng}" target="_blank" rel="noopener">📍 ${esc(t("geo.line", hmOf(s.geo.at), Math.round(s.geo.acc || 0)))}</a>`;
+    if (isImgData(s.photo)) pr += `<button type="button" class="ph" data-fmrevphoto="1" aria-label="${esc(t("fm.photo"))}"><img src="${esc(s.photo)}" alt=""></button>`;
+    $("fmProofR").innerHTML = pr; $("fmProofR").hidden = !pr;
+    let p = 0, a = 0, diff = 0;
+    const rows = activeWorkers(s.date).map((w) => {
+      const st = s.statuses[w.id], tm = s.times && s.times[w.id], sv = savedRec(s.date, w);
+      if (st === "P") p++; else if (st === "A") a++;
+      const changed = sv && (st === "P" || st === "A") && (sv.st !== st || (st === "P" && tm && ((tm.in || "") !== sv.in || (tm.out || "") !== sv.out)));
+      if (changed) diff++;
+      return `<div class="fmr${changed ? " diff" : ""}"><span class="nm">${esc(w.name)}</span><span class="pill ${st === "P" || st === "A" ? st : "N"}">${esc(fmLabel(st, tm))}</span>${changed ? `<span class="was">${esc(t("fm.was", fmLabel(sv.st, sv)))}</span>` : ""}</div>`;
+    }).join("");
+    $("fmRows").innerHTML = `<p class="hint">${esc(t("fm.revSum", p, a, diff))}</p><div class="fmrows">${rows}</div>`;
+    const open = s.status === "pending" && S.canWrite;
+    $("fmApprove").hidden = $("fmReject").hidden = !open;
+    $("fmApprove").disabled = $("fmReject").disabled = !!S.fmBusy;
+  }
+  async function fmApprove() {
+    const r = S.fmRev;
+    if (!r || !S.db || !S.canWrite || S.fmBusy || !window.SIJIL_FM) return;
+    const s = fmSubOf(r.fid, r.d); if (!s || s.status !== "pending") return;
+    const d = s.date;
+    let reason = "";
+    if (isLocked(d)) { reason = await askReason(t("fm.lockTitle"), t("fm.lockSub", fmtLong(d))); if (!reason) return; }
+    const prev = S.days.get(d) || {};
+    const statuses = { ...(prev.statuses || {}) }, times = { ...(prev.times || {}) }, wages = { ...(prev.wages || {}) };
+    let pc = 0, ac = 0;
+    for (const w of activeWorkers(d)) {
+      const st = s.statuses[w.id];
+      if (st !== "P" && st !== "A") continue;
+      const was = statuses[w.id];
+      statuses[w.id] = st;
+      if (st === "P") {
+        const tm = (s.times && s.times[w.id]) || {};
+        const tin = normTime(tm.in) || "", tout = normTime(tm.out) || "";
+        times[w.id] = { in: tin, out: tin && tout && toMin(tout) < toMin(tin) ? "" : tout };
+        const old = Number(prev.wages?.[w.id]);
+        wages[w.id] = old > 0 && isP(was) ? old : effWage(w);
+        pc++;
+      } else { delete times[w.id]; delete wages[w.id]; ac++; }
+    }
+    S.fmBusy = true; renderFmReview();
+    try {
+      const patch = { statuses, times, wages, savedAt: new Date().toISOString() };
+      if (reason) patch.amends = amendsWith(prev, reason);
+      if (s.geo && Number.isFinite(s.geo.lat) && Number.isFinite(s.geo.lng)) patch.geo = { lat: s.geo.lat, lng: s.geo.lng, acc: Math.round(Number(s.geo.acc) || 0), at: String(s.geo.at || s.at || ""), by: "fm" };
+      await writeDay(d, patch);
+      if (isImgData(s.photo) && s.photo.length < 900000 && !S.photos.has(d)) {
+        const ph = { date: d, at: String(s.at || new Date().toISOString()), w: 0, h: 0, data: s.photo, by: "fm" };
+        await S.db.doc("photos/" + d).set(ph); S.photos.set(d, ph);
+      }
+      delete S.drafts[d];
+      s.status = "approved"; s.doneAt = new Date().toISOString();
+      window.SIJIL_FM.mark(s.fid, d, { status: "approved", doneAt: s.doneAt, note: "" }).catch(() => toast(t("fm.markFail")));
+      logChange(t("log.fmOk", fmtShort(d), pc, ac) + (reason ? " — " + t("lock.reason") + ": " + reason : ""));
+      toast(t("fm.approvedToast", fmtShort(d)));
+      closeFmReview();
+    } catch (e) { writeError(e); }
+    finally { S.fmBusy = false; renderAll(); }
+  }
+  async function fmReject() {
+    const r = S.fmRev;
+    if (!r || !S.canWrite || S.fmBusy || !window.SIJIL_FM) return;
+    const s = fmSubOf(r.fid, r.d); if (!s || s.status !== "pending") return;
+    const reason = await askReason(t("fm.rejTitle"), t("fm.rejSub", fmtLong(s.date)));
+    if (!reason) return;
+    s.status = "rejected"; s.note = reason; s.doneAt = new Date().toISOString();
+    window.SIJIL_FM.mark(s.fid, s.date, { status: "rejected", note: reason, doneAt: s.doneAt }).catch(() => toast(t("fm.markFail")));
+    logChange(t("log.fmNo", fmtShort(s.date), reason));
+    toast(t("fm.rejectedToast"));
+    closeFmReview(); renderAll();
+  }
   /* ----- document verification: each receipt, pay list and monthly file carries a QR code and a code (XXXX-XXXX)
      computed from its key figures. Scanning it opens the app on #chk=…, which compares the paper with the register. */
   const amt2 = (x) => r2(Number(x) || 0).toFixed(2);
@@ -4199,6 +4466,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     if (g === "settings") return setTab("settings");
     if (g.startsWith("day:")) { S.sel = g.slice(4); return setTab("day"); }
     if (g.startsWith("worker:")) { S.open = g.slice(7); setTab("workers"); }
+    if (g.startsWith("fm:")) { const i = g.indexOf(":", 3); openFmReview(g.slice(3, i), g.slice(i + 1)); }
   });
   $("calGrid").addEventListener("click", (e) => { const b = e.target.closest("button[data-d]"); if (!b || b.disabled) return; S.sel = b.dataset.d; setTab("day"); });
   const shiftMonth = (k) => { let [y, m] = S.calMonth.split("-").map(Number); m += k; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } S.calMonth = `${y}-${String(m).padStart(2, "0")}`; renderCalendar(); };
@@ -4275,7 +4543,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     S.gridScrolled = false; renderGrid();
   });
   $("cClose").addEventListener("click", closeCell);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); if (e.key === "Escape" && !$("reasonSheet").hidden) closeReason(null); if (e.key === "Escape" && !$("photoView").hidden) $("photoView").hidden = true; if (e.key === "Escape" && !$("chkSheet").hidden) closeChk(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cellSheet").hidden) closeCell(); if (e.key === "Escape" && !$("paySheet").hidden) closePay(); if (e.key === "Escape" && !$("sigSheet").hidden) closeSign(); if (e.key === "Escape" && !$("reasonSheet").hidden) closeReason(null); if (e.key === "Escape" && !$("photoView").hidden) $("photoView").hidden = true; if (e.key === "Escape" && !$("chkSheet").hidden) closeChk(); if (e.key === "Escape" && !$("fmSheet").hidden && $("reasonSheet").hidden && $("photoView").hidden) closeFmReview(); });
 
   $("openAdd").addEventListener("click", () => { S.returnToDay = false; openForm("add", S.sel); });
   $("openBulk").addEventListener("click", () => openForm("bulk", start()));
@@ -4444,6 +4712,69 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   $("sigSheet").addEventListener("click", (e) => { if (e.target === $("sigSheet")) closeSign(); });
   window.addEventListener("resize", () => { if (S.pyPad && !$("paySheet").hidden) S.pyPad.fit(); if (S.sgPad && !$("sigSheet").hidden) S.sgPad.fit(); });
   $("pyClose").addEventListener("click", closePay);
+  /* site foreman's screen */
+  $("fmDate").addEventListener("change", (e) => {
+    const v = e.target.value, min = maxD(start(), addDays(todayISO(), -6));
+    if (isISO(v) && v <= todayISO() && v >= min) S.fmSel = v; else { if (isISO(v)) toast(t("fm.tooOld")); e.target.value = S.fmSel || todayISO(); }
+    renderFm();
+  });
+  $("fmList").addEventListener("click", (e) => {
+    const b = e.target.closest(".tog button"); if (!b || b.disabled) return;
+    fmDraft(S.fmSel).st[b.closest(".wrow").dataset.id] = b.dataset.st; fmSaveDraft(); renderFm();
+  });
+  $("fmList").addEventListener("focusout", (e) => {
+    const inp = e.target;
+    if (S.rebuilding || !inp.classList || !inp.classList.contains("tin")) return;
+    const row = inp.closest(".wrow"); const w = row && S.workers.get(row.dataset.id); if (!w) return;
+    const v = normTime(inp.value);
+    S.fmListHTML = null;
+    if (v === null) { toast(t("err.time")); renderFm(); return; }
+    const r = fmRec(S.fmSel, w); if (r.st !== "P") return;
+    const next = { in: r.in, out: r.out, [inp.dataset.f]: v };
+    if (next.in && next.out && toMin(next.out) < toMin(next.in)) { toast(t("err.timeOrder")); renderFm(); return; }
+    fmDraft(S.fmSel).tm[w.id] = next; fmSaveDraft(); renderFm();
+  });
+  $("fmAllP").addEventListener("click", () => { const d = S.fmSel, x = fmDraft(d); for (const w of activeWorkers(d)) x.st[w.id] = "P"; fmSaveDraft(); renderFm(); });
+  $("fmAllOut").addEventListener("click", () => {
+    const d = S.fmSel, at = d === todayISO() ? nowHM() : hTo();
+    let n = 0;
+    for (const w of activeWorkers(d)) {
+      const r = fmRec(d, w);
+      if (r.st !== "P" || r.out || (r.in && toMin(at) < toMin(r.in))) continue;
+      fmDraft(d).tm[w.id] = { in: r.in, out: at }; n++;
+    }
+    if (!n) { toast(t("day.nothing")); return; }
+    fmSaveDraft(); S.fmListHTML = null; renderFm();
+    toast(t("fm.outDone", at, n));
+  });
+  $("fmSend").addEventListener("click", fmSend);
+  $("fmProof").addEventListener("change", async (e) => {
+    const inp = e.target; if (!inp || inp.id !== "fmPhotoIn" || !inp.files || !inp.files[0]) return;
+    try { const im = await compressImage(inp.files[0], 1100, 0.62); S.fmPhoto[S.fmSel] = im.url; renderFm(); toast(t("fm.photoOk")); } catch (x) { toast(t("err.save")); }
+  });
+  $("fmProof").addEventListener("click", (e) => {
+    if (!e.target.closest("[data-fmphoto]")) return;
+    const sub = S.subs.get(S.fmSel), ph = S.fmPhoto[S.fmSel] || (sub && sub.photo);
+    if (ph) { $("pvImg").src = ph; $("photoView").hidden = false; }
+  });
+  $("fmHist").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fmday]"); if (!b) return;
+    if (b.dataset.fmday >= maxD(start(), addDays(todayISO(), -6))) { S.fmSel = b.dataset.fmday; renderFm(); window.scrollTo(0, 0); } else toast(t("fm.tooOld"));
+  });
+  $("fmExit").addEventListener("click", (e) => {
+    const b = e.currentTarget;
+    if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = t("fm.exitSure"); return; }
+    b.disabled = true; if (window.SIJIL_EXIT_VIEW) window.SIJIL_EXIT_VIEW();
+  });
+  /* owner: review of what the foreman sent */
+  $("dFm").addEventListener("click", (e) => { const b = e.target.closest("[data-fmrev]"); if (b) openFmReview(b.dataset.fmrev, S.sel); });
+  $("fmApprove").addEventListener("click", fmApprove);
+  $("fmReject").addEventListener("click", fmReject);
+  $("fmClose").addEventListener("click", closeFmReview);
+  $("fmSheet").addEventListener("click", (e) => {
+    if (e.target === $("fmSheet")) { closeFmReview(); return; }
+    if (e.target.closest("[data-fmrevphoto]")) { const x = S.fmRev && fmSubOf(S.fmRev.fid, S.fmRev.d); if (x && isImgData(x.photo)) { $("pvImg").src = x.photo; $("photoView").hidden = false; } }
+  });
   $("ckOpen").addEventListener("click", () => openChk(null));
   $("ckClose").addEventListener("click", closeChk);
   $("chkSheet").addEventListener("click", (e) => { if (e.target === $("chkSheet")) closeChk(); });
@@ -4570,7 +4901,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     }, () => { S.loaded.payments = true; renderAll(); });
     db.collection("photos").onSnapshot((snap) => {
       const m = new Map();
-      for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date) && typeof v.data === "string" && v.data.indexOf("data:image/") === 0) m.set(v.date, v); }
+      for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date) && isImgData(v.data)) m.set(v.date, v); }
       S.photos = m; if (S.tab === "day") renderDay();
     }, keep);
     db.collection("audit").onSnapshot((snap) => {
@@ -4578,6 +4909,15 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date)) m.set(v.date, v); }
       S.audit = m; if (S.authed && S.tab === "settings") renderAudit();
     }, keep);
+    if (FM) {
+      db.collection("subs").onSnapshot((snap) => {
+        const m = new Map();
+        for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date)) m.set(v.date, { id: d.id, ...v }); }
+        S.subs = m; S.loaded.subs = true; renderAll();
+      }, () => { S.loaded.subs = true; renderAll(); });
+    } else if (window.SIJIL_FM) {
+      window.SIJIL_FM.on((list) => { S.fmSubs = Array.isArray(list) ? list : []; renderAll(); if (S.fmRev) renderFmReview(); });
+    }
   })();
 })();
 </script>

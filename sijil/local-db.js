@@ -99,11 +99,16 @@
   /* short public address of this app: a redirect that keeps the #… part of the link */
   var SHORT_BASE = /*SHORT_BASE*/"";
   var CODE_RE = /^[a-km-z2-9]{12}$/;
-  function codeView(code) { return { c: HOME_CFG, o: "", e: "view." + code + "@example.com", p: code + "-v", k: code }; }
+  function codeView(code, role) {
+    var f = role === "f", v = { c: HOME_CFG, o: "", e: (f ? "fore." : "view.") + code + "@example.com", p: code + (f ? "-f" : "-v"), k: code };
+    if (f) v.r = "f";
+    return v;
+  }
   function b64e(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
   function b64d(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
   function validView(v) { return !!(v && v.c && v.c.apiKey && v.c.projectId && v.c.appId && typeof v.o === "string" && typeof v.e === "string" && v.e && typeof v.p === "string" && v.p); }
   function readOnly() { return Promise.reject(err("invalid_argument", "view-only link: writing is not allowed")); }
+  function fmWritable(p) { return FMODE && /^subs\/\d{4}-\d{2}-\d{2}$/.test(p); }
   function syncError(e) {
     console.error(e);
     var code = (e && e.code) || "";
@@ -120,9 +125,9 @@
       id: ref.id, path: p,
       get: function () { return m.getDoc(ref).then(snapOf); },
       /* writes are applied to the phone's copy at once and sent when there is a connection */
-      set: function (d) { if (VIEW) return readOnly(); var x = clean(d); m.setDoc(ref, x).catch(syncError); mirrorOp("set", p, x); return Promise.resolve(); },
-      update: function (d) { if (VIEW) return readOnly(); var x = clean(d); m.setDoc(ref, x, { merge: true }).catch(syncError); mirrorOp("merge", p, x); return Promise.resolve(); },
-      delete: function () { if (VIEW) return readOnly(); m.deleteDoc(ref).catch(syncError); mirrorOp("del", p); return Promise.resolve(); },
+      set: function (d) { if (VIEW && !fmWritable(p)) return readOnly(); var x = clean(d); m.setDoc(ref, x).catch(syncError); mirrorOp("set", p, x); return Promise.resolve(); },
+      update: function (d) { if (VIEW && !fmWritable(p)) return readOnly(); var x = clean(d); m.setDoc(ref, x, { merge: true }).catch(syncError); mirrorOp("merge", p, x); return Promise.resolve(); },
+      delete: function () { if (VIEW && !fmWritable(p)) return readOnly(); m.deleteDoc(ref).catch(syncError); mirrorOp("del", p); return Promise.resolve(); },
       onSnapshot: function (next, error) { return m.onSnapshot(ref, function (s) { next(snapOf(s)); }, function (e) { syncError(e); if (error) error(e); }); },
     };
   }
@@ -222,6 +227,11 @@
       if (HOME_CFG && CODE_RE.test(vc[1])) setJ(VIEW_KEY, codeView(vc[1])); else { badViewLink = true; try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ } }
       history.replaceState(null, "", location.pathname + location.search);
     }
+    var fc = /[#&]f=([a-z0-9]+)/.exec(location.hash);
+    if (fc) {
+      if (HOME_CFG && CODE_RE.test(fc[1])) setJ(VIEW_KEY, codeView(fc[1], "f")); else { badViewLink = true; try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ } }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
     var vm = /[#&]view=([A-Za-z0-9_\-+/=]+)/.exec(location.hash);
     if (vm) {
       var vv = null;
@@ -237,18 +247,23 @@
   if (hashCfg) { saved = { cfg: hashCfg, pending: true }; setJ(CLOUD_KEY, saved); }
   /* the owner's own device (cloud saving set up for the same project) never turns into a view-only copy */
   if (VIEW && saved && saved.cfg && saved.cfg.projectId === VIEW.c.projectId) {
+    var wasFm = VIEW.r === "f";
     try { if (LS) LS.removeItem(VIEW_KEY); } catch (e) { /* ignore */ }
     VIEW = null;
     whenBody(function () {
+      if (wasFm) { banner(T("هذا رابط رئيس الورش الخاص بسجلك: على هاتفك يبقى السجل كما هو، وعند رئيس الورش يُفتح لتسجيل الحضور فقط وإرساله إليك للاعتماد.", "C'est le lien chef de chantier de votre registre : sur votre téléphone le registre reste inchangé ; chez le chef de chantier, il sert uniquement à saisir les présences et à vous les envoyer pour validation."), false); return; }
       banner(T("هذا رابط المشاهدة الخاص بسجلك: على هاتفك يبقى السجل قابلاً للتعديل كما هو، وعند من ترسله إليه يُفتح للاطلاع فقط. لتجربته اضغط «تجربة الرابط» في الإعدادات.",
         "C'est le lien de consultation de votre registre : sur votre téléphone le registre reste modifiable ; chez la personne qui le reçoit, il s'ouvre en lecture seule. Pour le vérifier, appuyez sur « Tester le lien » dans les paramètres."), false);
     });
   }
+  /* the site foreman's link: like a view-only link, but it can send the day's attendance (subs/…) for the owner to approve */
+  var FMODE = !!(VIEW && VIEW.r === "f");
   var dbReady;
   if (VIEW) {
     /* view-only: sign in with the link's own viewer account and read the owner's register */
-    window.SIJIL_CLOUD = true; window.SIJIL_VIEW = true;
-    document.documentElement.classList.add("cloud-on", "view-on");
+    window.SIJIL_CLOUD = true;
+    if (FMODE) { window.SIJIL_FOREMAN = true; document.documentElement.classList.add("cloud-on", "fm-on"); }
+    else { window.SIJIL_VIEW = true; document.documentElement.classList.add("cloud-on", "view-on"); }
     dbReady = loadFirebase(VIEW.c, "sijilview").then(firstUser).then(function (u) {
       if (u && String(u.email || "").toLowerCase() === VIEW.e.toLowerCase()) return u;
       return cloud.au.signInWithEmailAndPassword(cloud.auth, VIEW.e, VIEW.p).then(function (c) { return c.user; });
@@ -320,7 +335,7 @@
     '.sjsteps{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7;color:var(--ink,#131A2B)}.sjsteps b{font-weight:700}' +
     '.sjcode{direction:ltr;text-align:left;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--surface-2,#EDF0F6);border-radius:10px;padding:10px;margin:0;overflow-x:auto}' +
     'html.cloud-on #protCard{display:none}html.view-on #bkCard{display:none}' +
-    '#shareCard{display:flex;flex-direction:column;gap:10px;scroll-margin-top:calc(84px + env(safe-area-inset-top,0px))}#shareCard[hidden]{display:none}.sjsb{display:flex;flex-direction:column;gap:10px}#shareCard a.btn{text-decoration:none}' +
+    '#shareCard,#fmCard{display:flex;flex-direction:column;gap:10px;scroll-margin-top:calc(84px + env(safe-area-inset-top,0px))}#shareCard[hidden],#fmCard[hidden]{display:none}.sjsb{display:flex;flex-direction:column;gap:10px}#shareCard a.btn{text-decoration:none}' +
     '.sjres{display:flex;flex-direction:column;gap:8px}.sjlink{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line,#DBE1EB);background:var(--surface-2,#EDF0F6);color:var(--ink,#131A2B);font:12px/1 ui-monospace,Menlo,Consolas,monospace;width:100%;box-sizing:border-box;direction:ltr;text-align:left}';
   whenBody(function () { var s = document.createElement("style"); s.textContent = CSS; document.head.appendChild(s); });
 
@@ -360,7 +375,7 @@
   /* full-screen message when a view-only link cannot be used (stopped by the owner, invalid, offline) */
   function viewStopped(e) {
     var c = String((e && e.code) || "");
-    var title = T("رابط المشاهدة غير متاح", "Lien de consultation indisponible"), msg;
+    var title = FMODE ? T("رابط رئيس الورش غير متاح", "Lien du chef de chantier indisponible") : T("رابط المشاهدة غير متاح", "Lien de consultation indisponible"), msg;
     if (/permission-denied|unauthenticated|stopped|invalid-credential|user-not-found|wrong-password|user-disabled|user-token-expired/.test(c)) msg = T("أوقف صاحب السجل هذا الرابط. اطلب منه رابطاً جديداً.", "Le propriétaire du registre a arrêté ce lien. Demandez-lui un nouveau lien.");
     else if (c === "bad-link") msg = T("الرابط ناقص: افتحه كاملاً كما وصلك، أو اطلب من صاحب السجل رابطاً جديداً.", "Lien incomplet : ouvrez-le en entier tel que reçu, ou demandez un nouveau lien au propriétaire du registre.");
     else if (/invalid-email/.test(c)) msg = T("هذا الرابط لم يعد صالحاً. اطلب من صاحب السجل رابطاً جديداً.", "Ce lien n'est plus valide. Demandez un nouveau lien au propriétaire du registre.");
@@ -371,7 +386,7 @@
         if (document.getElementById("sjLogin")) return;
         var box = el('<div id="sjLogin"><div class="bx"><h2></h2><p></p><div class="sjrow">' +
           '<button class="sjb p" type="button" id="sjRetry">' + T("إعادة المحاولة", "Réessayer") + '</button>' +
-          '<button class="sjb g" type="button" id="sjExitView">' + T("الخروج من وضع المشاهدة", "Quitter la consultation") + '</button></div></div></div>');
+          '<button class="sjb g" type="button" id="sjExitView">' + (FMODE ? T("الخروج من وضع رئيس الورش", "Quitter le mode chef de chantier") : T("الخروج من وضع المشاهدة", "Quitter la consultation")) + '</button></div></div></div>');
         box.querySelector("h2").textContent = title; box.querySelector("p").textContent = msg;
         document.body.appendChild(box);
         box.querySelector("#sjRetry").addEventListener("click", function () { location.reload(); });
@@ -379,6 +394,7 @@
       });
     });
   }
+  window.SIJIL_EXIT_VIEW = function () { exitView(); };
   function exitView() {
     try { if (LS) LS.removeItem(VIEW_KEY); } catch (x) { /* ignore */ }
     var done = function () { location.reload(); };
@@ -394,6 +410,55 @@
      never be touched from the link, and nothing has to be changed in Firebase. */
   var MIR = { ready: false, list: [], pre: [], overflow: false, waiters: [] };
   var MIR_COLS = ["workers", "days", "payments", "audit", "photos"];
+  /* the foreman's copy: names and attendance only */
+  var FM_COLS = ["workers", "days"];
+  var FM_KEEP = { "app/settings": ["siteName", "startDate", "hourFrom", "hourTo"], workers: ["name", "joinDate", "exitDate"], days: ["date", "statuses", "times", "savedAt"] };
+  function fmKeys(p) { return FM_KEEP[p === "app/settings" ? p : p.split("/")[0]] || null; }
+  function fmPick(p, d) { var ks = fmKeys(p), o = {}; if (!ks || !d) return o; ks.forEach(function (k) { if (d[k] !== undefined) o[k] = d[k]; }); return o; }
+  function fmOp(op) {
+    if (!fmKeys(op[1])) return null;
+    if (op[0] === "del") return op;
+    var o = fmPick(op[1], op[2]);
+    if (op[0] === "merge" && !Object.keys(o).length) return null;
+    return [op[0], op[1], o];
+  }
+  function forLink(v, op) { return v.r === "f" ? fmOp(op) : op; }
+  /* what the foreman sends (sijil/<foreman link>/subs/<date>), read by the owner's app with the link's account */
+  var FMW = { subs: {}, cbs: [] };
+  function fmNotify() {
+    var all = [];
+    MIR.list.forEach(function (v) { if (v.r === "f" && !v.gone && FMW.subs[v.uid]) all = all.concat(FMW.subs[v.uid]); });
+    FMW.cbs.forEach(function (f) { try { f(all); } catch (e) { console.error(e); } });
+  }
+  function watchSubs(v) {
+    if (v.r !== "f" || v.unsub || v.gone) return;
+    run(v, function () {
+      return vApp(v).then(function () {
+        if (v.unsub || v.gone) return;
+        var F = cloud.F;
+        v.unsub = F.onSnapshot(F.collection(v.fs, "sijil/" + v.uid + "/subs"), function (q) {
+          FMW.subs[v.uid] = q.docs.map(function (d) { var x = d.data() || {}; x.id = d.id; x.fid = v.uid; return x; });
+          fmNotify();
+        }, function (e) { console.error(e); v.unsub = null; setTimeout(function () { watchSubs(v); }, 60000); });
+      });
+    }).catch(function (e) { console.error(e); setTimeout(function () { watchSubs(v); }, 60000); });
+  }
+  function fmApi() {
+    window.SIJIL_FM = {
+      on: function (cb) { FMW.cbs.push(cb); setTimeout(fmNotify, 0); },
+      /* the owner's decision goes back to the foreman's phone */
+      mark: function (fid, date, patch) {
+        var v = MIR.list.filter(function (x) { return x.uid === fid && x.r === "f" && !x.gone; })[0];
+        if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return Promise.reject(err("not_found", "link"));
+        var x = clean(patch);
+        function attempt(n) {
+          return run(v, function () { return vApp(v).then(function () { var F = cloud.F; return F.setDoc(F.doc(v.fs, "sijil/" + v.uid + "/subs/" + date), x, { merge: true }); }); })
+            .catch(function (e) { if (n >= 4) throw e; return new Promise(function (res) { setTimeout(res, 20000); }).then(function () { return attempt(n + 1); }); });
+        }
+        return attempt(0);
+      },
+    };
+  }
   function noop() {}
   function rnd(n) { var a = "abcdefghijkmnpqrstuvwxyz23456789", b = new Uint8Array(n), s = ""; crypto.getRandomValues(b); for (var i = 0; i < n; i++) s += a[b[i] % 32]; return s; }
   function isDenied(e) { return String((e && e.code) || "").indexOf("permission-denied") >= 0; }
@@ -404,7 +469,7 @@
     if (VIEW || !mirrorable(p)) return;
     var op = [kind, p, d];
     if (!MIR.ready) { if (MIR.pre.length < 3000) MIR.pre.push(op); else MIR.overflow = true; return; }
-    MIR.list.forEach(function (v) { v.q.push(op); flushMirror(v); });
+    MIR.list.forEach(function (v) { var o = forLink(v, op); if (o) { v.q.push(o); flushMirror(v); } });
   }
   /* one queue per link: copies and changes are applied in order */
   function run(v, fn) { var p = (v.chain || Promise.resolve()).then(fn); v.chain = p.catch(noop); return p; }
@@ -445,17 +510,18 @@
     return run(v, function () {
       if (v.gone) return;
       v.q = []; /* every change made so far is part of the copy below */
-      var F = cloud.F, base = cloud.base, mb = "sijil/" + v.uid + "/", n = MIR_COLS.length;
+      var F = cloud.F, base = cloud.base, mb = "sijil/" + v.uid + "/", fm = v.r === "f", cols = fm ? FM_COLS : MIR_COLS, n = cols.length;
+      var data = function (p, d) { return fm ? fmPick(p, d) : d; };
       return Promise.resolve().then(function () { return vApp(v); }).then(function () {
         return Promise.all([F.getDoc(F.doc(cloud.fs, base + "app/settings"))]
-          .concat(MIR_COLS.map(function (c) { return F.getDocs(F.collection(cloud.fs, base + c)); }))
-          .concat(MIR_COLS.map(function (c) { return F.getDocs(F.collection(v.fs, mb + c)); })));
+          .concat(cols.map(function (c) { return F.getDocs(F.collection(cloud.fs, base + c)); }))
+          .concat(cols.map(function (c) { return F.getDocs(F.collection(v.fs, mb + c)); })));
       }).then(function (r) {
-        var ops = [["set", "app/viewer", { active: true, at: new Date().toISOString() }]];
-        if (r[0].exists()) ops.push(["set", "app/settings", r[0].data()]);
-        MIR_COLS.forEach(function (c, i) {
+        var ops = [["set", "app/viewer", { active: true, at: new Date().toISOString(), r: fm ? "f" : "v" }]];
+        if (r[0].exists()) ops.push(["set", "app/settings", data("app/settings", r[0].data())]);
+        cols.forEach(function (c, i) {
           var keep = {};
-          r[1 + i].docs.forEach(function (d) { keep[d.id] = 1; ops.push(["set", c + "/" + d.id, d.data()]); });
+          r[1 + i].docs.forEach(function (d) { keep[d.id] = 1; ops.push(["set", c + "/" + d.id, data(c + "/" + d.id, d.data())]); });
           r[1 + n + i].docs.forEach(function (d) { if (!keep[d.id]) ops.push(["del", c + "/" + d.id]); });
         });
         return commitOps(v, ops);
@@ -464,16 +530,17 @@
   }
   function saveViewers() {
     var F = cloud.F;
-    return F.setDoc(F.doc(cloud.fs, cloud.base + "app/viewers"), { list: MIR.list.map(function (v) { return { uid: v.uid, e: v.e, p: v.p, link: v.link, at: v.at }; }) });
+    return F.setDoc(F.doc(cloud.fs, cloud.base + "app/viewers"), { list: MIR.list.map(function (v) { var o = { uid: v.uid, e: v.e, p: v.p, link: v.link, at: v.at }; if (v.r === "f") o.r = "f"; return o; }) });
   }
   function startMirrors() {
     var F = cloud.F;
     F.getDoc(F.doc(cloud.fs, cloud.base + "app/viewers")).then(function (sn) {
       var d = sn.exists() ? sn.data() : null;
-      MIR.list = ((d && d.list) || []).filter(function (x) { return x && x.uid && x.e && x.p; }).map(function (x) { return { uid: x.uid, e: x.e, p: x.p, link: x.link, at: x.at, q: [] }; });
+      MIR.list = ((d && d.list) || []).filter(function (x) { return x && x.uid && x.e && x.p; }).map(function (x) { var v = { uid: x.uid, e: x.e, p: x.p, link: x.link, at: x.at, q: [] }; if (x.r === "f") v.r = "f"; return v; });
       var pre = MIR.pre; MIR.pre = []; MIR.ready = true;
       MIR.list.forEach(function (v) {
-        v.q = pre.slice();
+        v.q = pre.map(function (op) { return forLink(v, op); }).filter(Boolean);
+        watchSubs(v);
         var last = 0;
         try { last = Number(LS && LS.getItem("sijil.mirsync." + v.uid)) || 0; } catch (x) { last = 0; }
         if (MIR.overflow || Date.now() - last > 12 * 3600000) fullSync(v).catch(function (e) { console.error(e); });
@@ -483,39 +550,45 @@
       MIR.waiters.splice(0).forEach(function (f) { f(); });
     }).catch(function (e) { console.error(e); setTimeout(startMirrors, 60000); });
   }
-  function createViewer() {
-    var A = cloud.A, Au = cloud.au, F = cloud.F, c = cloud.cfg, app = null;
+  function createViewer(role) {
+    var A = cloud.A, Au = cloud.au, F = cloud.F, c = cloud.cfg, app = null, fm = role === "f";
     var code = rnd(12);
     var short = !!(HOME_CFG && HOME_CFG.projectId === c.projectId && CODE_RE.test(code));
-    var v = short ? { e: codeView(code).e, p: codeView(code).p, at: new Date().toISOString(), q: [] } : { e: "view." + rnd(12) + "@example.com", p: rnd(24), at: new Date().toISOString(), q: [] };
+    var v = short ? { e: codeView(code, role).e, p: codeView(code, role).p, at: new Date().toISOString(), q: [] } : { e: (fm ? "fore." : "view.") + rnd(12) + "@example.com", p: rnd(24), at: new Date().toISOString(), q: [] };
+    if (fm) v.r = "f";
     return Promise.resolve().then(function () {
       app = A.initializeApp(c, "sijilmk" + Date.now());
       var auth = Au.initializeAuth(app, { persistence: Au.inMemoryPersistence });
       return Au.createUserWithEmailAndPassword(auth, v.e, v.p).then(function (cred) { v.auth = auth; return cred; });
     }).then(function (cred) {
       v.uid = cred.user.uid; v.app = app; v.fs = F.getFirestore(app);
-      v.link = short ? (SHORT_BASE || location.origin + location.pathname) + "#v=" + code
-        : location.origin + location.pathname + "#view=" + b64e({ c: { apiKey: c.apiKey, authDomain: c.authDomain, projectId: c.projectId, appId: c.appId }, o: v.uid, e: v.e, p: v.p });
+      var payload = { c: { apiKey: c.apiKey, authDomain: c.authDomain, projectId: c.projectId, appId: c.appId }, o: v.uid, e: v.e, p: v.p };
+      if (fm) payload.r = "f";
+      v.link = short ? (SHORT_BASE || location.origin + location.pathname) + (fm ? "#f=" : "#v=") + code
+        : location.origin + location.pathname + "#view=" + b64e(payload);
       MIR.list.push(v);
       return fullSync(v).then(saveViewers);
-    }).then(function () { return v; }, function (e) {
+    }).then(function () { watchSubs(v); return v; }, function (e) {
       var i = MIR.list.indexOf(v); if (i >= 0) MIR.list.splice(i, 1);
       if (v.app) closeV(v); else if (app) A.deleteApp(app).catch(noop);
       throw e;
     });
   }
   /* stopping: empty the copy, then delete the link's account, so the link can never open again */
-  function stopViewers() {
-    var Au = cloud.au, F = cloud.F, all = MIR.list.slice();
+  function stopViewers(role) {
+    var Au = cloud.au, F = cloud.F, all = MIR.list.filter(function (v) { return (v.r || "v") === (role || "v"); });
     return Promise.all(all.map(function (v) {
       v.q = [];
+      if (v.unsub) { try { v.unsub(); } catch (x) { /* ignore */ } v.unsub = null; }
+      delete FMW.subs[v.uid];
+      var cols = v.r === "f" ? FM_COLS.concat(["subs"]) : MIR_COLS;
       return run(v, function () {
         var mb = "sijil/" + v.uid + "/";
         return Promise.resolve().then(function () { return vApp(v); }).then(function () {
-          return Promise.all(MIR_COLS.map(function (c) { return F.getDocs(F.collection(v.fs, mb + c)); }));
+          return Promise.all(cols.map(function (c) { return F.getDocs(F.collection(v.fs, mb + c)); }));
         }).then(function (r) {
           var ops = [["del", "app/viewer"], ["del", "app/settings"]];
-          r.forEach(function (q, i) { q.docs.forEach(function (d) { ops.push(["del", MIR_COLS[i] + "/" + d.id]); }); });
+          r.forEach(function (q, i) { q.docs.forEach(function (d) { ops.push(["del", cols[i] + "/" + d.id]); }); });
           return commitOps(v, ops);
         }).then(function () { return Au.signInWithEmailAndPassword(v.auth, v.e, v.p); })
           .then(function () { return Au.deleteUser(v.auth.currentUser); })
@@ -523,8 +596,9 @@
       }).then(function () { v.gone = true; closeV(v); try { if (LS) LS.removeItem("sijil.mirsync." + v.uid); } catch (x) { /* ignore */ } });
     })).then(function () {
       MIR.list = MIR.list.filter(function (v) { return all.indexOf(v) < 0; });
+      fmNotify();
       return saveViewers();
-    }).then(stopLegacy);
+    }).then(function () { if ((role || "v") === "v") return stopLegacy(); });
   }
   /* links made with the previous version (they read the register directly) */
   function legacyPath() { return "sijilViewers/" + cloud.user.uid + "/v"; }
@@ -555,6 +629,28 @@
 
   /* ---------- the "view-only link" card (top of Settings) and its button in the top bar */
   var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>';
+  var LINKS = {
+    v: {
+      title: function () { return T("رابط المشاهدة فقط", "Lien en lecture seule"); },
+      hint: function () { return T("أرسله لمن تريد أن يطّلع على السجل (العمال، الحضور، الأجور، التقارير) دون أن يستطيع تعديل أي شيء. يتحدّث عنده تلقائياً كلما سجّلت، ويمكنك إيقافه متى شئت.", "Envoyez-le à qui doit consulter le registre (ouvriers, présences, salaires, rapports) sans pouvoir rien modifier. Il se met à jour à chaque enregistrement, et vous pouvez l'arrêter à tout moment."); },
+      create: function () { return T("إنشاء رابط المشاهدة", "Créer le lien de consultation"); },
+      active: function () { return T("الرابط مفعّل ✓ — من يفتحه يرى السجل فقط ولا يستطيع تعديل أي شيء.", "Lien actif ✓ — la personne qui l'ouvre voit le registre sans pouvoir rien modifier."); },
+      aria: function () { return T("رابط المشاهدة", "Lien de consultation"); },
+      wa: function () { return T("سجل الحضور والأجور — رابط للاطلاع فقط:", "Registre de présence et de paie — lien en lecture seule :"); },
+      stop: function () { return T("إيقاف رابط المشاهدة", "Arrêter le lien de consultation"); },
+      ok: function (n) { return T("تمت التجربة ✓ الرابط يفتح السجل للاطلاع (عدد العمال: ", "Test réussi ✓ le lien ouvre le registre en consultation (ouvriers : ") + n + T(")، ولا يستطيع تعديل أي شيء.", "), sans aucune modification possible."); },
+    },
+    f: {
+      title: function () { return T("رابط رئيس الورش", "Lien du chef de chantier"); },
+      hint: function () { return T("أرسله لرئيس الورش ليسجّل حضور العمال من هاتفه في الورش. لا يرى الأجور ولا الأداءات، ولا يدخل تسجيله السجل إلا بعد أن تعتمده أنت (يظهر لك تنبيه في الرئيسية).", "Envoyez-le au chef de chantier pour qu'il saisisse la présence des ouvriers depuis son téléphone. Il ne voit ni salaires ni paiements, et sa saisie n'entre au registre qu'après votre validation (une alerte apparaît à l'accueil)."); },
+      create: function () { return T("إنشاء رابط رئيس الورش", "Créer le lien du chef de chantier"); },
+      active: function () { return T("الرابط مفعّل ✓ — رئيس الورش يسجّل الحضور ويرسله إليك للاعتماد، ولا يرى الأجور.", "Lien actif ✓ — le chef de chantier saisit les présences et vous les envoie pour validation, sans voir les salaires."); },
+      aria: function () { return T("رابط رئيس الورش", "Lien du chef de chantier"); },
+      wa: function () { return T("سجل الحضور — رابط رئيس الورش لتسجيل حضور العمال:", "Registre de présence — lien du chef de chantier pour le pointage :"); },
+      stop: function () { return T("إيقاف رابط رئيس الورش", "Arrêter le lien du chef de chantier"); },
+      ok: function (n) { return T("تمت التجربة ✓ الرابط يفتح قائمة العمال (العدد: ", "Test réussi ✓ le lien ouvre la liste des ouvriers (") + n + T(") لتسجيل الحضور، ولا يستطيع تعديل سجلك ولا رؤية الأجور.", ") pour le pointage, sans pouvoir modifier votre registre ni voir les salaires."); },
+    },
+  };
   function shareUI() {
     var on = !!(window.SIJIL_CLOUD && cloud.user && !VIEW);
     var gear = document.getElementById("gearBtn"), btn = document.getElementById("shareBtn");
@@ -567,51 +663,54 @@
       });
     }
     if (btn) { var lb = T("رابط المشاهدة فقط", "Lien en lecture seule"); btn.hidden = !on; btn.setAttribute("aria-label", lb); btn.title = lb; }
-    var view = document.getElementById("v-settings"), card = document.getElementById("shareCard");
-    if (!card && view) {
-      card = el('<div class="card pad16" id="shareCard" hidden></div>');
-      var head = view.querySelector(".sec-h");
-      view.insertBefore(card, head ? head.nextSibling : view.firstChild);
-    }
-    if (!card) return;
-    card.hidden = !on;
-    if (!on) return;
-    card.innerHTML = '<h2>' + T("رابط المشاهدة فقط", "Lien en lecture seule") + '</h2>' +
-      '<p class="hint" style="margin:0">' + T("أرسله لمن تريد أن يطّلع على السجل (العمال، الحضور، الأجور، التقارير) دون أن يستطيع تعديل أي شيء. يتحدّث عنده تلقائياً كلما سجّلت، ويمكنك إيقافه متى شئت.",
-        "Envoyez-le à qui doit consulter le registre (ouvriers, présences, salaires, rapports) sans pouvoir rien modifier. Il se met à jour à chaque enregistrement, et vous pouvez l'arrêter à tout moment.") + '</p>' +
-      '<div class="sjsb"></div>';
-    drawShare(card.querySelector(".sjsb"));
+    var view = document.getElementById("v-settings");
+    [["v", "shareCard"], ["f", "fmCard"]].forEach(function (x) {
+      var role = x[0], card = document.getElementById(x[1]);
+      if (!card && view) {
+        card = el('<div class="card pad16 sjcard" id="' + x[1] + '" hidden></div>');
+        var after = role === "f" ? document.getElementById("shareCard") : null, head = view.querySelector(".sec-h");
+        if (after) view.insertBefore(card, after.nextSibling); else view.insertBefore(card, head ? head.nextSibling : view.firstChild);
+      }
+      if (!card) return;
+      card.hidden = !on;
+      if (!on) return;
+      card.innerHTML = '<h2>' + LINKS[role].title() + '</h2><p class="hint" style="margin:0">' + LINKS[role].hint() + '</p><div class="sjsb"></div>';
+      drawShare(card.querySelector(".sjsb"), role);
+    });
   }
-  function drawShare(sb) {
+  function drawShare(sb, role) {
     if (!sb.isConnected) return;
-    if (!MIR.ready) { sb.innerHTML = '<p class="hint" style="margin:0">…</p>'; MIR.waiters.push(function () { drawShare(sb); }); return; }
-    var v = MIR.list[MIR.list.length - 1];
+    var L = LINKS[role];
+    if (!MIR.ready) { sb.innerHTML = '<p class="hint" style="margin:0">…</p>'; MIR.waiters.push(function () { drawShare(sb, role); }); return; }
+    var mine = MIR.list.filter(function (x) { return (x.r || "v") === role && !x.gone; }), v = mine[mine.length - 1];
     if (!v) {
-      sb.innerHTML = '<p class="sjerr" hidden></p><div class="row"><button class="btn primary" type="button" data-v="create">' + T("إنشاء رابط المشاهدة", "Créer le lien de consultation") + '</button></div><div class="sjold"></div>';
+      sb.innerHTML = '<p class="sjerr" hidden></p><div class="row"><button class="btn primary" type="button" data-v="create">' + L.create() + '</button></div><div class="sjold"></div>';
       var cb = sb.querySelector('[data-v="create"]'), er = sb.querySelector(".sjerr");
       cb.addEventListener("click", function () {
         cb.disabled = true; cb.textContent = T("جارٍ إنشاء الرابط…", "Création du lien…"); er.hidden = true;
-        createViewer().then(function () { drawShare(sb); }, function (x) {
+        createViewer(role).then(function () { drawShare(sb, role); }, function (x) {
           console.error(x);
-          cb.disabled = false; cb.textContent = T("إنشاء رابط المشاهدة", "Créer le lien de consultation");
+          cb.disabled = false; cb.textContent = L.create();
           er.hidden = false; er.textContent = T("تعذّر إنشاء الرابط: ", "Création impossible : ") + errLine(x);
         });
       });
-      drawLegacy(sb.querySelector(".sjold"));
+      if (role === "v") drawLegacy(sb.querySelector(".sjold"));
       return;
     }
     var link = v.link;
-    sb.innerHTML = '<p class="notice" style="background:var(--ok-soft);margin:0">' + T("الرابط مفعّل ✓ — من يفتحه يرى السجل فقط ولا يستطيع تعديل أي شيء.", "Lien actif ✓ — la personne qui l'ouvre voit le registre sans pouvoir rien modifier.") + '</p>' +
-      '<input class="sjlink" type="text" readonly aria-label="' + T("رابط المشاهدة", "Lien de consultation") + '">' +
+    var pend = role === "f" ? (FMW.subs[v.uid] || []).filter(function (x) { return x && x.status === "pending"; }).length : 0;
+    sb.innerHTML = '<p class="notice" style="background:var(--ok-soft);margin:0">' + L.active() + '</p>' +
+      (pend ? '<p class="notice warn" style="margin:0">' + T("تسجيلات تنتظر اعتمادك: ", "Pointages à valider : ") + pend + T(" — راجعها من تنبيهات الرئيسية.", " — voir les alertes de l'accueil.") + '</p>' : '') +
+      '<input class="sjlink" type="text" readonly aria-label="' + L.aria() + '">' +
       '<div class="row"><button class="btn primary" type="button" data-v="copy">' + T("نسخ الرابط", "Copier le lien") + '</button>' +
       '<a class="btn" data-v="wa" target="_blank" rel="noopener">' + T("إرسال عبر واتساب", "Envoyer par WhatsApp") + '</a></div>' +
       '<div class="row"><button class="btn" type="button" data-v="test">' + T("تجربة الرابط", "Tester le lien") + '</button>' +
-      '<button class="btn ghost" type="button" data-v="stop">' + T("إيقاف رابط المشاهدة", "Arrêter le lien de consultation") + '</button></div>' +
+      '<button class="btn ghost" type="button" data-v="stop">' + L.stop() + '</button></div>' +
       '<div class="sjres" hidden></div><div class="sjold"></div>';
     var inp = sb.querySelector(".sjlink");
     inp.value = link;
     inp.addEventListener("focus", function () { inp.select(); });
-    sb.querySelector('[data-v="wa"]').href = "https://wa.me/?text=" + encodeURIComponent(T("سجل الحضور والأجور — رابط للاطلاع فقط:", "Registre de présence et de paie — lien en lecture seule :") + "\n" + link);
+    sb.querySelector('[data-v="wa"]').href = "https://wa.me/?text=" + encodeURIComponent(L.wa() + "\n" + link);
     sb.querySelector('[data-v="copy"]').addEventListener("click", function (ev) { copy(link, ev.currentTarget); });
     sb.querySelector('[data-v="test"]').addEventListener("click", function (ev) {
       var b = ev.currentTarget, res = sb.querySelector(".sjres"), label = b.textContent;
@@ -622,7 +721,7 @@
       }
       b.disabled = true; b.textContent = T("جارٍ التجربة…", "Test en cours…"); res.hidden = true;
       testViewer(v).then(function (r) {
-        if (r.blocked) show(true, T("تمت التجربة ✓ الرابط يفتح السجل للاطلاع (عدد العمال: ", "Test réussi ✓ le lien ouvre le registre en consultation (ouvriers : ") + r.n + T(")، ولا يستطيع تعديل أي شيء.", "), sans aucune modification possible."));
+        if (r.blocked) show(true, L.ok(r.n));
         else show(false, T("تنبيه: قواعد الأمان في Firebase تسمح بالتعديل. أرسل لي صورة من هذه الرسالة.", "Attention : les règles Firebase permettent la modification. Envoyez une capture de ce message."));
       }, function (x) { console.error(x); show(false, T("فشلت التجربة: ", "Échec du test : ") + errLine(x)); })
         .then(function () { b.disabled = false; b.textContent = label; });
@@ -631,9 +730,9 @@
       var b = ev.currentTarget;
       if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = T("تأكيد: إيقاف الرابط الآن", "Confirmer : arrêter le lien"); return; }
       b.disabled = true; b.textContent = T("جارٍ الإيقاف…", "Arrêt…");
-      stopViewers().then(function () { drawShare(sb); }, function (x) { console.error(x); b.disabled = false; banner(errLine(x), true); drawShare(sb); });
+      stopViewers(role).then(function () { drawShare(sb, role); }, function (x) { console.error(x); b.disabled = false; banner(errLine(x), true); drawShare(sb, role); });
     });
-    drawLegacy(sb.querySelector(".sjold"));
+    if (role === "v") drawLegacy(sb.querySelector(".sjold"));
   }
   function drawLegacy(box) {
     legacyLinks().then(function (ids) {
@@ -734,7 +833,7 @@
     document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-lang], #langBtn")) setTimeout(function () { renderCloudCard(); shareUI(); }, 50); });
   });
   dbReady.then(function (db) {
-    if (db === cloudDb && !VIEW && cloud.user) startMirrors();
+    if (db === cloudDb && !VIEW && cloud.user) { fmApi(); startMirrors(); }
     whenBody(function () { renderCloudCard(); shareUI(); });
   });
 
