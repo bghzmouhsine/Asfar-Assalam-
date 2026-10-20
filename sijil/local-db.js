@@ -199,7 +199,7 @@
   }
   /* copies the cloud data back to the phone (when cloud saving is turned off) */
   function downloadCloud() {
-    var m = cloud.m, cols = ["workers", "days", "payments", "audit", "safety", "photos"];
+    var m = cloud.m, cols = ["workers", "days", "payments", "audit", "safety", "photos", "gallery"];
     return Promise.all([m.getDoc(m.doc(cloud.fs, cloud.base + "app/settings"))].concat(cols.map(function (c) { return m.getDocs(m.collection(cloud.fs, cloud.base + c)); }))).then(function (res) {
       if (res[0].exists()) write("app/settings", res[0].data());
       cols.forEach(function (c, i) {
@@ -409,7 +409,7 @@
      (sijil/<link uid>/…) up to date; the person with the link reads only that copy, so the owner's register can
      never be touched from the link, and nothing has to be changed in Firebase. */
   var MIR = { ready: false, list: [], pre: [], overflow: false, waiters: [] };
-  var MIR_COLS = ["workers", "days", "payments", "audit", "photos"];
+  var MIR_COLS = ["workers", "days", "payments", "audit", "photos", "gallery"];
   /* the foreman's copy: names and attendance only */
   var FM_COLS = ["workers", "days"];
   var FM_KEEP = { "app/settings": ["siteName", "startDate", "hourFrom", "hourTo"], workers: ["name", "joinDate", "exitDate"], days: ["date", "statuses", "times", "savedAt"] };

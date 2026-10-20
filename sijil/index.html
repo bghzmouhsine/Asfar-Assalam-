@@ -820,6 +820,74 @@ html.fm-on nav.tabs, html.fm-on #gearBtn, html.fm-on #shareBtn, html.fm-on #save
 .fmr.diff { background: var(--warn-soft); }
 .fmr .was { flex-basis: 100%; color: var(--warn); font-size: 11.5px; font-weight: 700; }
 .fmbar { border-color: var(--link); background: var(--brand-soft); }
+/* ---------- worksite photos: moving slideshow */
+.gal { padding: 0; overflow: hidden; position: relative; isolation: isolate; box-shadow: var(--shadow); }
+.gal-stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 56vh; overflow: hidden; background: #0B1020; touch-action: pan-y; cursor: zoom-in; user-select: none; -webkit-user-select: none; outline: none; }
+.gal-stage:focus-visible { box-shadow: inset 0 0 0 3px var(--gold); }
+@media (min-width: 600px) { .gal-stage { aspect-ratio: 16 / 9; } }
+.gal-sl { position: absolute; inset: 0; opacity: 0; transition: opacity 1.3s ease; overflow: hidden; }
+.gal-sl.on { opacity: 1; }
+.gal-bg { position: absolute; inset: -10%; width: 120%; height: 120%; max-width: none; object-fit: cover; filter: blur(18px) brightness(.6) saturate(1.15); transform: translateZ(0); -webkit-user-drag: none; }
+.gal-fg { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; will-change: transform; backface-visibility: hidden; -webkit-user-drag: none; }
+.gal-sl.tall .gal-fg { object-fit: contain; filter: drop-shadow(0 6px 22px rgba(0, 0, 0, .45)); }
+.gal-sl.kb0 .gal-fg { animation: galKb0 8.2s linear both; }
+.gal-sl.kb1 .gal-fg { animation: galKb1 8.2s linear both; }
+.gal-sl.kb2 .gal-fg { animation: galKb2 8.2s linear both; }
+.gal-sl.kb3 .gal-fg { animation: galKb3 8.2s linear both; }
+.gal-sl.tall.kb0 .gal-fg, .gal-sl.tall.kb2 .gal-fg { animation-name: galKt0; }
+.gal-sl.tall.kb1 .gal-fg, .gal-sl.tall.kb3 .gal-fg { animation-name: galKt1; }
+.gal-sl.kbloop .gal-fg { animation-duration: 14s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out; }
+@keyframes galKb0 { from { transform: scale(1.03) translate3d(0, 0, 0); } to { transform: scale(1.17) translate3d(-3%, -2%, 0); } }
+@keyframes galKb1 { from { transform: scale(1.17) translate3d(2.5%, 1.5%, 0); } to { transform: scale(1.04) translate3d(0, 0, 0); } }
+@keyframes galKb2 { from { transform: scale(1.06) translate3d(3%, -1%, 0); } to { transform: scale(1.15) translate3d(-2.5%, 1%, 0); } }
+@keyframes galKb3 { from { transform: scale(1.15) translate3d(0, 2.5%, 0); } to { transform: scale(1.05) translate3d(0, -2%, 0); } }
+@keyframes galKt0 { from { transform: scale(1) translate3d(0, 1%, 0); } to { transform: scale(1.08) translate3d(0, -1.5%, 0); } }
+@keyframes galKt1 { from { transform: scale(1.08) translate3d(0, -1%, 0); } to { transform: scale(1) translate3d(0, 1%, 0); } }
+.gal-shade { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 95% at 50% 42%, transparent 58%, rgba(5, 8, 16, .32)), linear-gradient(180deg, rgba(5, 8, 16, .42) 0, rgba(5, 8, 16, 0) 26%, rgba(5, 8, 16, 0) 52%, rgba(5, 8, 16, .82) 100%); }
+.gal-bar { position: absolute; inset-inline: 14px; top: 12px; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .24); overflow: hidden; pointer-events: none; }
+.gal-bar i { display: block; height: 100%; width: 100%; border-radius: inherit; background: var(--gold); transform: scaleX(0); transform-origin: right center; }
+html[dir="ltr"] .gal-bar i { transform-origin: left center; }
+.gal-bar i.run { animation: galBar 6.5s linear both; }
+@keyframes galBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.gal-count { position: absolute; top: 24px; inset-inline-start: 14px; padding: 3px 10px; border-radius: 999px; background: rgba(5, 8, 16, .4); color: #FFFFFF; font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; pointer-events: none; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.gal-btn { position: absolute; width: 36px; height: 36px; padding: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .3); background: rgba(5, 8, 16, .38); color: #FFFFFF; display: grid; place-items: center; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: background .2s, opacity .2s; }
+.gal-btn:hover { background: rgba(5, 8, 16, .58); }
+.gal-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gal-btn svg { width: 16px; height: 16px; }
+#galPlay { top: 22px; inset-inline-end: 12px; }
+.gal-nav { top: 50%; margin-top: -18px; opacity: .82; }
+.gal-nav.prev { inset-inline-start: 10px; }
+.gal-nav.next { inset-inline-end: 10px; }
+.gal-nav svg { width: 18px; height: 18px; }
+.gal-cap { position: absolute; inset-inline: 16px 60px; bottom: 14px; display: flex; flex-direction: column; gap: 3px; color: #FFFFFF; pointer-events: none; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
+.gal-cap b { font-family: var(--font-d); font-weight: 600; font-size: 15.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gal-cap span { font-size: 12px; opacity: .9; }
+.gal-cap.swap { animation: galCap .7s ease both; }
+@keyframes galCap { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.gal-empty { aspect-ratio: 16 / 7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 18px; text-align: center; color: #FFFFFF; background: var(--pattern), linear-gradient(135deg, var(--hero), #2B4FA6); }
+.gal-empty svg { width: 34px; height: 34px; opacity: .9; }
+.gal-empty b { font-family: var(--font-d); font-size: 16px; font-weight: 600; }
+.gal-empty p { margin: 0; font-size: 12.5px; opacity: .88; max-width: 40ch; }
+.gal-strip { position: relative; overflow: hidden; padding: 10px 0; direction: ltr; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+.gal-track { display: flex; gap: 8px; width: max-content; padding-inline: 8px; }
+.gal-track.run { animation: galScroll var(--galS, 30s) linear infinite; }
+.gal-strip:hover .gal-track.run { animation-play-state: paused; }
+@keyframes galScroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+.gal-strip.static { -webkit-mask-image: none; mask-image: none; }
+.gal-strip.static .gal-track { width: auto; flex-wrap: wrap; justify-content: center; }
+.gal-cell { position: relative; flex: none; }
+.gal-th { display: block; width: 78px; height: 56px; padding: 0; border-radius: 10px; overflow: hidden; border: 2px solid transparent; background: var(--surface-2); cursor: pointer; opacity: .74; transition: opacity .35s, border-color .35s, transform .35s; }
+.gal-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gal-th.on { opacity: 1; border-color: var(--gold); transform: translateY(-2px); }
+.gal-x { position: absolute; top: -6px; inset-inline-end: -6px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; border: 2px solid var(--surface); background: var(--bad); color: #FFFFFF; font-size: 11px; font-weight: 800; line-height: 1; cursor: pointer; }
+.gal-x.sure { font-size: 10.5px; }
+.gal-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px; }
+.gal-strip:not([hidden]) + .gal-foot { padding-top: 2px; }
+.gal-foot .hint { flex: 1 1 220px; font-size: 11.5px; }
+.gal-foot label.btn { cursor: pointer; }
+.gal-foot label.btn.busy { opacity: .6; pointer-events: none; }
+.gal-foot label.btn svg { width: 15px; height: 15px; }
+.gal.paused .gal-fg, .gal.idle .gal-fg, .gal.paused .gal-bar i, .gal.idle .gal-bar i, .gal.idle .gal-track { animation-play-state: paused; }
 .sigwrap { display: flex; flex-direction: column; gap: 6px; }
 .sig-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sig-h b { font-size: 13px; }
@@ -984,6 +1052,21 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
             <p class="note" id="hNote" hidden></p>
             <button class="btn cta" id="hGo" type="button">—</button>
           </div>
+        </div>
+        <div class="card gal" id="hGal" hidden>
+          <div class="gal-stage" id="galStage" role="region" aria-roledescription="carousel" data-ta="gal.aria" tabindex="0" hidden>
+            <div class="gal-sl"><img class="gal-bg" alt="" draggable="false"><img class="gal-fg" alt="" decoding="async" draggable="false"></div><div class="gal-sl"><img class="gal-bg" alt="" draggable="false"><img class="gal-fg" alt="" decoding="async" draggable="false"></div>
+            <div class="gal-shade" aria-hidden="true"></div>
+            <div class="gal-bar" aria-hidden="true"><i></i></div>
+            <span class="gal-count" id="galCount" aria-hidden="true"></span>
+            <button type="button" class="gal-btn" id="galPlay"></button>
+            <button type="button" class="gal-btn gal-nav prev" id="galPrev" data-ta="gal.prev"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="gal-btn gal-nav next" id="galNext" data-ta="gal.next"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <div class="gal-cap" id="galCap" aria-live="off"><b id="galTitle"></b><span id="galSub"></span></div>
+          </div>
+          <div class="gal-empty" id="galEmpty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.6-2.3h6.8L17 8.5h3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.2" r="3.4"/></svg><b data-t="gal.title">صور الورش</b><p data-t="gal.empty"></p></div>
+          <div class="gal-strip" id="galStrip" hidden><div class="gal-track" id="galTrack"></div></div>
+          <div class="gal-foot" id="galFoot" hidden><label class="btn sm primary" id="galAddL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span data-t="gal.add">إضافة صور</span><input type="file" accept="image/*" multiple id="galIn" hidden></label><button class="btn sm ghost" id="galManage" type="button">—</button><span class="hint" data-t="gal.privacy"></span></div>
         </div>
         <div class="sec-h"><h2 data-t="dash.week">هذا الأسبوع</h2><span class="hint" id="weekRange"></span></div>
         <div class="kpis">
@@ -1470,7 +1553,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "لوحة المؤشرات", "dash.rate": "نسبة الحضور يوماً بيوم", "dash.cum": "الكلفة المتراكمة منذ البداية", "dash.cumB": "الكلفة المتراكمة مقابل الاعتماد المالي", "dash.abs": "الغيابات حسب العامل",
       "dash.noAbs": "لا غياب في هذه الفترة.", "dash.budget": "الاعتماد {0}", "dash.unrec": "غير مسجّل", "dash.tipRate": "{0}: {1} حاضر، {2} غائب ({3}%)", "dash.tipCum": "{0}: {1} درهم هذا اليوم · المجموع {2} درهم",
       "dash.table": "عرض البيانات كجدول", "dash.th.date": "اليوم", "dash.th.p": "حاضر", "dash.th.a": "غائب", "dash.th.rate": "النسبة", "dash.th.pay": "كلفة اليوم", "dash.th.cum": "المتراكم", "dash.others": "آخرون ({0})", "dash.absN": "{0} غياب",
-      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "fm.title": "تسجيل الحضور — رئيس الورش", "fm.hint": "سجّل حضور العمال ثم اضغط «إرسال للاعتماد». يصل تسجيلك إلى صاحب السجل، ولا يدخل السجل الرسمي إلا بعد اعتماده.",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "gal.title": "صور الورش", "gal.empty": "أضف صوراً من الورش لتظهر هنا متحركة باستمرار.", "gal.add": "إضافة صور", "gal.adding": "جارٍ إضافة الصور…",
+      "gal.manage": "إدارة الصور", "gal.done": "تم", "gal.added": "أُضيفت {0}", "gal.team": "صورة الفريق — {0}", "gal.pause": "إيقاف الحركة", "gal.play": "تشغيل الحركة",
+      "gal.prev": "الصورة السابقة", "gal.next": "الصورة التالية", "gal.aria": "صور الورش", "gal.saved": "أُضيفت {0} صورة إلى صور الورش", "gal.max": "الحد الأقصى 30 صورة.",
+      "gal.del": "حذف الصورة", "gal.delSure": "حذف؟", "gal.deleted": "حُذفت الصورة.", "gal.privacy": "تُحفظ الصور في سجلك فقط: تظهر لك ولمن أرسلت له رابط المشاهدة، ولا تظهر في الرابط العام.",
+      "log.galAdd": "إضافة {0} صورة إلى صور الورش", "log.galDel": "حذف صورة من صور الورش", "fm.title": "تسجيل الحضور — رئيس الورش", "fm.hint": "سجّل حضور العمال ثم اضغط «إرسال للاعتماد». يصل تسجيلك إلى صاحب السجل، ولا يدخل السجل الرسمي إلا بعد اعتماده.",
       "fm.date": "تاريخ التسجيل", "fm.outDone": "الخروج {0} لـ{1} عامل — اضغط «إرسال للاعتماد»", "fm.allP": "الجميع حاضر", "fm.send": "إرسال للاعتماد", "fm.resend": "إعادة الإرسال", "fm.sending": "جارٍ الإرسال…", "fm.none": "لم يُرسل تسجيل هذا اليوم بعد.",
       "fm.pending": "أُرسل التسجيل الساعة {0} — في انتظار اعتماد صاحب السجل.", "fm.approved": "✓ اعتمد صاحب السجل هذا التسجيل (الساعة {0}).", "fm.rejected": "✗ رُفض التسجيل: {0} — صحّحه ثم أعد الإرسال.",
       "fm.official": "في السجل الرسمي: {0} حاضر · {1} غائب.", "fm.photo": "صورة جماعية (اختياري)", "fm.photoRe": "تغيير الصورة", "fm.photoOk": "أُضيفت الصورة، تُرسل مع التسجيل.",
@@ -1656,7 +1743,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "Tableau de bord", "dash.rate": "Taux de présence par jour", "dash.cum": "Coût cumulé depuis le début", "dash.cumB": "Coût cumulé face au crédit alloué", "dash.abs": "Absences par ouvrier",
       "dash.noAbs": "Aucune absence sur cette période.", "dash.budget": "Crédit {0}", "dash.unrec": "non pointé", "dash.tipRate": "{0} : {1} présents, {2} absents ({3} %)", "dash.tipCum": "{0} : {1} DH ce jour · total {2} DH",
       "dash.table": "Voir les données en tableau", "dash.th.date": "Jour", "dash.th.p": "Présents", "dash.th.a": "Absents", "dash.th.rate": "Taux", "dash.th.pay": "Coût du jour", "dash.th.cum": "Cumul", "dash.others": "Autres ({0})", "dash.absN": "{0} absence(s)",
-      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "fm.title": "Pointage — chef de chantier", "fm.hint": "Saisissez la présence des ouvriers puis appuyez sur « Envoyer pour validation ». Votre saisie parvient au propriétaire du registre et n'entre au registre officiel qu'après sa validation.",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "gal.title": "Photos du chantier", "gal.empty": "Ajoutez des photos du chantier pour les voir défiler ici en continu.", "gal.add": "Ajouter des photos", "gal.adding": "Ajout des photos…",
+      "gal.manage": "Gérer les photos", "gal.done": "Terminé", "gal.added": "Ajoutée le {0}", "gal.team": "Photo de l'équipe — {0}", "gal.pause": "Mettre en pause", "gal.play": "Relancer le défilement",
+      "gal.prev": "Photo précédente", "gal.next": "Photo suivante", "gal.aria": "Photos du chantier", "gal.saved": "{0} photo(s) ajoutée(s) aux photos du chantier", "gal.max": "30 photos au maximum.",
+      "gal.del": "Supprimer la photo", "gal.delSure": "Supprimer ?", "gal.deleted": "Photo supprimée.", "gal.privacy": "Les photos restent dans votre registre : visibles par vous et par les personnes ayant le lien de consultation, jamais sur l'adresse publique.",
+      "log.galAdd": "Ajout de {0} photo(s) aux photos du chantier", "log.galDel": "Suppression d'une photo du chantier", "fm.title": "Pointage — chef de chantier", "fm.hint": "Saisissez la présence des ouvriers puis appuyez sur « Envoyer pour validation ». Votre saisie parvient au propriétaire du registre et n'entre au registre officiel qu'après sa validation.",
       "fm.date": "Date du pointage", "fm.outDone": "Sortie à {0} pour {1} ouvrier(s) — appuyez sur « Envoyer pour validation »", "fm.allP": "Tous présents", "fm.send": "Envoyer pour validation", "fm.resend": "Renvoyer", "fm.sending": "Envoi…", "fm.none": "Aucun pointage envoyé pour ce jour.",
       "fm.pending": "Pointage envoyé à {0} — en attente de validation par le propriétaire du registre.", "fm.approved": "✓ Le propriétaire du registre a validé ce pointage ({0}).", "fm.rejected": "✗ Pointage refusé : {0} — corrigez puis renvoyez.",
       "fm.official": "Au registre officiel : {0} présent(s) · {1} absent(s).", "fm.photo": "Photo de groupe (facultative)", "fm.photoRe": "Changer la photo", "fm.photoOk": "Photo ajoutée, elle sera envoyée avec le pointage.",
@@ -1776,7 +1867,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     period: "week", repFrom: null, repTo: null, setDirty: false, saving: false, cell: null,
     calMonth: todayISO().slice(0, 7), noteDirty: false, noteDate: null, auditQ: Promise.resolve(), gridScrolled: false,
     gFrom: null, gTo: null, restore: null, restoring: false, rp: [0, 0], safety: [], dListHTML: null, rebuilding: false,
-    fmSel: null, fmDraft: {}, fmPhoto: {}, subs: new Map(), fmSubs: [],
+    fmSel: null, fmDraft: {}, fmPhoto: {}, subs: new Map(), fmSubs: [], gallery: new Map(),
   };
   /* opened from the site foreman's link: a single screen to record attendance and send it for approval */
   const FM = !!window.SIJIL_FOREMAN;
@@ -2161,6 +2252,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("alerts").innerHTML = al.map((x) => `<button type="button" class="alert ${x.k}" ${x.go ? `data-go="${esc(x.go)}"` : "disabled"}><i class="dot"></i><span class="t">${esc(x.t)}</span>${x.go ? chev : ""}</button>`).join("");
     renderBudget();
     renderCalendar();
+    renderGallery();
   }
   function renderCalendar() {
     const today = todayISO();
@@ -3652,6 +3744,161 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       signatures(D);
     });
   }
+  /* =========================================================== worksite photos: a slideshow on the home page that keeps moving
+     (slow zoom and pan on each photo, cross-fades, a filmstrip that drifts). The photos live in the register (gallery/…),
+     never in the public site, and the daily team photos join them automatically. Motion stops when the card is off screen. */
+  const GAL = { items: [], sig: "", i: 0, layer: 0, kb: 0, timer: null, paused: null, off: false, hiddenDoc: false, manage: false, thumbs: new Map(), sure: null, busy: false };
+  const GAL_D = 6500;
+  function galleryItems() {
+    const title = S.settings.siteName || t("gal.title");
+    const dayOf = (at) => { const x = new Date(at); return isNaN(x) ? "" : isoOf(x); };
+    const g = [...S.gallery.values()].sort((a, b) => String(a.at || "").localeCompare(String(b.at || "")))
+      .map((x) => ({ key: "g:" + x.id, id: x.id, own: true, src: x.data, thumb: x.thumb, title, sub: dayOf(x.at) ? t("gal.added", fmtShort(dayOf(x.at))) : t("gal.title") }));
+    const d = [...S.photos.values()].filter((x) => isImgData(x.data)).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10)
+      .map((x) => ({ key: "d:" + x.date, src: x.data, title, sub: t("gal.team", fmtShort(x.date)) + (x.at ? " · " + hmOf(x.at) : "") }));
+    return [...g, ...d].slice(0, 24);
+  }
+  function galThumb(it) {
+    if (it.thumb && isImgData(it.thumb)) return Promise.resolve(it.thumb);
+    if (GAL.thumbs.has(it.key)) return GAL.thumbs.get(it.key);
+    const p = new Promise((res) => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const k = Math.min(1, 220 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+          res(c.toDataURL("image/jpeg", 0.7));
+        } catch (e) { res(it.src); }
+      };
+      im.onerror = () => res("");
+      im.src = it.src;
+    });
+    GAL.thumbs.set(it.key, p);
+    return p;
+  }
+  const galIdle = () => GAL.off || GAL.hiddenDoc || $("app").hidden;
+  function galClasses() {
+    const card = $("hGal");
+    card.classList.toggle("paused", !!GAL.paused);
+    card.classList.toggle("idle", galIdle());
+    const pb = $("galPlay");
+    pb.innerHTML = GAL.paused ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>';
+    const lb = GAL.paused ? t("gal.play") : t("gal.pause");
+    pb.setAttribute("aria-label", lb); pb.title = lb;
+    $("galCap").setAttribute("aria-live", GAL.paused ? "polite" : "off");
+  }
+  function galSchedule() {
+    clearTimeout(GAL.timer); GAL.timer = null;
+    if (GAL.paused || galIdle() || GAL.items.length < 2) return;
+    GAL.timer = setTimeout(() => galShow(GAL.i + 1), GAL_D);
+  }
+  function galBar() {
+    const bar = $("galStage").querySelector(".gal-bar i");
+    bar.classList.remove("run"); void bar.offsetWidth;
+    if (!GAL.paused && GAL.items.length > 1) bar.classList.add("run");
+  }
+  function galShow(i) {
+    const n = GAL.items.length; if (!n) return;
+    GAL.i = ((i % n) + n) % n;
+    const it = GAL.items[GAL.i], sls = $("galStage").querySelectorAll(".gal-sl");
+    const cur = sls[GAL.layer], next = sls[GAL.layer ^ 1], fg = next.querySelector(".gal-fg"), bg = next.querySelector(".gal-bg");
+    const go = () => {
+      if (GAL.items[GAL.i] !== it) return;
+      GAL.kb = (GAL.kb + 1) % 4;
+      const tall = fg.naturalWidth > 0 && fg.naturalHeight > fg.naturalWidth * 0.9;
+      next.className = "gal-sl" + (tall ? " tall" : "");
+      void next.offsetWidth; /* restart the zoom and pan from the beginning */
+      next.classList.add("on", "kb" + GAL.kb); if (n === 1) next.classList.add("kbloop");
+      cur.classList.remove("on");
+      GAL.layer ^= 1;
+      $("galTitle").textContent = it.title; $("galSub").textContent = it.sub;
+      const cap = $("galCap"); cap.classList.remove("swap"); void cap.offsetWidth; cap.classList.add("swap");
+      $("galCount").textContent = `\u2066${GAL.i + 1} / ${n}\u2069`;
+      for (const th of $("galTrack").querySelectorAll(".gal-th")) th.classList.toggle("on", th.dataset.k === it.key);
+      galBar(); galSchedule();
+    };
+    if (next.dataset.k === it.key) { go(); return; }
+    next.dataset.k = it.key;
+    fg.src = it.src; bg.removeAttribute("src");
+    galThumb(it).then((u) => { if (next.dataset.k === it.key) bg.src = u || it.src; });
+    (fg.decode ? fg.decode() : Promise.resolve()).then(go, go);
+  }
+  function galStrip() {
+    const items = GAL.items, strip = $("galStrip"), track = $("galTrack");
+    const moving = !GAL.manage && !reduceMotion() && items.length > 1;
+    strip.hidden = items.length < 2 && !GAL.manage;
+    strip.classList.toggle("static", !moving);
+    let seq = items;
+    if (moving) { seq = []; while (seq.length < 12) seq = seq.concat(items); seq = seq.concat(seq); }
+    track.innerHTML = seq.map((it, k) => `<div class="gal-cell"><button type="button" class="gal-th" data-k="${esc(it.key)}" aria-label="${esc(it.sub)}" ${moving && k >= seq.length / 2 ? 'tabindex="-1" aria-hidden="true"' : ""}><img alt="" decoding="async" draggable="false" data-tk="${esc(it.key)}"></button>${GAL.manage && it.own ? `<button type="button" class="gal-x${GAL.sure === it.id ? " sure" : ""}" data-del="${esc(it.id)}" aria-label="${esc(t("gal.del"))}">${GAL.sure === it.id ? esc(t("gal.delSure")) : "✕"}</button>` : ""}</div>`).join("");
+    track.style.setProperty("--galS", `${Math.max(20, (seq.length / 2) * 3.4)}s`);
+    track.classList.toggle("run", moving);
+    for (const it of items) galThumb(it).then((u) => { if (!u) return; for (const im of track.querySelectorAll(`img[data-tk="${CSS.escape(it.key)}"]`)) im.src = u; });
+  }
+  function renderGallery() {
+    const card = $("hGal"); if (!card) return;
+    if (GAL.paused === null) GAL.paused = reduceMotion();
+    const items = galleryItems(), canAdd = S.canWrite && !FM && !!S.db;
+    card.hidden = !allLoaded() || (!items.length && !canAdd);
+    $("galFoot").hidden = !canAdd;
+    $("galManage").hidden = !S.gallery.size;
+    $("galManage").textContent = GAL.manage ? t("gal.done") : t("gal.manage");
+    if (card.hidden) { clearTimeout(GAL.timer); GAL.sig = ""; return; }
+    const sig = items.map((x) => x.key).join("|") + `|${GAL.manage}|${GAL.sure}|${LANG}|${S.settings.siteName || ""}`;
+    galClasses();
+    if (sig === GAL.sig) return; /* nothing new: the motion goes on undisturbed */
+    const prevKey = GAL.items[GAL.i] && GAL.items[GAL.i].key;
+    GAL.sig = sig; GAL.items = items;
+    $("galStage").hidden = !items.length; $("galEmpty").hidden = !!items.length;
+    if (!items.length) { clearTimeout(GAL.timer); $("galStrip").hidden = true; return; }
+    const keep = items.findIndex((x) => x.key === prevKey);
+    $("galPrev").hidden = $("galNext").hidden = items.length < 2;
+    galStrip();
+    const sls = $("galStage").querySelectorAll(".gal-sl");
+    const shown = sls[GAL.layer] && sls[GAL.layer].dataset.k;
+    if (keep >= 0 && shown === items[keep].key) {
+      GAL.i = keep;
+      $("galTitle").textContent = items[keep].title; $("galSub").textContent = items[keep].sub;
+      $("galCount").textContent = `\u2066${keep + 1} / ${items.length}\u2069`;
+      for (const th of $("galTrack").querySelectorAll(".gal-th")) th.classList.toggle("on", th.dataset.k === items[keep].key);
+      if (!GAL.timer) { galBar(); galSchedule(); }
+    } else galShow(keep >= 0 ? keep : 0);
+  }
+  function galSetPaused(p) { GAL.paused = p; galClasses(); galBar(); galSchedule(); }
+  function galWake() { const was = $("hGal").classList.contains("idle"); galClasses(); if (was && !galIdle()) { galBar(); galSchedule(); } else if (galIdle()) { clearTimeout(GAL.timer); GAL.timer = null; } }
+  async function galAdd(files) {
+    if (!S.db || !S.canWrite || GAL.busy) return;
+    const list = [...(files || [])].filter((f) => /^image\//.test(f.type || "image/"));
+    if (!list.length) return;
+    const room = 30 - S.gallery.size;
+    if (room <= 0) { toast(t("gal.max")); return; }
+    GAL.busy = true;
+    const lab = $("galAddL").querySelector("span"), l0 = lab.textContent;
+    lab.textContent = t("gal.adding"); $("galAddL").classList.add("busy");
+    let n = 0;
+    try {
+      for (const f of list.slice(0, room)) {
+        const big = await compressImage(f, 1400, 0.72), small = await compressImage(f, 240, 0.62);
+        await S.db.collection("gallery").add({ at: new Date().toISOString(), w: big.w, h: big.h, data: big.url, thumb: small.url });
+        n++;
+      }
+    } catch (e) { writeError(e); }
+    finally {
+      GAL.busy = false; lab.textContent = l0; $("galAddL").classList.remove("busy");
+      if (n) { toast(t("gal.saved", n) + (list.length > room ? " — " + t("gal.max") : "")); logChange(t("log.galAdd", n)); GAL.i = 0; GAL.sig = ""; renderGallery(); }
+      else if (list.length > room) toast(t("gal.max"));
+    }
+  }
+  async function galDel(id) {
+    if (!S.db || !S.canWrite) return;
+    try {
+      await S.db.doc("gallery/" + id).delete();
+      S.gallery.delete(id); GAL.sure = null; GAL.sig = "";
+      toast(t("gal.deleted")); logChange(t("log.galDel"));
+      renderGallery();
+    } catch (e) { writeError(e); }
+  }
   /* =========================================================== site foreman
      The foreman's link opens this screen only: he records the attendance of the day and sends it. Nothing he sends
      enters the register until the owner approves it, and no wage or payment is ever shown or copied to his phone. */
@@ -4470,6 +4717,34 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   });
   $("calGrid").addEventListener("click", (e) => { const b = e.target.closest("button[data-d]"); if (!b || b.disabled) return; S.sel = b.dataset.d; setTab("day"); });
   const shiftMonth = (k) => { let [y, m] = S.calMonth.split("-").map(Number); m += k; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } S.calMonth = `${y}-${String(m).padStart(2, "0")}`; renderCalendar(); };
+  $("galPlay").addEventListener("click", (e) => { e.stopPropagation(); galSetPaused(!GAL.paused); });
+  $("galPrev").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i - 1); });
+  $("galNext").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i + 1); });
+  {
+    let p0 = null;
+    $("galStage").addEventListener("pointerdown", (e) => { if (e.target.closest(".gal-btn")) return; p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+    $("galStage").addEventListener("pointercancel", () => { p0 = null; });
+    $("galStage").addEventListener("pointerup", (e) => {
+      if (!p0 || e.target.closest(".gal-btn")) { p0 = null; return; }
+      const dx = e.clientX - p0.x, dy = e.clientY - p0.y; p0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { const fwd = (dx < 0) === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1)); return; }
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) { const it = GAL.items[GAL.i]; if (it) { $("pvImg").src = it.src; $("photoView").hidden = false; } }
+    });
+    $("galStage").addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); const fwd = (e.key === "ArrowRight") === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1)); }
+      else if (e.key === " " || e.key === "Enter") { e.preventDefault(); galSetPaused(!GAL.paused); }
+    });
+  }
+  $("galTrack").addEventListener("click", (e) => {
+    const x = e.target.closest("[data-del]");
+    if (x) { const id = x.dataset.del; if (GAL.sure === id) galDel(id); else { GAL.sure = id; GAL.sig = ""; renderGallery(); } return; }
+    const b = e.target.closest(".gal-th"); if (!b) return;
+    const i = GAL.items.findIndex((it) => it.key === b.dataset.k); if (i >= 0) galShow(i);
+  });
+  $("galIn").addEventListener("change", async (e) => { const fl = e.target.files; await galAdd(fl); e.target.value = ""; });
+  $("galManage").addEventListener("click", () => { GAL.manage = !GAL.manage; GAL.sure = null; GAL.sig = ""; renderGallery(); });
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { for (const en of es) { GAL.off = !en.isIntersecting; galWake(); } }, { threshold: 0.12 }).observe($("hGal"));
+  document.addEventListener("visibilitychange", () => { GAL.hiddenDoc = document.visibilityState !== "visible"; galWake(); });
   $("calPrev").addEventListener("click", () => shiftMonth(-1));
   $("calNext").addEventListener("click", () => shiftMonth(1));
 
@@ -4902,7 +5177,12 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     db.collection("photos").onSnapshot((snap) => {
       const m = new Map();
       for (const d of snap.docs) { const v = d.data(); if (v && isISO(v.date) && isImgData(v.data)) m.set(v.date, v); }
-      S.photos = m; if (S.tab === "day") renderDay();
+      S.photos = m; if (S.tab === "day") renderDay(); if (S.authed && S.tab === "home") renderGallery();
+    }, keep);
+    db.collection("gallery").onSnapshot((snap) => {
+      const m = new Map();
+      for (const d of snap.docs) { const v = d.data(); if (v && isImgData(v.data)) m.set(d.id, { id: d.id, at: v.at, w: v.w, h: v.h, data: v.data, thumb: isImgData(v.thumb) ? v.thumb : "" }); }
+      S.gallery = m; if (S.authed && S.tab === "home") renderGallery();
     }, keep);
     db.collection("audit").onSnapshot((snap) => {
       const m = new Map();
