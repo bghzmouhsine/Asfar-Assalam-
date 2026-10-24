@@ -825,8 +825,32 @@ html.fm-on nav.tabs, html.fm-on #gearBtn, html.fm-on #shareBtn, html.fm-on #save
 .gal-stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 56vh; overflow: hidden; background: #0B1020; touch-action: pan-y; cursor: zoom-in; user-select: none; -webkit-user-select: none; outline: none; }
 .gal-stage:focus-visible { box-shadow: inset 0 0 0 3px var(--gold); }
 @media (min-width: 600px) { .gal-stage { aspect-ratio: 16 / 9; } }
-.gal-sl { position: absolute; inset: 0; opacity: 0; transition: opacity 1.3s ease; overflow: hidden; }
-.gal-sl.on { opacity: 1; }
+.gal-sl { position: absolute; inset: 0; opacity: 0; overflow: hidden; z-index: 1; backface-visibility: hidden; }
+.gal-sl.on { opacity: 1; z-index: 2; }
+.gal-sl.in-r { animation: galInR 1.15s cubic-bezier(.2, .75, .15, 1) both; }
+.gal-sl.in-l { animation: galInL 1.15s cubic-bezier(.2, .75, .15, 1) both; }
+.gal-sl.in-t { animation: galInT 1.15s cubic-bezier(.2, .75, .15, 1) both; }
+.gal-sl.in-b { animation: galInB 1.15s cubic-bezier(.2, .75, .15, 1) both; }
+.gal-sl.in-zi { animation: galInZi 1.35s cubic-bezier(.2, .7, .2, 1) both; }
+.gal-sl.in-zo { animation: galInZo 1.35s cubic-bezier(.2, .7, .2, 1) both; }
+.gal-sl.out-r { animation: galOutR 1.15s cubic-bezier(.45, 0, .6, 1) both; }
+.gal-sl.out-l { animation: galOutL 1.15s cubic-bezier(.45, 0, .6, 1) both; }
+.gal-sl.out-t { animation: galOutT 1.15s cubic-bezier(.45, 0, .6, 1) both; }
+.gal-sl.out-b { animation: galOutB 1.15s cubic-bezier(.45, 0, .6, 1) both; }
+.gal-sl.out-z { animation: galOutZ 1.35s ease both; }
+@keyframes galInR { from { transform: translate3d(100%, 0, 0); } to { transform: none; } }
+@keyframes galInL { from { transform: translate3d(-100%, 0, 0); } to { transform: none; } }
+@keyframes galInT { from { transform: translate3d(0, -100%, 0); } to { transform: none; } }
+@keyframes galInB { from { transform: translate3d(0, 100%, 0); } to { transform: none; } }
+@keyframes galInZi { from { transform: scale(1.45); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes galInZo { from { transform: scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes galOutR { from { transform: none; opacity: 1; } to { transform: translate3d(40%, 0, 0); opacity: .3; } }
+@keyframes galOutL { from { transform: none; opacity: 1; } to { transform: translate3d(-40%, 0, 0); opacity: .3; } }
+@keyframes galOutT { from { transform: none; opacity: 1; } to { transform: translate3d(0, -40%, 0); opacity: .3; } }
+@keyframes galOutB { from { transform: none; opacity: 1; } to { transform: translate3d(0, 40%, 0); opacity: .3; } }
+@keyframes galOutZ { from { transform: none; opacity: 1; } to { transform: scale(1.15); opacity: 0; } }
+.gal-shade { z-index: 3; }
+.gal-bar, .gal-cap, .gal-btn { z-index: 4; }
 .gal-bg { position: absolute; inset: -10%; width: 120%; height: 120%; max-width: none; object-fit: cover; filter: blur(18px) brightness(.6) saturate(1.15); transform: translateZ(0); -webkit-user-drag: none; }
 .gal-fg { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; will-change: transform; backface-visibility: hidden; -webkit-user-drag: none; }
 .gal-sl.tall .gal-fg { object-fit: contain; filter: drop-shadow(0 6px 22px rgba(0, 0, 0, .45)); }
@@ -834,13 +858,17 @@ html.fm-on nav.tabs, html.fm-on #gearBtn, html.fm-on #shareBtn, html.fm-on #save
 .gal-sl.kb1 .gal-fg { animation: galKb1 8.2s linear both; }
 .gal-sl.kb2 .gal-fg { animation: galKb2 8.2s linear both; }
 .gal-sl.kb3 .gal-fg { animation: galKb3 8.2s linear both; }
-.gal-sl.tall.kb0 .gal-fg, .gal-sl.tall.kb2 .gal-fg { animation-name: galKt0; }
-.gal-sl.tall.kb1 .gal-fg, .gal-sl.tall.kb3 .gal-fg { animation-name: galKt1; }
+.gal-sl.kb4 .gal-fg { animation: galKb4 8.2s linear both; }
+.gal-sl.kb5 .gal-fg { animation: galKb5 8.2s linear both; }
+.gal-sl.tall.kb0 .gal-fg, .gal-sl.tall.kb2 .gal-fg, .gal-sl.tall.kb4 .gal-fg { animation-name: galKt0; }
+.gal-sl.tall.kb1 .gal-fg, .gal-sl.tall.kb3 .gal-fg, .gal-sl.tall.kb5 .gal-fg { animation-name: galKt1; }
 .gal-sl.kbloop .gal-fg { animation-duration: 14s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out; }
 @keyframes galKb0 { from { transform: scale(1.03) translate3d(0, 0, 0); } to { transform: scale(1.17) translate3d(-3%, -2%, 0); } }
 @keyframes galKb1 { from { transform: scale(1.17) translate3d(2.5%, 1.5%, 0); } to { transform: scale(1.04) translate3d(0, 0, 0); } }
 @keyframes galKb2 { from { transform: scale(1.06) translate3d(3%, -1%, 0); } to { transform: scale(1.15) translate3d(-2.5%, 1%, 0); } }
 @keyframes galKb3 { from { transform: scale(1.15) translate3d(0, 2.5%, 0); } to { transform: scale(1.05) translate3d(0, -2%, 0); } }
+@keyframes galKb4 { from { transform: scale(1.15) translate3d(0, -3.5%, 0); } to { transform: scale(1.05) translate3d(0, 3%, 0); } }
+@keyframes galKb5 { from { transform: scale(1.05) translate3d(-3.5%, 0, 0); } to { transform: scale(1.17) translate3d(3%, 0, 0); } }
 @keyframes galKt0 { from { transform: scale(1) translate3d(0, 1%, 0); } to { transform: scale(1.08) translate3d(0, -1.5%, 0); } }
 @keyframes galKt1 { from { transform: scale(1.08) translate3d(0, -1%, 0); } to { transform: scale(1) translate3d(0, 1%, 0); } }
 .gal-shade { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 95% at 50% 42%, transparent 58%, rgba(5, 8, 16, .32)), linear-gradient(180deg, rgba(5, 8, 16, .42) 0, rgba(5, 8, 16, 0) 26%, rgba(5, 8, 16, 0) 52%, rgba(5, 8, 16, .82) 100%); }
@@ -1058,7 +1086,6 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
             <div class="gal-sl"><img class="gal-bg" alt="" draggable="false"><img class="gal-fg" alt="" decoding="async" draggable="false"></div><div class="gal-sl"><img class="gal-bg" alt="" draggable="false"><img class="gal-fg" alt="" decoding="async" draggable="false"></div>
             <div class="gal-shade" aria-hidden="true"></div>
             <div class="gal-bar" aria-hidden="true"><i></i></div>
-            <span class="gal-count" id="galCount" aria-hidden="true"></span>
             <button type="button" class="gal-btn" id="galPlay"></button>
             <button type="button" class="gal-btn gal-nav prev" id="galPrev" data-ta="gal.prev"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
             <button type="button" class="gal-btn gal-nav next" id="galNext" data-ta="gal.next"><svg class="flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -3810,23 +3837,28 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     bar.classList.remove("run"); void bar.offsetWidth;
     if (!GAL.paused && GAL.items.length > 1) bar.classList.add("run");
   }
-  function galShow(i) {
+  const GAL_TR = ["r", "zi", "t", "l", "zo", "b"], GAL_OUT = { r: "out-l", l: "out-r", t: "out-b", b: "out-t", zi: "out-z", zo: "out-z" };
+  const galSide = (fwd) => (fwd === (LANG === "ar") ? "l" : "r");
+  function galShow(i, how) {
     const n = GAL.items.length; if (!n) return;
+    const tr = GAL_OUT[how] ? how : GAL_TR[(GAL.tk = ((GAL.tk || 0) + 1) % GAL_TR.length)];
     GAL.i = ((i % n) + n) % n;
     const it = GAL.items[GAL.i], sls = $("galStage").querySelectorAll(".gal-sl");
     const cur = sls[GAL.layer], next = sls[GAL.layer ^ 1], fg = next.querySelector(".gal-fg"), bg = next.querySelector(".gal-bg");
     const go = () => {
       if (GAL.items[GAL.i] !== it) return;
-      GAL.kb = (GAL.kb + 1) % 4;
+      GAL.kb = (GAL.kb + 1) % 6;
       const tall = fg.naturalWidth > 0 && fg.naturalHeight > fg.naturalWidth * 0.9;
       next.className = "gal-sl" + (tall ? " tall" : "");
       void next.offsetWidth; /* restart the zoom and pan from the beginning */
       next.classList.add("on", "kb" + GAL.kb); if (n === 1) next.classList.add("kbloop");
-      cur.classList.remove("on");
+      if (cur.dataset.k && n > 1) next.classList.add("in-" + tr);
+      cur.classList.remove("on", "in-r", "in-l", "in-t", "in-b", "in-zi", "in-zo");
+      if (cur.dataset.k && n > 1) cur.classList.add(GAL_OUT[tr]);
       GAL.layer ^= 1;
       $("galTitle").textContent = it.title; $("galSub").textContent = it.sub;
       const cap = $("galCap"); cap.classList.remove("swap"); void cap.offsetWidth; cap.classList.add("swap");
-      $("galCount").textContent = `\u2066${GAL.i + 1} / ${n}\u2069`;
+      $("hGal").dataset.i = String(GAL.i + 1);
       for (const th of $("galTrack").querySelectorAll(".gal-th")) th.classList.toggle("on", th.dataset.k === it.key);
       galBar(); galSchedule();
     };
@@ -3838,8 +3870,9 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   function galStrip() {
     const items = GAL.items, strip = $("galStrip"), track = $("galTrack");
-    const moving = !GAL.manage && !reduceMotion() && items.length > 1;
-    strip.hidden = items.length < 2 && !GAL.manage;
+    const moving = false; /* the strip of small photos is shown only while managing the photos */
+    strip.hidden = !GAL.manage;
+    if (!GAL.manage) { track.innerHTML = ""; return; }
     strip.classList.toggle("static", !moving);
     let seq = items;
     if (moving) { seq = []; while (seq.length < 12) seq = seq.concat(items); seq = seq.concat(seq); }
@@ -3872,7 +3905,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     if (keep >= 0 && shown === items[keep].key) {
       GAL.i = keep;
       $("galTitle").textContent = items[keep].title; $("galSub").textContent = items[keep].sub;
-      $("galCount").textContent = `\u2066${keep + 1} / ${items.length}\u2069`;
+      $("hGal").dataset.i = String(keep + 1);
       for (const th of $("galTrack").querySelectorAll(".gal-th")) th.classList.toggle("on", th.dataset.k === items[keep].key);
       if (!GAL.timer) { galBar(); galSchedule(); }
     } else galShow(keep >= 0 ? keep : 0);
@@ -4730,8 +4763,8 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   $("calGrid").addEventListener("click", (e) => { const b = e.target.closest("button[data-d]"); if (!b || b.disabled) return; S.sel = b.dataset.d; setTab("day"); });
   const shiftMonth = (k) => { let [y, m] = S.calMonth.split("-").map(Number); m += k; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } S.calMonth = `${y}-${String(m).padStart(2, "0")}`; renderCalendar(); };
   $("galPlay").addEventListener("click", (e) => { e.stopPropagation(); galSetPaused(!GAL.paused); });
-  $("galPrev").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i - 1); });
-  $("galNext").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i + 1); });
+  $("galPrev").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i - 1, galSide(false)); });
+  $("galNext").addEventListener("click", (e) => { e.stopPropagation(); galShow(GAL.i + 1, galSide(true)); });
   {
     let p0 = null;
     $("galStage").addEventListener("pointerdown", (e) => { if (e.target.closest(".gal-btn")) return; p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; });
@@ -4739,11 +4772,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("galStage").addEventListener("pointerup", (e) => {
       if (!p0 || e.target.closest(".gal-btn")) { p0 = null; return; }
       const dx = e.clientX - p0.x, dy = e.clientY - p0.y; p0 = null;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { const fwd = (dx < 0) === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1)); return; }
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { const fwd = (dx < 0) === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1), galSide(fwd)); return; }
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) { const it = GAL.items[GAL.i]; if (it) { $("pvImg").src = it.src; $("photoView").hidden = false; } }
     });
     $("galStage").addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); const fwd = (e.key === "ArrowRight") === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1)); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); const fwd = (e.key === "ArrowRight") === (LANG !== "ar"); galShow(GAL.i + (fwd ? 1 : -1), galSide(fwd)); }
       else if (e.key === " " || e.key === "Enter") { e.preventDefault(); galSetPaused(!GAL.paused); }
     });
   }
