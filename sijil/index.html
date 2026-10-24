@@ -3664,7 +3664,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const today = todayISO();
     return buildPdf(t("wl.docTitle"), (D) => {
       D.add(false);
-      letterhead(D, t("wl.docTitle"), [t("wl.asOf", fmtLong(today)), t("x.hours", hFrom(), hTo())]);
+      letterhead(D, t("wl.docTitle"), []);
       const cols = [
         { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.fullName"), w: 132 }, { h: t("th.cin"), w: 56, al: "c", ltr: true }, { h: t("th.phone"), w: 64, al: "c", ltr: true },
         { h: t("th.address"), w: 131 }, { h: t("th.join"), w: 52, al: "c", ltr: true }, { h: t("th.days"), w: 40, al: "c", ltr: true }, { h: t("th.abs"), w: 36, al: "c", ltr: true },
