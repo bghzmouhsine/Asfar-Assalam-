@@ -3301,9 +3301,9 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     {
       const y = p.h - 22, g = p.g;
       g.fillStyle = RULE; g.fillRect(D.m, y - 9, p.w - 2 * D.m, 0.6);
-      const pg = t("x.page", i + 1, n), nm = D.plainFooter ? fmtDM(todayISO()) : `${t("org.caidat")} · ${t("app.name")} · ${fmtDM(todayISO())}`;
-      txt(g, rtl ? pg : nm, D.m, y, { size: 7.5, color: GREY, align: "left" });
-      txt(g, rtl ? nm : pg, p.w - D.m, y, { size: 7.5, color: GREY, align: "right" });
+      const pg = t("x.page", i + 1, n), nm = D.plainFooter ? "" : `${t("org.caidat")} · ${t("app.name")} · ${fmtDM(todayISO())}`;
+      if (rtl ? pg : nm) txt(g, rtl ? pg : nm, D.m, y, { size: 7.5, color: GREY, align: "left" });
+      if (rtl ? nm : pg) txt(g, rtl ? nm : pg, p.w - D.m, y, { size: 7.5, color: GREY, align: "right" });
     }
   }
   async function encodePage(p) {
@@ -3688,9 +3688,8 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     D.y += rows * (ch + 6) + 6;
   }
   function workersListBytes() {
-    const today = todayISO();
     return buildPdf(t("wl.docTitle"), (D) => {
-      D.plainFooter = true; /* the page footer of this list carries only the date and the page number */
+      D.plainFooter = true; /* the page footer of this list carries only the page number */
       D.add(false);
       letterhead(D, t("wl.docTitle"), []);
       const cols = [
@@ -3701,9 +3700,6 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       const rows = ws.map((w, i) => ({ cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || ""] }));
       rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", ""] });
       table(D, cols, rows, { size: 8, rowH: 28 });
-      D.y += 10;
-      keepTogether(D, 30);
-      para(D, t("pay.madeAt", fmtLong(today)), { align: "end", wt: 600 });
     });
   }
   function finalData() {
