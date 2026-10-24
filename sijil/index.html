@@ -3274,7 +3274,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     {
       const y = p.h - 22, g = p.g;
       g.fillStyle = RULE; g.fillRect(D.m, y - 9, p.w - 2 * D.m, 0.6);
-      const pg = t("x.page", i + 1, n), nm = `${t("org.caidat")} · ${t("app.name")} · ${fmtDM(todayISO())}`;
+      const pg = t("x.page", i + 1, n), nm = D.plainFooter ? fmtDM(todayISO()) : `${t("org.caidat")} · ${t("app.name")} · ${fmtDM(todayISO())}`;
       txt(g, rtl ? pg : nm, D.m, y, { size: 7.5, color: GREY, align: "left" });
       txt(g, rtl ? nm : pg, p.w - D.m, y, { size: 7.5, color: GREY, align: "right" });
     }
@@ -3663,6 +3663,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function workersListBytes() {
     const today = todayISO();
     return buildPdf(t("wl.docTitle"), (D) => {
+      D.plainFooter = true; /* the page footer of this list carries only the date and the page number */
       D.add(false);
       letterhead(D, t("wl.docTitle"), []);
       const cols = [
