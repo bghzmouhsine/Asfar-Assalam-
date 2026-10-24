@@ -1581,7 +1581,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "لوحة المؤشرات", "dash.rate": "نسبة الحضور يوماً بيوم", "dash.cum": "الكلفة المتراكمة منذ البداية", "dash.cumB": "الكلفة المتراكمة مقابل الاعتماد المالي", "dash.abs": "الغيابات حسب العامل",
       "dash.noAbs": "لا غياب في هذه الفترة.", "dash.budget": "الاعتماد {0}", "dash.unrec": "غير مسجّل", "dash.tipRate": "{0}: {1} حاضر، {2} غائب ({3}%)", "dash.tipCum": "{0}: {1} درهم هذا اليوم · المجموع {2} درهم",
       "dash.table": "عرض البيانات كجدول", "dash.th.date": "اليوم", "dash.th.p": "حاضر", "dash.th.a": "غائب", "dash.th.rate": "النسبة", "dash.th.pay": "كلفة اليوم", "dash.th.cum": "المتراكم", "dash.others": "آخرون ({0})", "dash.absN": "{0} غياب",
-      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "gal.title": "صور الورش", "gal.empty": "أضف صوراً من الورش لتظهر هنا متحركة باستمرار.", "gal.add": "إضافة صور", "gal.adding": "جارٍ إضافة الصور…",
+      "zoom.in": "تكبير العرض", "zoom.out": "تصغير العرض", "zoom.label": "حجم العرض", "zoom.now": "حجم العرض: {0}%", "gal.title": "صور الورش", "gal.caption": "العمال المختصون بإزالة الركام بقصر الزاوية الجديدة", "gal.empty": "أضف صوراً من الورش لتظهر هنا متحركة باستمرار.", "gal.add": "إضافة صور", "gal.adding": "جارٍ إضافة الصور…",
       "gal.manage": "إدارة الصور", "gal.done": "تم", "gal.added": "أُضيفت {0}", "gal.team": "صورة الفريق — {0}", "gal.pause": "إيقاف الحركة", "gal.play": "تشغيل الحركة",
       "gal.prev": "الصورة السابقة", "gal.next": "الصورة التالية", "gal.aria": "صور الورش", "gal.saved": "أُضيفت {0} صورة إلى صور الورش", "gal.max": "الحد الأقصى 30 صورة.",
       "gal.del": "حذف الصورة", "gal.delSure": "حذف؟", "gal.deleted": "حُذفت الصورة.", "gal.privacy": "تُحفظ الصور في سجلك فقط: تظهر لك ولمن أرسلت له رابط المشاهدة، ولا تظهر في الرابط العام.",
@@ -1771,7 +1771,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "dash.title": "Tableau de bord", "dash.rate": "Taux de présence par jour", "dash.cum": "Coût cumulé depuis le début", "dash.cumB": "Coût cumulé face au crédit alloué", "dash.abs": "Absences par ouvrier",
       "dash.noAbs": "Aucune absence sur cette période.", "dash.budget": "Crédit {0}", "dash.unrec": "non pointé", "dash.tipRate": "{0} : {1} présents, {2} absents ({3} %)", "dash.tipCum": "{0} : {1} DH ce jour · total {2} DH",
       "dash.table": "Voir les données en tableau", "dash.th.date": "Jour", "dash.th.p": "Présents", "dash.th.a": "Absents", "dash.th.rate": "Taux", "dash.th.pay": "Coût du jour", "dash.th.cum": "Cumul", "dash.others": "Autres ({0})", "dash.absN": "{0} absence(s)",
-      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "gal.title": "Photos du chantier", "gal.empty": "Ajoutez des photos du chantier pour les voir défiler ici en continu.", "gal.add": "Ajouter des photos", "gal.adding": "Ajout des photos…",
+      "zoom.in": "Agrandir l'affichage", "zoom.out": "Réduire l'affichage", "zoom.label": "Taille d'affichage", "zoom.now": "Taille d'affichage : {0} %", "gal.title": "Photos du chantier", "gal.caption": "Les ouvriers chargés de l'enlèvement des gravats au ksar Zaouia Jdida", "gal.empty": "Ajoutez des photos du chantier pour les voir défiler ici en continu.", "gal.add": "Ajouter des photos", "gal.adding": "Ajout des photos…",
       "gal.manage": "Gérer les photos", "gal.done": "Terminé", "gal.added": "Ajoutée le {0}", "gal.team": "Photo de l'équipe — {0}", "gal.pause": "Mettre en pause", "gal.play": "Relancer le défilement",
       "gal.prev": "Photo précédente", "gal.next": "Photo suivante", "gal.aria": "Photos du chantier", "gal.saved": "{0} photo(s) ajoutée(s) aux photos du chantier", "gal.max": "30 photos au maximum.",
       "gal.del": "Supprimer la photo", "gal.delSure": "Supprimer ?", "gal.deleted": "Photo supprimée.", "gal.privacy": "Les photos restent dans votre registre : visibles par vous et par les personnes ayant le lien de consultation, jamais sur l'adresse publique.",
@@ -3789,7 +3789,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   const GAL = { items: [], sig: "", i: 0, layer: 0, kb: 0, timer: null, paused: null, off: false, hiddenDoc: false, manage: false, thumbs: new Map(), sure: null, busy: false };
   const GAL_D = 6500;
   function galleryItems() {
-    const title = S.settings.siteName || t("gal.title");
+    const title = t("gal.caption");
     const dayOf = (at) => { const x = new Date(at); return isNaN(x) ? "" : isoOf(x); };
     const g = [...S.gallery.values()].sort((a, b) => String(a.at || "").localeCompare(String(b.at || "")))
       .map((x) => ({ key: "g:" + x.id, id: x.id, own: true, src: x.data, thumb: x.thumb, title, sub: dayOf(x.at) ? t("gal.added", fmtShort(dayOf(x.at))) : t("gal.title") }));
