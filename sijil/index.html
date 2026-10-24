@@ -3694,17 +3694,12 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       D.add(false);
       letterhead(D, t("wl.docTitle"), []);
       const cols = [
-        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.fullName"), w: 132 }, { h: t("th.cin"), w: 56, al: "c", ltr: true }, { h: t("th.phone"), w: 64, al: "c", ltr: true },
-        { h: t("th.address"), w: 131 }, { h: t("th.join"), w: 52, al: "c", ltr: true }, { h: t("th.days"), w: 40, al: "c", ltr: true }, { h: t("th.abs"), w: 36, al: "c", ltr: true },
+        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.fullName"), w: 165 }, { h: t("th.cin"), w: 72, al: "c", ltr: true }, { h: t("th.phone"), w: 82, al: "c", ltr: true },
+        { h: t("th.address"), w: 192 },
       ];
       const ws = sortedWorkers();
-      let td = 0, ta = 0;
-      const rows = ws.map((w, i) => {
-        const st = workerStats(w, start(), today);
-        td += st.worked; ta += st.absences.length;
-        return { cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || "", fmtDM(w.joinDate), num(st.worked), st.absences.length || "—"] };
-      });
-      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", "", "", num(td), ta || "—"] });
+      const rows = ws.map((w, i) => ({ cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || ""] }));
+      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", ""] });
       table(D, cols, rows, { size: 8, rowH: 28 });
       D.y += 10;
       keepTogether(D, 30);
