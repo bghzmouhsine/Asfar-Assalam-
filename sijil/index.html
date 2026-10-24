@@ -1158,6 +1158,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
           <div class="field"><label for="fWage" data-t="w.wage">الأجر اليومي</label><input class="input ltr" type="number" id="fWage" min="1" step="0.5" inputmode="decimal" required></div>
           <div class="field"><label for="fCin" data-t="w.cin">رقم البطاقة الوطنية</label><input class="input ltr" id="fCin" maxlength="20" autocapitalize="characters"></div>
           <div class="field"><label for="fPhone" data-t="w.phone">الهاتف</label><input class="input ltr" id="fPhone" maxlength="20" inputmode="tel"></div>
+          <div class="field full"><label for="fAddr" data-t="w.address">العنوان (اختياري)</label><input class="input" id="fAddr" maxlength="160" autocomplete="off"></div>
         </div>
         <p class="hint" id="fHint"></p>
         <div class="row"><button class="btn primary" type="submit" id="fSubmit" data-t="w.save">حفظ العامل</button><button class="btn ghost" type="button" id="fCancel" data-t="common.cancel">إلغاء</button></div>
@@ -1589,7 +1590,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "ds.th.day": "اليوم", "ds.th.at": "تاريخ التعديل", "ds.th.reason": "السبب", "ds.th.no": "رقم الوصل", "ds.th.kind": "النوع", "ds.th.pa": "ح / غ", "ds.th.state": "التسجيل", "ds.th.geo": "الموقع (GPS)", "ds.th.photo": "صورة",
       "ds.geo": "{0}, {1} (±{2} م\u200E) — {3}", "ds.yes": "نعم", "ds.stFull": "كامل", "ds.stPart": "ناقص", "ds.stNone": "غير مسجّل", "ds.photos": "صور الفريق", "ds.verify": "التحقق من هذا الملف",
       "ds.verifyNote": "امسح الرمز بكاميرا الهاتف، أو أدخل رمز التحقق في التطبيق (الأجور ← التحقق من وثيقة)، للتأكد أن هذا الملف مطابق للسجل ولم يُغيَّر بعد طباعته.",
-      "ds.closing": "أيام العمل: {0} — مجموع أيام العمال: {1} — الأجور المستحقة: {2} درهم ({3}) — المؤدى خلال الفترة: {4} درهم.", "wl.pdf": "لائحة العمال PDF", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "ds.closing": "أيام العمل: {0} — مجموع أيام العمال: {1} — الأجور المستحقة: {2} درهم ({3}) — المؤدى خلال الفترة: {4} درهم.", "wl.pdf": "لائحة العمال PDF", "wl.docTitle": "لائحة العمال المختصين بإزالة الركام بقصر الزاوية الجديدة", "th.fullName": "الاسم الكامل", "th.address": "العنوان", "w.address": "العنوان (اختياري)", "w.addressL": "العنوان", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1779,7 +1780,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "ds.th.day": "Jour", "ds.th.at": "Modifié le", "ds.th.reason": "Motif", "ds.th.no": "N° reçu", "ds.th.kind": "Type", "ds.th.pa": "P / A", "ds.th.state": "Saisie", "ds.th.geo": "Position (GPS)", "ds.th.photo": "Photo",
       "ds.geo": "{0}, {1} (±{2} m) — {3}", "ds.yes": "Oui", "ds.stFull": "Complet", "ds.stPart": "Incomplet", "ds.stNone": "Non saisi", "ds.photos": "Photos de l'équipe", "ds.verify": "Vérification de ce dossier",
       "ds.verifyNote": "Scannez le code avec l'appareil photo du téléphone, ou saisissez-le dans l'application (Salaires → Vérifier un document), pour confirmer que ce dossier correspond au registre et n'a pas été modifié après impression.",
-      "ds.closing": "Jours de travail : {0} — Total jours-ouvriers : {1} — Salaires dus : {2} DH ({3}) — Payé sur la période : {4} DH.", "wl.pdf": "Liste des ouvriers PDF", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "ds.closing": "Jours de travail : {0} — Total jours-ouvriers : {1} — Salaires dus : {2} DH ({3}) — Payé sur la période : {4} DH.", "wl.pdf": "Liste des ouvriers PDF", "wl.docTitle": "Liste des ouvriers chargés de l'enlèvement des gravats au ksar Zaouia Jdida", "th.fullName": "Nom complet", "th.address": "Adresse", "w.address": "Adresse (facultatif)", "w.addressL": "Adresse", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -2642,6 +2643,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
           <dt>${esc(t("w.joinDate"))}</dt><dd>${esc(fmtLong(w.joinDate))}</dd>
           ${w.cin ? `<dt>${esc(t("th.cin"))}</dt><dd><span class="ltr">${esc(w.cin)}</span>${copyBtn(w.cin)}</dd>` : ""}
           ${w.phone ? `<dt>${esc(t("w.phoneL"))}</dt><dd><span class="ltr">${esc(w.phone)}</span>${copyBtn(w.phone)}</dd>` : ""}
+          ${w.address ? `<dt>${esc(t("w.addressL"))}</dt><dd>${esc(w.address)}</dd>` : ""}
           ${w.exitDate ? `<dt>${esc(t("w.exitDate"))}</dt><dd>${esc(fmtLong(w.exitDate))}</dd>` : ""}
           <dt>${esc(t("w.wageL"))}</dt><dd>${esc(t("w.wageShort", num(effWage(w))))}</dd>
           <dt>${esc(t("w.due"))}</dt><dd><b>${money(st.amount)} ${esc(t("cur"))}</b>${st.wages.size === 1 ? `<span class="hint">(${num(st.worked)} × ${num([...st.wages][0])})</span>` : ""}</dd>
@@ -2671,6 +2673,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
         <div class="field"><label for="eExit">${esc(t("w.exit"))}</label><input class="input ltr" type="date" id="eExit" value="${esc(w.exitDate || "")}"></div>
         <div class="field"><label for="eCin">${esc(t("w.cin"))}</label><input class="input ltr" id="eCin" maxlength="20" value="${esc(w.cin || "")}"></div>
         <div class="field"><label for="ePhone">${esc(t("w.phone"))}</label><input class="input ltr" id="ePhone" maxlength="20" inputmode="tel" value="${esc(w.phone || "")}"></div>
+        <div class="field full"><label for="eAddr">${esc(t("w.address"))}</label><input class="input" id="eAddr" maxlength="160" value="${esc(w.address || "")}"></div>
         <div class="field"><label for="eWage">${esc(t("w.wage"))}</label><input class="input ltr" type="number" id="eWage" min="1" step="0.5" inputmode="decimal" required value="${esc(String(effWage(w)))}"></div>
         <label class="check full" for="ePast"><input type="checkbox" id="ePast"><span>${esc(t("w.wagePast"))}</span></label>
       </div>
@@ -2681,7 +2684,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   async function addWorkers(names, joinDate, extra = {}) {
     let n = 0;
     for (const name of names) {
-      await S.db.collection("workers").add({ name, joinDate, exitDate: "", cin: extra.cin || "", phone: extra.phone || "", wage: Number(extra.wage) > 0 ? Number(extra.wage) : wage(), createdAt: new Date().toISOString() });
+      await S.db.collection("workers").add({ name, joinDate, exitDate: "", cin: extra.cin || "", phone: extra.phone || "", address: extra.address || "", wage: Number(extra.wage) > 0 ? Number(extra.wage) : wage(), createdAt: new Date().toISOString() });
       logChange(t("log.add", name, fmtShort(joinDate)));
       n++;
     }
@@ -3148,8 +3151,18 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     g.fillStyle = "#C1272D"; g.fillRect(m, y, p.w - 2 * m, 1.6);
     g.fillStyle = "#006233"; g.fillRect(m, y + 2.6, p.w - 2 * m, 1.1);
     y += 24;
-    txt(g, title, p.w / 2, y, { wt: 700, size: 15, color: NAVY });
-    y += 18;
+    let tl = wrapT(g, title, p.w - 2 * m - 24, `700 15px ${PFONT}`);
+    if (tl.length === 2) { /* two balanced lines rather than one long line and a lone word */
+      const ws = String(title).split(/[ \t]+/), maxW = p.w - 2 * m - 24;
+      let best = null;
+      for (let i = 1; i < ws.length; i++) {
+        const a = ws.slice(0, i).join(" "), b = ws.slice(i).join(" "), wa = g.measureText(a).width, wb = g.measureText(b).width;
+        if (wa <= maxW && wb <= maxW && (!best || Math.max(wa, wb) < best.w)) best = { w: Math.max(wa, wb), l: [a, b] };
+      }
+      if (best) tl = best.l;
+    }
+    tl.forEach((ln, i) => txt(g, ln, p.w / 2, y + i * 19, { wt: 700, size: 15, color: NAVY }));
+    y += 18 + (tl.length - 1) * 19;
     for (const ln of lines) { txt(g, ln, p.w / 2, y, { size: 9.5, color: "#374151" }); y += 13; }
     D.y = y + 6;
   }
@@ -3649,27 +3662,25 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   function workersListBytes() {
     const today = todayISO();
-    return buildPdf(t("wl.title"), (D) => {
+    return buildPdf(t("wl.docTitle"), (D) => {
       D.add(false);
-      letterhead(D, t("wl.title"), [...(S.settings.siteName ? [t("x.site", S.settings.siteName)] : []), t("wl.asOf", fmtLong(today)), t("x.hours", hFrom(), hTo())]);
+      letterhead(D, t("wl.docTitle"), [t("wl.asOf", fmtLong(today)), t("x.hours", hFrom(), hTo())]);
       const cols = [
-        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.name"), w: 138 }, { h: t("th.cin"), w: 58, al: "c", ltr: true }, { h: t("th.phone"), w: 66, al: "c", ltr: true },
-        { h: t("th.join"), w: 52, al: "c", ltr: true }, { h: t("th.wageD"), w: 46, al: "c", ltr: true }, { h: t("th.days"), w: 42, al: "c", ltr: true },
-        { h: t("th.abs"), w: 40, al: "c", ltr: true }, { h: t("th.due"), w: 69, al: "e", ltr: true },
+        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.fullName"), w: 132 }, { h: t("th.cin"), w: 56, al: "c", ltr: true }, { h: t("th.phone"), w: 64, al: "c", ltr: true },
+        { h: t("th.address"), w: 131 }, { h: t("th.join"), w: 52, al: "c", ltr: true }, { h: t("th.days"), w: 40, al: "c", ltr: true }, { h: t("th.abs"), w: 36, al: "c", ltr: true },
       ];
       const ws = sortedWorkers();
-      let td = 0, ta = 0, tm = 0;
+      let td = 0, ta = 0;
       const rows = ws.map((w, i) => {
         const st = workerStats(w, start(), today);
-        td += st.worked; ta += st.absences.length; tm += st.amount;
-        return { cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", fmtDM(w.joinDate), num(effWage(w)), num(st.worked), st.absences.length || "—", money(st.amount)] };
+        td += st.worked; ta += st.absences.length;
+        return { cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || "", fmtDM(w.joinDate), num(st.worked), st.absences.length || "—"] };
       });
-      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", "", "", num(td), ta || "—", money(r2(tm))] });
-      table(D, cols, rows, { size: 8, rowH: 24 });
-      D.y += 8;
-      keepTogether(D, 110);
+      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", "", "", num(td), ta || "—"] });
+      table(D, cols, rows, { size: 8, rowH: 28 });
+      D.y += 10;
+      keepTogether(D, 30);
       para(D, t("pay.madeAt", fmtLong(today)), { align: "end", wt: 600 });
-      signatures(D);
     });
   }
   function finalData() {
@@ -4582,7 +4593,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     budget: Number(o.budget) > 0 ? Math.round(Number(o.budget) * 100) / 100 : 0 });
   function cleanWorker(w) {
     const o = { name: String(w.name).slice(0, 80), joinDate: w.joinDate, exitDate: isISO(w.exitDate) ? w.exitDate : "", cin: String(w.cin || "").slice(0, 20),
-      phone: String(w.phone || "").slice(0, 20), createdAt: String(w.createdAt || new Date().toISOString()) };
+      phone: String(w.phone || "").slice(0, 20), address: String(w.address || "").slice(0, 160), createdAt: String(w.createdAt || new Date().toISOString()) };
     if (Number(w.wage) > 0) o.wage = Number(w.wage);
     return o;
   }
@@ -4834,7 +4845,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     try {
       const fw = Number($("fWage").value);
       if (!(fw > 0)) { toast(t("w.wageBad")); return; }
-      await addWorkers([name], join, { cin: $("fCin").value.trim().toUpperCase(), phone: $("fPhone").value.trim(), wage: fw });
+      await addWorkers([name], join, { cin: $("fCin").value.trim().toUpperCase(), phone: $("fPhone").value.trim(), address: $("fAddr").value.trim().replace(/\s+/g, " ").slice(0, 160), wage: fw });
       toast(t("w.added", name));
       $("addForm").reset(); delete $("fSubmit").dataset.confirm; $("addForm").hidden = true;
       if (S.returnToDay) { S.returnToDay = false; if (join <= todayISO()) S.sel = join; setTab("day"); }
@@ -4905,7 +4916,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const wNew = Number($("eWage").value);
     if (!(wNew > 0)) return toast(t("w.wageBad"));
     const before = S.workers.get(id), wOld = effWage(before), past = $("ePast").checked;
-    const cin = $("eCin").value.trim().toUpperCase(), phone = $("ePhone").value.trim();
+    const cin = $("eCin").value.trim().toUpperCase(), phone = $("ePhone").value.trim(), address = $("eAddr").value.trim().replace(/\s+/g, " ").slice(0, 160);
     try {
       let n = 0;
       if (wNew !== wOld || past) {
@@ -4917,7 +4928,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
           await writeDay(d, { wages: { ...(doc.wages || {}), [id]: target } }); n++;
         }
       }
-      await S.db.doc("workers/" + id).update({ name, joinDate, exitDate: exitDate || "", cin, phone, wage: wNew });
+      await S.db.doc("workers/" + id).update({ name, joinDate, exitDate: exitDate || "", cin, phone, address, wage: wNew });
       toast(past && n ? t("w.wageApplied", nDays(n)) : t("w.saved")); logChange(t("log.edit", name)); if (wNew !== wOld) logChange(t("log.wage", name, num(wNew))); S.editing = null;
     } catch (err) { writeError(err); }
     renderAll();
