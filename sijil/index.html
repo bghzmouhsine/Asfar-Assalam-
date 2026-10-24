@@ -3698,7 +3698,6 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       ];
       const ws = sortedWorkers();
       const rows = ws.map((w, i) => ({ cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || ""] }));
-      rows.push({ bold: true, topRule: true, bg: "#EAEFF8", cells: ["", t("wl.total", ws.length), "", "", ""] });
       table(D, cols, rows, { size: 8, rowH: 28 });
     });
   }
