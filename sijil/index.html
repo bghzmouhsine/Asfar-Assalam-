@@ -1500,7 +1500,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "cal.full": "مسجّل", "cal.part": "ناقص", "cal.miss": "غير مسجّل", "cal.note": "ملاحظة", "cal.prev": "الشهر السابق", "cal.next": "الشهر الموالي",
       "cal.lblFull": "{0} حاضر من {1}", "cal.lblPart": "تسجيل ناقص", "cal.lblMiss": "غير مسجّل",
       "day.prev": "اليوم السابق", "day.next": "اليوم الموالي", "day.pick": "اختيار التاريخ", "day.nth": "اليوم {0} من بداية الحساب",
-      "day.before": "قبل بداية الحساب", "day.future": "يوم لم يأت بعد", "pre.bar": "يوم لم يأت بعد. يمكنك تسجيله مسبقاً.", "pre.btn": "تفعيل التسجيل الآن", "pre.open": "تسجيل مسبق ليوم لم يأت بعد. يُحتسب في الأجور عندما يحلّ هذا اليوم.", "day.allP": "الكل حاضر", "day.newW": "عامل جديد",
+      "day.before": "قبل بداية الحساب", "day.future": "يوم لم يأت بعد", "pre.bar": "يوم لم يأت بعد. يمكنك تسجيله مسبقاً.", "pre.btn": "تفعيل التسجيل الآن", "pre.open": "تسجيل مسبق ليوم لم يأت بعد. يظهر في السجل ويُحتسب في الأجور من الآن.", "day.allP": "الكل حاضر", "day.newW": "عامل جديد",
       "day.first": "أول يوم", "day.since": "منذ {0}", "day.empty": "لم تُضف أي عامل بعد. أضف عمالك مع تاريخ التحاق كل واحد.",
       "day.emptyDate": "لا يوجد عمال في هذا التاريخ. يظهر العامل ابتداءً من تاريخ التحاقه.", "day.addWorkers": "إضافة العمال",
       "day.save": "حفظ اليوم", "day.saved": "محفوظ", "day.saving": "جارٍ الحفظ…", "day.dirty": "{0} حاضر · {1} غائب — غير محفوظ", "day.clean": "لا توجد تعديلات",
@@ -1690,7 +1690,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "cal.full": "Complet", "cal.part": "Incomplet", "cal.miss": "Non pointé", "cal.note": "Note", "cal.prev": "Mois précédent", "cal.next": "Mois suivant",
       "cal.lblFull": "{0} présents sur {1}", "cal.lblPart": "pointage incomplet", "cal.lblMiss": "non pointé",
       "day.prev": "Jour précédent", "day.next": "Jour suivant", "day.pick": "Choisir la date", "day.nth": "Jour {0} depuis le début",
-      "day.before": "Avant le début du suivi", "day.future": "Jour à venir", "pre.bar": "Jour à venir. Vous pouvez le pointer à l'avance.", "pre.btn": "Activer le pointage", "pre.open": "Pointage anticipé d'un jour à venir. Il comptera dans les salaires à sa date.", "day.allP": "Tous présents", "day.newW": "Nouvel ouvrier",
+      "day.before": "Avant le début du suivi", "day.future": "Jour à venir", "pre.bar": "Jour à venir. Vous pouvez le pointer à l'avance.", "pre.btn": "Activer le pointage", "pre.open": "Pointage anticipé d'un jour à venir. Il figure au registre et compte dans les salaires dès maintenant.", "day.allP": "Tous présents", "day.newW": "Nouvel ouvrier",
       "day.first": "1er jour", "day.since": "depuis le {0}", "day.empty": "Aucun ouvrier pour l'instant. Ajoutez vos ouvriers avec leur date d'arrivée.",
       "day.emptyDate": "Aucun ouvrier à cette date. Un ouvrier apparaît à partir de sa date d'arrivée.", "day.addWorkers": "Ajouter des ouvriers",
       "day.save": "Enregistrer", "day.saved": "Enregistré", "day.saving": "Enregistrement…", "day.dirty": "{0} présents · {1} absents — non enregistré", "day.clean": "Aucune modification",
@@ -1934,6 +1934,13 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   const hTo = () => S.settings.hourTo || DEFAULTS.hourTo;
   const AHEAD = 30; /* a day to come can be recorded in advance, up to this many days ahead */
   const maxDay = () => addDays(todayISO(), AHEAD);
+  /* the register, the pay and the reports count up to today, or up to a later day already recorded in advance (to pay before the work day) */
+  function lastDay() {
+    const mx = maxDay();
+    let last = todayISO();
+    for (const [d, doc] of S.days) if (d > last && d <= mx && doc && doc.statuses && Object.keys(doc.statuses).length) last = d;
+    return last;
+  }
   const sortedWorkers = () => [...S.workers.values()].sort((a, b) =>
     (a.joinDate || "").localeCompare(b.joinDate || "") || (a.name || "").localeCompare(b.name || "", "ar", { numeric: true }));
   const activeOn = (w, d) => !!w.joinDate && w.joinDate <= d && (!w.exitDate || w.exitDate >= d);
@@ -1994,7 +2001,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function workerStats(w, from, to) {
     const today = todayISO();
     const a = maxD(from, w.joinDate, start());
-    const b = minD(to, w.exitDate || null, today);
+    const b = minD(to, w.exitDate || null, lastDay());
     const res = { worked: 0, absences: [], unrecorded: [], range: [a, b], amount: 0, wages: new Set(), mins: 0 };
     for (const d of daysBetween(a, b)) {
       const st = S.days.get(d)?.statuses?.[w.id];
@@ -2004,7 +2011,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
         const tm = savedTimes(d, w.id); res.mins += durMin(tm.in, tm.out);
       }
       else if (st === "A") res.absences.push(d);
-      else res.unrecorded.push(d);
+      else if (d <= today) res.unrecorded.push(d);
     }
     if (!res.wages.size) res.wages.add(effWage(w));
     return res;
@@ -2186,7 +2193,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function budgetInfo() {
     const B = Number(S.settings.budget) || 0;
     if (!(B > 0) || !allLoaded()) return null;
-    const today = todayISO(), days = daysBetween(start(), today);
+    const today = lastDay(), days = daysBetween(start(), today);
     let earned = 0, paid = 0;
     for (const d of days) earned += dayCounts(d).pay;
     for (const p of S.payments.values()) paid += Number(p.amount) || 0;
@@ -2537,14 +2544,14 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   function gridRange() {
     const today = todayISO();
     const a = S.gFrom && S.gFrom >= start() ? S.gFrom : start();
-    const b = S.gTo && S.gTo <= today ? S.gTo : today;
+    const last = lastDay(), b = S.gTo && S.gTo <= last ? S.gTo : last;
     return [a, b];
   }
   function renderGrid() {
     if (!allLoaded()) return;
     const today = todayISO(), L = LET();
     const [from, to] = gridRange();
-    for (const id of ["gFrom", "gTo"]) { $(id).min = start(); $(id).max = today; }
+    for (const id of ["gFrom", "gTo"]) { $(id).min = start(); $(id).max = lastDay(); }
     if (document.activeElement !== $("gFrom")) $("gFrom").value = from;
     if (document.activeElement !== $("gTo")) $("gTo").value = to;
     const all = sortedWorkers();
@@ -2660,7 +2667,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("wList").innerHTML = `<div class="wcards">${list.map((w) => workerCard(w, today)).join("")}</div>`;
   }
   function workerCard(w, today) {
-    const st = workerStats(w, start(), today);
+    const st = workerStats(w, start(), lastDay());
     const open = S.open === w.id;
     const left = w.exitDate && w.exitDate < today;
     const chips = [
@@ -2751,10 +2758,11 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const today = todayISO();
     const monday = addDays(today, -((wd(today) + 6) % 7));
     S.period = p;
-    if (p === "all") { S.repFrom = start(); S.repTo = today; }
-    if (p === "week") { S.repFrom = maxD(monday, start()); S.repTo = today; }
+    const last = lastDay(), [yy, mm] = today.split("-").map(Number);
+    if (p === "all") { S.repFrom = start(); S.repTo = last; }
+    if (p === "week") { S.repFrom = maxD(monday, start()); S.repTo = minD(last, addDays(monday, 6)); }
     if (p === "last") { S.repFrom = maxD(addDays(monday, -7), start()); S.repTo = addDays(monday, -1); }
-    if (p === "month") { S.repFrom = maxD(today.slice(0, 8) + "01", start()); S.repTo = today; }
+    if (p === "month") { S.repFrom = maxD(today.slice(0, 8) + "01", start()); S.repTo = minD(last, isoOf(new Date(yy, mm, 0))); }
     if (p === "today") { S.repFrom = today; S.repTo = today; }
     if (p === "lastMonth") { const end = addDays(today.slice(0, 8) + "01", -1); S.repFrom = maxD(end.slice(0, 8) + "01", start()); S.repTo = end; }
   }
@@ -2770,6 +2778,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   const wageCell = (r) => (r.st.wages.size > 1 ? [...r.st.wages].map(num).join(" / ") : num([...r.st.wages][0]));
   function renderPay() {
+    if (S.period !== "custom" && allLoaded()) setPeriod(S.period);
     $("pFrom").value = S.repFrom || ""; $("pTo").value = S.repTo || "";
     for (const b of $("pChips").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.p === S.period));
     renderBalances();
@@ -2828,7 +2837,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   /* ----- dashboard: three small charts drawn at the card's real width (crisp text), mirrored in Arabic */
   function dashData(R) {
     const today = todayISO();
-    const days = daysBetween(maxD(R.from, start()), minD(R.to, today));
+    const days = daysBetween(maxD(R.from, start()), minD(R.to, lastDay()));
     let cum = 0;
     if (days.length) for (const d of daysBetween(start(), addDays(days[0], -1))) cum += dayCounts(d).pay;
     const pts = days.map((d) => {
@@ -2939,7 +2948,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     if (!XL) { toast(t("pay.xlsxWait")); return; }
     if (!S.downloads) return;
     const R = payData(), L = LET();
-    const days = daysBetween(maxD(R.from, start()), minD(R.to, todayISO()));
+    const days = daysBetween(maxD(R.from, start()), minD(R.to, lastDay()));
     const head = [
       [t("org.kingdom")], [t("org.ministry")], [t("org.province")], [t("org.cercle")], [t("org.caidat")], [],
       [`${t("x.title")}${S.settings.siteName ? " — " + S.settings.siteName : ""}`],
@@ -3388,7 +3397,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     signatures(D);
   }
   function buildGridPdf(D, R) {
-    const days = daysBetween(maxD(R.from, start()), minD(R.to, todayISO()));
+    const days = daysBetween(maxD(R.from, start()), minD(R.to, lastDay()));
     if (!days.length) return;
     const L = LET(), usable = A4.h - 2 * D.m, fixed = 150 + 36 + 36;
     const per = Math.max(1, Math.floor((usable - fixed) / 20));
@@ -3467,14 +3476,16 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     .sort((a, b) => (a.date + (a.createdAt || "")).localeCompare(b.date + (b.createdAt || "")));
   const r2 = (x) => Math.round(x * 100) / 100;
   function balanceOf(w, asOf) {
-    const to = asOf || todayISO();
+    const to = asOf || lastDay();
     const st = workerStats(w, start(), to);
     const paid = payList(w.id).filter((p) => p.date <= to).reduce((a, p) => a + Number(p.amount || 0), 0);
     return { earned: r2(st.amount), worked: st.worked, paid: r2(paid), rest: r2(st.amount - paid) };
   }
+  /* a payment made after recording days in advance covers them too */
+  const payUpTo = (p) => (isISO(p.upTo) && p.upTo > p.date ? p.upTo : p.date);
   function receiptFigures(p) {
     const w = S.workers.get(p.workerId) || { id: p.workerId, name: p.name || "—", cin: p.cin || "", joinDate: start() };
-    const st = workerStats(w, start(), p.date);
+    const st = workerStats(w, start(), payUpTo(p));
     const list = payList(p.workerId), idx = list.findIndex((x) => x.id === p.id);
     const before = (idx < 0 ? list : list.slice(0, idx)).reduce((a, x) => a + Number(x.amount || 0), 0);
     return { w, worked: st.worked, earned: r2(st.amount), before: r2(before), amount: Number(p.amount), after: r2(st.amount - before - Number(p.amount)) };
@@ -3744,7 +3755,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   function finalData() {
     const today = todayISO();
-    const recorded = [...S.days.values()].filter((d) => d.statuses && Object.keys(d.statuses).length && d.date >= start() && d.date <= today).map((d) => d.date).sort();
+    const recorded = [...S.days.values()].filter((d) => d.statuses && Object.keys(d.statuses).length && d.date >= start() && d.date <= lastDay()).map((d) => d.date).sort();
     const from = start(), to = recorded.length ? recorded[recorded.length - 1] : today;
     const rows = sortedWorkers().filter((w) => w.joinDate <= to && (!w.exitDate || w.exitDate >= from)).map((w) => {
       const st = workerStats(w, from, to), paid = r2(payList(w.id).reduce((a, p) => a + Number(p.amount || 0), 0));
@@ -4180,10 +4191,10 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   const chkUrl = (kind, code, key) => `${location.origin}${location.pathname}#chk=${kind}${code}.${key}`;
   function monthRange(ym) {
     const [y, m] = ym.split("-").map(Number);
-    return { from: maxD(`${ym}-01`, start()), to: minD(isoOf(new Date(y, m, 0)), todayISO()) };
+    return { from: maxD(`${ym}-01`, start()), to: minD(isoOf(new Date(y, m, 0)), lastDay()) };
   }
   function monthsList() {
-    const out = [], last = todayISO().slice(0, 7);
+    const out = [], last = lastDay().slice(0, 7);
     let ym = minD(start(), todayISO()).slice(0, 7);
     while (ym <= last && out.length < 60) { out.push(ym); let [y, m] = ym.split("-").map(Number); m++; if (m > 12) { m = 1; y++; } ym = `${y}-${pad2(m)}`; }
     return out;
@@ -4456,13 +4467,13 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   }
   async function payAll() {
     if (!S.db || S.payingAll) return;
-    const today = todayISO(), batch = "b" + Date.now();
+    const today = todayISO(), batch = "b" + Date.now(), last = lastDay();
     const due = sortedWorkers().map((w) => ({ w, b: balanceOf(w) })).filter((x) => x.b.rest > 0);
     S.payingAll = true; renderBalances();
     let n = 0, sum = 0;
     try {
       for (const { w, b } of due) {
-        await S.db.collection("payments").add({ workerId: w.id, name: w.name, cin: w.cin || "", kind: "pay", amount: b.rest, date: today, note: "", batch, createdAt: new Date().toISOString() });
+        await S.db.collection("payments").add({ workerId: w.id, name: w.name, cin: w.cin || "", kind: "pay", amount: b.rest, date: today, note: "", batch, createdAt: new Date().toISOString(), ...(last > today ? { upTo: last } : {}) });
         n++; sum += b.rest;
       }
       toast(t("py.allDone", n, money(r2(sum))));
@@ -4500,6 +4511,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     S.paySaving = true; $("pySave").disabled = true;
     try {
       const doc = { workerId: w.id, name: w.name, cin: w.cin || "", kind: S.pay.kind, amount, date, note: $("pyNote").value.trim().slice(0, 120), createdAt: new Date().toISOString() };
+      if (date === todayISO() && lastDay() > date) doc.upTo = lastDay();
       const sig = S.pyPad ? S.pyPad.value() : null;
       if (sig) doc.sig = sig;
       const ref = await S.db.collection("payments").add(doc);
@@ -4675,6 +4687,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const o = { workerId: String(p.workerId), name: String(p.name || "").slice(0, 80), cin: String(p.cin || "").slice(0, 20), kind: p.kind === "adv" ? "adv" : "pay",
       amount: r2(Number(p.amount)), date: p.date, note: String(p.note || "").slice(0, 120), createdAt: String(p.createdAt || new Date().toISOString()) };
     if (typeof p.batch === "string" && SAFE_ID.test(p.batch)) o.batch = p.batch;
+    if (isISO(p.upTo) && isISO(o.date) && p.upTo > o.date) o.upTo = p.upTo;
     const sg = cleanSig(p.sig); if (sg) o.sig = sg;
     return o;
   }
