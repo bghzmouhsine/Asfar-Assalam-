@@ -1500,7 +1500,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "cal.full": "مسجّل", "cal.part": "ناقص", "cal.miss": "غير مسجّل", "cal.note": "ملاحظة", "cal.prev": "الشهر السابق", "cal.next": "الشهر الموالي",
       "cal.lblFull": "{0} حاضر من {1}", "cal.lblPart": "تسجيل ناقص", "cal.lblMiss": "غير مسجّل",
       "day.prev": "اليوم السابق", "day.next": "اليوم الموالي", "day.pick": "اختيار التاريخ", "day.nth": "اليوم {0} من بداية الحساب",
-      "day.before": "قبل بداية الحساب", "day.future": "يوم لم يأت بعد", "day.allP": "الكل حاضر", "day.newW": "عامل جديد",
+      "day.before": "قبل بداية الحساب", "day.future": "يوم لم يأت بعد", "pre.bar": "يوم لم يأت بعد. يمكنك تسجيله مسبقاً.", "pre.btn": "تفعيل التسجيل الآن", "pre.open": "تسجيل مسبق ليوم لم يأت بعد. يُحتسب في الأجور عندما يحلّ هذا اليوم.", "day.allP": "الكل حاضر", "day.newW": "عامل جديد",
       "day.first": "أول يوم", "day.since": "منذ {0}", "day.empty": "لم تُضف أي عامل بعد. أضف عمالك مع تاريخ التحاق كل واحد.",
       "day.emptyDate": "لا يوجد عمال في هذا التاريخ. يظهر العامل ابتداءً من تاريخ التحاقه.", "day.addWorkers": "إضافة العمال",
       "day.save": "حفظ اليوم", "day.saved": "محفوظ", "day.saving": "جارٍ الحفظ…", "day.dirty": "{0} حاضر · {1} غائب — غير محفوظ", "day.clean": "لا توجد تعديلات",
@@ -1690,7 +1690,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "cal.full": "Complet", "cal.part": "Incomplet", "cal.miss": "Non pointé", "cal.note": "Note", "cal.prev": "Mois précédent", "cal.next": "Mois suivant",
       "cal.lblFull": "{0} présents sur {1}", "cal.lblPart": "pointage incomplet", "cal.lblMiss": "non pointé",
       "day.prev": "Jour précédent", "day.next": "Jour suivant", "day.pick": "Choisir la date", "day.nth": "Jour {0} depuis le début",
-      "day.before": "Avant le début du suivi", "day.future": "Jour à venir", "day.allP": "Tous présents", "day.newW": "Nouvel ouvrier",
+      "day.before": "Avant le début du suivi", "day.future": "Jour à venir", "pre.bar": "Jour à venir. Vous pouvez le pointer à l'avance.", "pre.btn": "Activer le pointage", "pre.open": "Pointage anticipé d'un jour à venir. Il comptera dans les salaires à sa date.", "day.allP": "Tous présents", "day.newW": "Nouvel ouvrier",
       "day.first": "1er jour", "day.since": "depuis le {0}", "day.empty": "Aucun ouvrier pour l'instant. Ajoutez vos ouvriers avec leur date d'arrivée.",
       "day.emptyDate": "Aucun ouvrier à cette date. Un ouvrier apparaît à partir de sa date d'arrivée.", "day.addWorkers": "Ajouter des ouvriers",
       "day.save": "Enregistrer", "day.saved": "Enregistré", "day.saving": "Enregistrement…", "day.dirty": "{0} présents · {1} absents — non enregistré", "day.clean": "Aucune modification",
@@ -1891,7 +1891,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   /* =========================================================== state */
   const DEFAULTS = { siteName: "", startDate: "2026-10-13", wage: 105, hourFrom: "08:00", hourTo: "13:00" };
   const S = {
-    db: null, downloads: null, canWrite: true, photos: new Map(), unlocked: {},
+    db: null, downloads: null, canWrite: true, photos: new Map(), unlocked: {}, preOpen: {},
     settings: { ...DEFAULTS }, workers: new Map(), days: new Map(), audit: new Map(),
     loaded: { settings: false, workers: false, days: false, payments: false }, payments: new Map(), pay: null, confirmPay: null, payAllConfirm: false, payingAll: false,
     authed: false, bootMode: "loading",
@@ -1932,6 +1932,8 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   const wage = () => Number(S.settings.wage) || DEFAULTS.wage;
   const hFrom = () => S.settings.hourFrom || DEFAULTS.hourFrom;
   const hTo = () => S.settings.hourTo || DEFAULTS.hourTo;
+  const AHEAD = 30; /* a day to come can be recorded in advance, up to this many days ahead */
+  const maxDay = () => addDays(todayISO(), AHEAD);
   const sortedWorkers = () => [...S.workers.values()].sort((a, b) =>
     (a.joinDate || "").localeCompare(b.joinDate || "") || (a.name || "").localeCompare(b.name || "", "ar", { numeric: true }));
   const activeOn = (w, d) => !!w.joinDate && w.joinDate <= d && (!w.exitDate || w.exitDate >= d);
@@ -1961,7 +1963,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const tm = S.days.get(d)?.times?.[wid];
     return tm ? { in: tm.in || "", out: tm.out || "" } : { in: hFrom(), out: hTo() };
   }
-  function defaultTimes(d) { return { in: hFrom(), out: d < todayISO() || nowMin() >= toMin(hTo()) ? hTo() : "" }; }
+  function defaultTimes(d) { return { in: hFrom(), out: d !== todayISO() || nowMin() >= toMin(hTo()) ? hTo() : "" }; }
   function draftOf(d) { return S.drafts[d] || (S.drafts[d] = { st: {}, tm: {} }); }
   function savedRec(d, w) {
     const s = S.days.get(d)?.statuses?.[w.id];
@@ -2294,14 +2296,22 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
     const lead = (wd(first) + 6) % 7;
     $("calPrev").disabled = S.calMonth <= start().slice(0, 7);
-    $("calNext").disabled = S.calMonth >= today.slice(0, 7);
+    $("calNext").disabled = S.calMonth >= maxDay().slice(0, 7);
     let html = [1, 2, 3, 4, 5, 6, 0].map((i) => `<span class="wdh">${DAYS_S[LANG][i]}</span>`).join("");
     for (let i = 0; i < lead; i++) html += "<span></span>";
     for (let dd = 1; dd <= dim; dd++) {
       const d = `${S.calMonth}-${String(dd).padStart(2, "0")}`;
       let cls = "calday", small = "", dis = false, label = fmtLong(d);
       if (d < start()) { cls += " off"; dis = true; }
-      else if (d > today) { cls += " future"; dis = true; }
+      else if (d > today) {
+        cls += " future"; dis = d > maxDay();
+        const sv = savedState(d).state;
+        if (sv !== "none") {
+          const k = dayCounts(d);
+          if (sv === "full") { cls += " full"; small = `${num(k.p)}/${k.act}`; label += " — " + t("cal.lblFull", num(k.p), k.act); }
+          else { cls += " part"; small = `${k.n}${LET().N}`; label += " — " + t("cal.lblPart"); }
+        }
+      }
       else {
         const k = dayCounts(d);
         if (!k.act) cls += " off";
@@ -2325,15 +2335,17 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("dLabel").textContent = fmtLong(d);
     const idx = Math.round((toUTC(d) - toUTC(start())) / DAY_MS) + 1;
     $("dSub").textContent = d < start() ? t("day.before") : t("day.nth", idx);
-    $("dPicker").value = d; $("dPicker").min = start(); $("dPicker").max = today;
+    $("dPicker").value = d; $("dPicker").min = start(); $("dPicker").max = maxDay();
     $("prevDay").disabled = d <= start();
-    $("nextDay").disabled = d >= today;
+    $("nextDay").disabled = d >= maxDay();
     if (!allLoaded()) return;
     const act = activeWorkers(d), st = savedState(d), dirty = isDirty(d);
     const future = d > today, before = d < start();
     const locked = isLocked(d);
-    const editable = S.canWrite && !future && !before && !locked;
-    renderDayExtras(d, locked, before, future);
+    /* a day to come is recorded in advance once opened with "activate now", or when it already has a record or unsaved changes */
+    const open = future && !before && (!!S.preOpen[d] || !!S.drafts[d] || st.state !== "none");
+    const editable = S.canWrite && (!future || open) && !before && !locked;
+    renderDayExtras(d, locked, before, future, open);
     { /* the site foreman sent this day: offer the review */
       const fs = S.canWrite ? fmPending().filter((x) => x.date === d) : [];
       const fh = fs.length ? `<span class="lk" aria-hidden="true">📋</span><span class="t">${esc(t("fm.dayBanner"))}</span><button type="button" class="btn sm primary" data-fmrev="${esc(fs[0].fid)}">${esc(t("fm.review"))}</button>` : "";
@@ -2345,14 +2357,15 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
 
     let chip;
     if (before) chip = `<span class="chip idle">${esc(t("day.before"))}</span>`;
-    else if (future) chip = `<span class="chip idle">${esc(t("day.future"))}</span>`;
+    else if (future && !open) chip = `<span class="chip idle">${esc(t("day.future"))}</span>`;
     else if (!act.length) chip = `<span class="chip idle">${esc(t("chip.noWorkers"))}</span>`;
     else if (st.state === "full" && !dirty) chip = `<span class="chip ok">${esc(t("chip.full"))}</span>`;
     else if (st.state === "none") chip = `<span class="chip warn">${esc(t("chip.none"))}</span>`;
     else if (st.state === "partial") chip = `<span class="chip warn">${esc(t("chip.partial"))}</span>`;
     else chip = `<span class="chip warn">${esc(t("chip.unsaved"))}</span>`;
+    if (future && open) chip = `<span class="chip idle">${esc(t("day.future"))}</span>` + chip;
     const nc = act.filter((w) => w.joinDate === d).length;
-    const ico = before || future ? ICON.wait : !act.length ? "" : st.state === "full" && !dirty ? ICON.done : ICON.todo;
+    const ico = before || (future && !open) ? ICON.wait : !act.length ? "" : st.state === "full" && !dirty ? ICON.done : ICON.todo;
     const stHTML = ico + chip + (nc ? `<span class="chip idle">${esc(t("day.newcomers", nc))}</span>` : "");
     if (S.dStateHTML !== stHTML) { $("dState").innerHTML = stHTML; S.dStateHTML = stHTML; }
 
@@ -2408,11 +2421,14 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     }
     persistDrafts();
   }
-  function renderDayExtras(d, locked, before, future) {
+  function renderDayExtras(d, locked, before, future, open) {
     const doc = S.days.get(d) || {}, amends = Array.isArray(doc.amends) ? doc.amends : [];
     let lb = "";
     if (locked) lb = `<span class="lk" aria-hidden="true">🔒</span><span class="t">${esc(t("lock.bar"))}</span>${S.canWrite ? `<button type="button" class="btn sm" data-lock="open">${esc(t("lock.edit"))}</button>` : ""}`;
     else if (S.unlocked[d] && S.canWrite) lb = `<span class="lk" aria-hidden="true">✎</span><span class="t">${esc(t("lock.open", S.unlocked[d]))}</span>`;
+    else if (future && !before && S.canWrite) lb = open
+      ? `<span class="lk" aria-hidden="true">✎</span><span class="t">${esc(t("pre.open"))}</span>`
+      : `<span class="lk" aria-hidden="true">⏳</span><span class="t">${esc(t("pre.bar"))}</span><button type="button" class="btn sm primary" data-preopen="1">${esc(t("pre.btn"))}</button>`;
     if (amends.length) { const last = amends[amends.length - 1]; lb += `<span class="am">${esc(t("lock.amends", amends.length))} — ${esc(t("lock.last", last.reason, fmtShort(isoOf(new Date(last.at))) + " " + hmOf(last.at)))}</span>`; }
     if (S.dLockHTML !== lb) { $("dLockBar").innerHTML = lb; S.dLockHTML = lb; }
     $("dLockBar").hidden = !lb;
@@ -5023,6 +5039,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   $("rsCancel").addEventListener("click", () => closeReason(null));
   $("reasonSheet").addEventListener("click", (e) => { if (e.target === $("reasonSheet")) closeReason(null); });
   $("dLockBar").addEventListener("click", async (e) => {
+    if (e.target.closest("[data-preopen]")) { if (S.canWrite && S.sel > todayISO() && S.sel <= maxDay()) { S.preOpen[S.sel] = true; renderDay(true); } return; }
     if (!e.target.closest('[data-lock="open"]')) return;
     const d = S.sel;
     const reason = await askReason(t("lock.dayTitle", fmtLong(d)), t("lock.daySub"));
