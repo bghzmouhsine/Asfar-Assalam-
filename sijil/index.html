@@ -153,6 +153,8 @@ html[dir="ltr"] .pw .eye { right: 6px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
 .pad16 { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bpair { display: inline-flex; gap: 8px; align-items: center; }
+.bpair:not(:has(> .btn:not([hidden]))) { display: none; }
 .sec-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .sec-h h2 { font-size: 15.5px; }
 .empty { padding: 24px 16px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; }
@@ -1174,8 +1176,10 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       <div class="row">
         <button class="btn primary" id="openAdd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span data-t="w.add">إضافة عامل</span></button>
         <button class="btn" id="openBulk" type="button" data-t="w.bulk">إضافة عدة عمال</button>
-        <button class="btn" id="wlPdf" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="wl.pdf">لائحة العمال PDF</span></button>
-        <button class="btn" id="wlShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button>
+        <span class="bpair"><button class="btn" id="wlPdf" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="wl.pdf">لائحة العمال PDF</span></button>
+        <button class="btn" id="wlShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></span>
+        <span class="bpair"><button class="btn" id="wdPdf" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-t="wd.pdf">لائحة توزيع الأيام PDF</span></button>
+        <button class="btn" id="wdShare" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg><span data-t="py.share">مشاركة</span></button></span>
       </div>
       <form class="card pad16" id="addForm" hidden autocomplete="off">
         <h2 data-t="w.new">عامل جديد</h2>
@@ -1617,7 +1621,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "ds.th.day": "اليوم", "ds.th.at": "تاريخ التعديل", "ds.th.reason": "السبب", "ds.th.no": "رقم الوصل", "ds.th.kind": "النوع", "ds.th.pa": "ح / غ", "ds.th.state": "التسجيل", "ds.th.geo": "الموقع (GPS)", "ds.th.photo": "صورة",
       "ds.geo": "{0}, {1} (±{2} م\u200E) — {3}", "ds.yes": "نعم", "ds.stFull": "كامل", "ds.stPart": "ناقص", "ds.stNone": "غير مسجّل", "ds.photos": "صور الفريق", "ds.verify": "التحقق من هذا الملف",
       "ds.verifyNote": "امسح الرمز بكاميرا الهاتف، أو أدخل رمز التحقق في التطبيق (الأجور ← التحقق من وثيقة)، للتأكد أن هذا الملف مطابق للسجل ولم يُغيَّر بعد طباعته.",
-      "ds.closing": "أيام العمل: {0} — مجموع أيام العمال: {1} — الأجور المستحقة: {2} درهم ({3}) — المؤدى خلال الفترة: {4} درهم.", "wl.pdf": "لائحة العمال PDF", "wl.docTitle": "لائحة العمال المختصين بإزالة الركام بقصر الزاوية الجديدة", "th.fullName": "الاسم الكامل", "th.address": "العنوان", "w.address": "العنوان (اختياري)", "w.addressL": "العنوان", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
+      "ds.closing": "أيام العمل: {0} — مجموع أيام العمال: {1} — الأجور المستحقة: {2} درهم ({3}) — المؤدى خلال الفترة: {4} درهم.", "wl.pdf": "لائحة العمال PDF", "wd.pdf": "لائحة توزيع الأيام PDF", "wd.file": "لائحة توزيع الأيام {0}.pdf", "th.nDays": "عدد الأيام", "wl.docTitle": "لائحة العمال المختصين بإزالة الركام بقصر الزاوية الجديدة", "th.fullName": "الاسم الكامل", "th.address": "العنوان", "w.address": "العنوان (اختياري)", "w.addressL": "العنوان", "wl.title": "لائحة العمال", "wl.asOf": "الوضعية إلى غاية {0}", "wl.file": "لائحة العمال {0}.pdf", "wl.total": "المجموع: {0} عامل", "th.phone": "الهاتف", "th.wageD": "الأجر اليومي", "th.due": "المستحق (درهم)",
       "fr.title": "التقرير الختامي للورش", "fr.hint": "كشف شامل للمشروع كله منذ بدايته: أيام العمل والأجور والأداءات والباقي لكل عامل، مع الحصيلة الشهرية وسجل الأداءات وخانات الإمضاء، لإغلاق الملف.",
       "fr.pdf": "تحميل التقرير الختامي PDF", "fr.file": "التقرير الختامي للورش {0}.pdf",
       "fr.k.workers": "عدد العمال", "fr.k.workDays": "أيام الاشتغال", "fr.k.man": "مجموع أيام العمل", "fr.k.abs": "مجموع الغيابات",
@@ -1807,7 +1811,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       "ds.th.day": "Jour", "ds.th.at": "Modifié le", "ds.th.reason": "Motif", "ds.th.no": "N° reçu", "ds.th.kind": "Type", "ds.th.pa": "P / A", "ds.th.state": "Saisie", "ds.th.geo": "Position (GPS)", "ds.th.photo": "Photo",
       "ds.geo": "{0}, {1} (±{2} m) — {3}", "ds.yes": "Oui", "ds.stFull": "Complet", "ds.stPart": "Incomplet", "ds.stNone": "Non saisi", "ds.photos": "Photos de l'équipe", "ds.verify": "Vérification de ce dossier",
       "ds.verifyNote": "Scannez le code avec l'appareil photo du téléphone, ou saisissez-le dans l'application (Salaires → Vérifier un document), pour confirmer que ce dossier correspond au registre et n'a pas été modifié après impression.",
-      "ds.closing": "Jours de travail : {0} — Total jours-ouvriers : {1} — Salaires dus : {2} DH ({3}) — Payé sur la période : {4} DH.", "wl.pdf": "Liste des ouvriers PDF", "wl.docTitle": "Liste des ouvriers chargés de l'enlèvement des gravats au ksar Zaouia Jdida", "th.fullName": "Nom complet", "th.address": "Adresse", "w.address": "Adresse (facultatif)", "w.addressL": "Adresse", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
+      "ds.closing": "Jours de travail : {0} — Total jours-ouvriers : {1} — Salaires dus : {2} DH ({3}) — Payé sur la période : {4} DH.", "wl.pdf": "Liste des ouvriers PDF", "wd.pdf": "Répartition des jours PDF", "wd.file": "Répartition des jours {0}.pdf", "th.nDays": "Nombre de jours", "wl.docTitle": "Liste des ouvriers chargés de l'enlèvement des gravats au ksar Zaouia Jdida", "th.fullName": "Nom complet", "th.address": "Adresse", "w.address": "Adresse (facultatif)", "w.addressL": "Adresse", "wl.title": "Liste des ouvriers", "wl.asOf": "Situation au {0}", "wl.file": "Liste des ouvriers {0}.pdf", "wl.total": "Total : {0} ouvriers", "th.phone": "Téléphone", "th.wageD": "Salaire journalier", "th.due": "Dû (DH)",
       "fr.title": "Rapport de clôture du chantier", "fr.hint": "État complet de tout le projet depuis son début : jours, salaires, paiements et reste dû par ouvrier, bilan mensuel, historique des paiements et cases de signature, pour clôturer le dossier.",
       "fr.pdf": "Télécharger le rapport de clôture PDF", "fr.file": "Rapport de cloture chantier {0}.pdf",
       "fr.k.workers": "Ouvriers", "fr.k.workDays": "Jours d'activité", "fr.k.man": "Total jours travaillés", "fr.k.abs": "Total absences",
@@ -2630,6 +2634,7 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
     $("wCount").textContent = t("w.count", S.workers.size);
     $("openAdd").disabled = !S.canWrite; $("openBulk").disabled = !S.canWrite;
     $("wlPdf").hidden = !S.downloads || !S.workers.size; $("wlShare").hidden = !S.downloads || !S.workers.size || !canShareFiles();
+    $("wdPdf").hidden = $("wlPdf").hidden; $("wdShare").hidden = $("wlShare").hidden;
     $("wSearch").hidden = S.workers.size < 6;
     if (!S.workers.size) { $("wList").innerHTML = `<div class="card empty">${HELMET}<p>${esc(t("w.empty"))}</p></div>`; return; }
     const q = norm($("wSearch").value);
@@ -3698,6 +3703,26 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
       ];
       const ws = sortedWorkers();
       const rows = ws.map((w, i) => ({ cells: [i + 1, { t: w.name, sub: w.exitDate ? t("w.left", fmtDM(w.exitDate)) : "" }, w.cin || "—", w.phone || "—", w.address || ""] }));
+      table(D, cols, rows, { size: 8, rowH: 28 });
+    });
+  }
+  /* the address says Ksar Zaouia Jdida, however it was typed (hamza, ta marbuta, alif maqsura, diacritics, Latin letters) */
+  const ZJ_DAYS = 8, OTHER_DAYS = 15;
+  const arNorm = (v) => String(v || "").normalize("NFKC").replace(/[\u064B-\u0652\u0670\u0640]/g, "").replace(/[\u0623\u0625\u0622\u0671]/g, "\u0627").replace(/\u0629/g, "\u0647").replace(/\u0649/g, "\u064A").toLowerCase();
+  const isZJ = (addr) => { const a = arNorm(addr); return /\u0632\u0627\u0648\u064A\u0647\s*(\u0627\u0644)?\s*\u062C\u062F\u064A\u062F/.test(a) || /za(ou|w|o)i?y?a?t?\s*((el|al)[\s-]*)?j(a|e)?did/.test(a); };
+  function daysListBytes() {
+    const today = todayISO();
+    return buildPdf(t("wl.docTitle"), (D) => {
+      D.plainFooter = true; /* like the workers list: the page footer carries only the page number */
+      D.add(false);
+      letterhead(D, t("wl.docTitle"), []);
+      const cols = [
+        { h: t("th.n"), w: 20, al: "c", ltr: true }, { h: t("th.fullName"), w: 150 }, { h: t("th.cin"), w: 66, al: "c", ltr: true }, { h: t("th.phone"), w: 76, al: "c", ltr: true },
+        { h: t("th.address"), w: 159 }, { h: t("th.nDays"), w: 60, al: "c", ltr: true },
+      ];
+      const ws = sortedWorkers().filter((w) => !w.exitDate || w.exitDate >= today); /* workers who have left are not on it */
+      const list = [...ws.filter((w) => !isZJ(w.address)).map((w) => [w, OTHER_DAYS]), ...ws.filter((w) => isZJ(w.address)).map((w) => [w, ZJ_DAYS])];
+      const rows = list.map(([w, n], i) => ({ cells: [i + 1, w.name, w.cin || "—", w.phone || "—", w.address || "", n] }));
       table(D, cols, rows, { size: 8, rowH: 28 });
     });
   }
@@ -4986,6 +5011,8 @@ textarea.input { height: auto; min-height: 76px; padding-block: 10px; resize: ve
   });
   $("wlPdf").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await workersListBytes(), t("wl.file", todayISO()), false)); });
   $("wlShare").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await workersListBytes(), t("wl.file", todayISO()), true)); });
+  $("wdPdf").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await daysListBytes(), t("wd.file", todayISO()), false)); });
+  $("wdShare").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await daysListBytes(), t("wd.file", todayISO()), true)); });
   $("finalPdf").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await finalReportBytes(), t("fr.file", todayISO()), false)); });
   $("finalShare").addEventListener("click", (e) => { const b = e.currentTarget; pdfJob(b, async () => deliver(await finalReportBytes(), t("fr.file", todayISO()), true)); });
   $("pyKind").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) setPayKind(b.dataset.k); });
